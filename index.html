@@ -1060,17 +1060,71 @@
     </div>
 
     <!-- EBOOK READING MODAL -->
-    <div id="ebook-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'ebook-modal')">
-        <div class="modal-content glass-panel flex flex-col" onclick="event.stopPropagation()" style="max-width:1000px; width:95%; height:95vh; padding: 1rem; margin: auto;">
-            <div class="flex justify-between items-center mb-2 pb-2 border-b border-white/10">
+    <style>
+        #ebook-modal .modal-content {
+            max-width: 1000px;
+            width: 95vw;
+            height: 95vh;
+            padding: 0;
+            margin: auto;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        #ebook-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            #ebook-modal .modal-content {
+                width: 100vw !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+            }
+            #ebook-modal-header {
+                display: none !important;
+            }
+            #ebook-modal-close {
+                top: 15px;
+                right: 15px;
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+    </style>
+    <div id="ebook-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'ebook-modal')" style="padding: 0;">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
+            <!-- Floating close button -->
+            <button id="ebook-modal-close" class="btn-icon" onclick="closeModal('ebook-modal')">
+                <span class="material-icons-round text-white">close</span>
+            </button>
+            
+            <!-- Header (Desktop only) -->
+            <div id="ebook-modal-header" class="flex justify-between items-center p-4 border-b border-white/10" style="background: rgba(15, 23, 42, 0.9);">
                 <div class="flex items-center gap-3">
                     <span class="material-icons-round text-accent-gold" style="font-size:28px;">menu_book</span>
                     <h2 id="modal-ebook-title" class="text-white m-0" style="font-size:1.3rem;">Titre de l'Ebook</h2>
                 </div>
-                <button class="btn-icon" onclick="closeModal('ebook-modal')" style="background: rgba(255,255,255,0.1);"><span class="material-icons-round text-white">close</span></button>
             </div>
             
-            <div id="modal-ebook-container" class="flex-1 w-full" style="background:#fff; border-radius:8px; overflow:hidden; display: flex; flex-direction: column;">
+            <div id="modal-ebook-container" class="w-full flex-1" style="background:#fff; display: flex; flex-direction: column; overflow: hidden; height: 100%;">
                 <!-- Iframe injected by JS -->
             </div>
         </div>
