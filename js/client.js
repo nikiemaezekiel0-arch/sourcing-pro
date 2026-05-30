@@ -373,9 +373,13 @@ async function toggleFavorite(supplierId, btnElement) {
     }
 }
 
+let currentSupplierList = [];
+let supplierDisplayCount = 0;
+const SUPPLIERS_PER_PAGE = 15;
+let supplierObserver = null;
+
 function renderClientSuppliers(categoryId = currentCategoryFilter, searchTerm = '') {
     const db = getDB();
-    const user = getCurrentUser();
     const container = document.getElementById('suppliers-grid');
     if(!container) return;
     
@@ -392,34 +396,64 @@ function renderClientSuppliers(categoryId = currentCategoryFilter, searchTerm = 
         );
     }
     
+    currentSupplierList = filtered;
+    supplierDisplayCount = 0;
+    container.innerHTML = ''; // Reset
+    
+    const trigger = document.getElementById('load-more-trigger');
+    
     if (filtered.length === 0) {
         container.innerHTML = `<div class="empty-state">
             <span class="material-icons-round">search_off</span>
             <p>Aucun fournisseur trouvé.</p>
         </div>`;
+        if (trigger) trigger.style.display = 'none';
         return;
     }
     
+    // Initial load
+    loadMoreSuppliers();
+    
+    // Setup observer if not already setup
+    if (trigger && !supplierObserver) {
+        supplierObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && supplierDisplayCount < currentSupplierList.length) {
+                loadMoreSuppliers();
+            }
+        });
+        supplierObserver.observe(trigger);
+    }
+}
+
+function loadMoreSuppliers() {
+    const container = document.getElementById('suppliers-grid');
+    const trigger = document.getElementById('load-more-trigger');
+    const db = getDB();
+    const user = getCurrentUser();
+    
     let html = '';
-    filtered.forEach(sup => {
+    const slice = currentSupplierList.slice(supplierDisplayCount, supplierDisplayCount + SUPPLIERS_PER_PAGE);
+    
+    slice.forEach((sup, index) => {
         const cat = db.categories.find(c => c.id === sup.categoryId);
         const isFav = user.favorites && user.favorites.includes(sup.id);
         const favClass = isFav ? 'active-fav' : '';
+        const delay = (index % SUPPLIERS_PER_PAGE) * 0.05;
         
         html += `
-            <div class="supplier-card glass-panel" onclick="openSupplierModal('${sup.id}')">
+            <div class="supplier-card glass-panel fade-in-up" style="animation-delay: ${delay}s" onclick="openSupplierModal('${sup.id}')">
                 <div class="card-header">
                     <div class="supplier-badge">
                         <span class="material-icons-round text-sm">${cat ? cat.icon : 'store'}</span>
                         ${cat ? cat.name : 'Autre'}
                     </div>
-                    <button class="btn-icon fav-btn ${favClass}" onclick="toggleFavorite('${sup.id}', this)">
+                    <button class="btn-icon fav-btn ${favClass}" onclick="event.stopPropagation(); toggleFavorite('${sup.id}', this)">
                         <span class="material-icons-round">favorite</span>
                     </button>
                 </div>
                 
                 <div class="supplier-image-wrapper">
-                    ${sup.cardFront ? `<img src="${sup.cardFront}" class="supplier-thumb">` : `<div class="placeholder-img"><span class="material-icons-round">business</span></div>`}
+                    ${sup.cardFront ? `<img src="${sup.cardFront}" class="supplier-thumb" loading="lazy">` : `<div class="placeholder-img"><span class="material-icons-round">business</span></div>`}
                     ${sup.isPremium ? `<div class="premium-badge"><span class="material-icons-round">verified</span> Vérifié</div>` : ''}
                 </div>
                 
@@ -431,7 +465,12 @@ function renderClientSuppliers(categoryId = currentCategoryFilter, searchTerm = 
         `;
     });
     
-    container.innerHTML = html;
+    container.insertAdjacentHTML('beforeend', html);
+    supplierDisplayCount += slice.length;
+    
+    if (trigger) {
+        trigger.style.display = (supplierDisplayCount >= currentSupplierList.length) ? 'none' : 'block';
+    }
 }
 
 let supplierViewTimer = null;
@@ -470,28 +509,52 @@ function openSupplierModal(id) {
         cardContainer.style.display = 'none';
     }
     
-    // QR Codes
+    // QR Codes & IDs
     const qrContainer = document.getElementById('modal-qr-container');
     let qrHtml = '';
     let waQR = sup.qrWa || sup.qrWhatsApp;
     let wcQR = sup.qrWc || sup.qrWeChat;
     
-    if(waQR) {
-        qrHtml += `
-            <div class="qr-item" onclick="openLightbox('${waQR}')" style="cursor:zoom-in;">
-                <img src="${waQR}" alt="WhatsApp">
-                <span>WhatsApp</span>
-            </div>
-        `;
+    // WhatsApp
+    if(waQR || sup.whatsapp) {
+        qrHtml += `<div class="qr-item" style="display:flex; flex-direction:column; align-items:center; gap:8px;">`;
+        if(waQR) {
+            qrHtml += `<img src="${waQR}" alt="WhatsApp" onclick="openLightbox('${waQR}')" style="cursor:zoom-in;">`;
+        } else {
+            qrHtml += `<div style="width:120px; height:120px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border-radius:8px;"><span class="material-icons-round text-muted" style="font-size:48px;">person</span></div>`;
+        }
+        qrHtml += `<span>WhatsApp</span>`;
+        if(sup.whatsapp) {
+            qrHtml += `<div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:8px; font-size:0.85rem;">
+                ${sup.whatsapp}
+                <button class="copy-btn" onclick="copyToClipboard('${sup.whatsapp}', this)" title="Copier">
+                    <span class="material-icons-round" style="font-size:16px;">content_copy</span>
+                </button>
+            </div>`;
+        }
+        qrHtml += `</div>`;
     }
-    if(wcQR) {
-        qrHtml += `
-            <div class="qr-item" onclick="openLightbox('${wcQR}')" style="cursor:zoom-in;">
-                <img src="${wcQR}" alt="WeChat">
-                <span>WeChat</span>
-            </div>
-        `;
+    
+    // WeChat
+    if(wcQR || sup.wechatId) {
+        qrHtml += `<div class="qr-item" style="display:flex; flex-direction:column; align-items:center; gap:8px;">`;
+        if(wcQR) {
+            qrHtml += `<img src="${wcQR}" alt="WeChat" onclick="openLightbox('${wcQR}')" style="cursor:zoom-in;">`;
+        } else {
+            qrHtml += `<div style="width:120px; height:120px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border-radius:8px;"><span class="material-icons-round text-muted" style="font-size:48px;">person</span></div>`;
+        }
+        qrHtml += `<span>WeChat</span>`;
+        if(sup.wechatId) {
+            qrHtml += `<div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:8px; font-size:0.85rem;">
+                ${sup.wechatId}
+                <button class="copy-btn" onclick="copyToClipboard('${sup.wechatId}', this)" title="Copier">
+                    <span class="material-icons-round" style="font-size:16px;">content_copy</span>
+                </button>
+            </div>`;
+        }
+        qrHtml += `</div>`;
     }
+    
     qrContainer.innerHTML = qrHtml;
     
     // Catalogs (PDFs)
@@ -686,4 +749,30 @@ function startClientTour() {
     });
 
     driverObj.drive();
+}
+
+function copyToClipboard(text, btnElement) {
+    if (!navigator.clipboard) {
+        // Fallback
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        document.body.removeChild(textArea);
+    } else {
+        navigator.clipboard.writeText(text).catch(err => console.error(err));
+    }
+    
+    // UI Feedback
+    if(btnElement) {
+        const originalHtml = btnElement.innerHTML;
+        btnElement.classList.add('copied');
+        btnElement.innerHTML = '<span class="material-icons-round" style="font-size:16px;">check</span>';
+        setTimeout(() => {
+            btnElement.classList.remove('copied');
+            btnElement.innerHTML = originalHtml;
+        }, 2000);
+    }
 }

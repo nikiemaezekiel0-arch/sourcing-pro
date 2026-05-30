@@ -703,3 +703,77 @@ textarea.input-control { resize: vertical; min-height: 100px; }
     .ebook-hero-banner { padding: 1.5rem !important; }
     .ebook-hero-banner h2 { font-size: 1.5rem !important; }
 }
+
+/* ==========================================================================
+   PREMIUM UX / ANIMATIONS / TAGS
+   ========================================================================== */
+
+/* Fade-in-up animation for cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.fade-in-up {
+    animation: fadeInUp 0.5s ease backwards;
+}
+
+/* Quick Category Tags */
+.category-tags-container {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    scrollbar-width: none; /* Firefox */
+}
+.category-tags-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+.quick-tag {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.quick-tag:hover {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: var(--accent-gold);
+    color: #fff;
+}
+.quick-tag.active {
+    background: var(--accent-gold);
+    color: #000;
+    font-weight: bold;
+}
+
+/* Copy UX Animation */
+.copy-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    padding: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.copy-btn.copied {
+    background: var(--success);
+    color: #fff;
+}
