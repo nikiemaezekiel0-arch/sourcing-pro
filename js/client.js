@@ -237,13 +237,13 @@ async function openEbookModal(url, title) {
         if (isMobile) {
             // Use native iframe for mobile, wrapped in a scrolling div for iOS compatibility
             container.innerHTML = `
-                <div style="width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; background: #fff;">
+                <div style="width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; background: #fff; flex: 1;">
                     <iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe>
                 </div>
             `;
         } else {
             // Desktop native fallback
-            container.innerHTML = `<iframe src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" width="100%" height="100%" style="border:none; margin: 0 auto; display: block; background: #fff;"></iframe>`;
+            container.innerHTML = `<iframe src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" width="100%" height="100%" style="border:none; margin: 0 auto; display: block; background: #fff; flex: 1;"></iframe>`;
         }
     }
 }
