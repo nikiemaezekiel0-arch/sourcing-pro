@@ -231,7 +231,20 @@ async function openEbookModal(url, title) {
         renderCustomPage(customPdfPageNum);
     } catch (err) {
         console.error("PDF Loading Error: ", err);
-        container.innerHTML = `<div style="padding:2rem; color:red; text-align:center;">Erreur lors du chargement de l'Ebook. Impossible de lire ce fichier PDF.</div>`;
+        // CORS or Invalid PDF: Fallback to native iframe
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            // Use native iframe for mobile, wrapped in a scrolling div for iOS compatibility
+            container.innerHTML = `
+                <div style="width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; background: #fff;">
+                    <iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe>
+                </div>
+            `;
+        } else {
+            // Desktop native fallback
+            container.innerHTML = `<iframe src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" width="100%" height="100%" style="border:none; margin: 0 auto; display: block; background: #fff;"></iframe>`;
+        }
     }
 }
 
