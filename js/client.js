@@ -189,69 +189,26 @@ let customPdfCtx = null;
 async function openEbookModal(url, title) {
     document.getElementById('modal-ebook-title').innerText = title;
     const container = document.getElementById('modal-ebook-container');
-    
-    // Create Custom Reader UI
-    container.innerHTML = `
-        <div class="flex justify-between items-center p-3" style="background:#0f172a; border-bottom:1px solid rgba(255,255,255,0.1); flex-shrink:0;">
-            <button class="btn-icon" id="pdf-prev-btn" style="background:rgba(255,255,255,0.1); color:white;"><span class="material-icons-round">chevron_left</span></button>
-            <span style="color:white; font-family:'Outfit',sans-serif; font-weight:600;">Page <span id="pdf-page-num">1</span> / <span id="pdf-page-count">...</span></span>
-            <button class="btn-icon" id="pdf-next-btn" style="background:rgba(255,255,255,0.1); color:white;"><span class="material-icons-round">chevron_right</span></button>
-        </div>
-        <div id="pdf-canvas-wrapper" style="flex-grow:1; overflow:auto; background:#cbd5e1; display:flex; justify-content:center; align-items:flex-start; padding:1rem;">
-            <canvas id="pdf-render-canvas" style="box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 100%;"></canvas>
-        </div>
-    `;
-    
     document.getElementById('ebook-modal').classList.remove('hidden');
     
-    customPdfCanvas = document.getElementById('pdf-render-canvas');
-    customPdfCtx = customPdfCanvas.getContext('2d');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    document.getElementById('pdf-prev-btn').addEventListener('click', () => {
-        if (customPdfPageNum <= 1) return;
-        customPdfPageNum--;
-        queueRenderCustomPage(customPdfPageNum);
-    });
-    
-    document.getElementById('pdf-next-btn').addEventListener('click', () => {
-        if (customPdfPageNum >= customPdfDoc.numPages) return;
-        customPdfPageNum++;
-        queueRenderCustomPage(customPdfPageNum);
-    });
-
-    try {
-        // Show loading state
-        const ctx = customPdfCanvas.getContext('2d');
-        ctx.font = '16px Arial';
-        ctx.fillText('Chargement du Ebook...', 50, 50);
-        
-        customPdfDoc = await pdfjsLib.getDocument(url).promise;
-        document.getElementById('pdf-page-count').textContent = customPdfDoc.numPages;
-        customPdfPageNum = 1;
-        renderCustomPage(customPdfPageNum);
-    } catch (err) {
-        console.error("PDF Loading Error: ", err);
-        // CORS or Invalid PDF: Fallback to native iframe
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        
-        if (isMobile) {
-            // Google Docs Viewer est capricieux sur les gros fichiers (page blanche). 
-            // On ajoute un bouton de secours robuste pour l'ouvrir nativement.
-            container.innerHTML = `
-                <div style="background: #f1f5f9; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; text-align: center; gap: 8px;">
-                    <span style="font-size: 12px; color: #475569; font-family: 'Outfit';">Si le document ci-dessous est blanc, cliquez ici :</span>
-                    <a href="${url}" target="_blank" style="background: #eab308; color: #0f172a; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: Outfit; font-size: 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <span class="material-icons-round" style="font-size: 18px;">launch</span> Ouvrir le PDF nativement
-                    </a>
-                </div>
-                <div style="width: 100%; height: 100%; overflow: hidden; background: #fff; flex: 1;">
-                    <iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true" width="100%" height="100%" style="border:none;"></iframe>
-                </div>
-            `;
-        } else {
-            // Desktop native fallback
-            container.innerHTML = `<iframe src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" width="100%" height="100%" style="border:none; margin: 0 auto; display: block; background: #fff; flex: 1;"></iframe>`;
-        }
+    if (isMobile) {
+        // Mobile fallback: Google Docs Viewer + Native Open Button
+        container.innerHTML = `
+            <div style="background: #f1f5f9; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; text-align: center; gap: 8px;">
+                <span style="font-size: 12px; color: #475569; font-family: 'Outfit';">Si le document ci-dessous est blanc, cliquez ici :</span>
+                <a href="${url}" target="_blank" style="background: #eab308; color: #0f172a; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: Outfit; font-size: 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <span class="material-icons-round" style="font-size: 18px;">launch</span> Ouvrir le PDF nativement
+                </a>
+            </div>
+            <div style="width: 100%; height: 100%; overflow: hidden; background: #fff; flex: 1;">
+                <iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true" width="100%" height="100%" style="border:none;"></iframe>
+            </div>
+        `;
+    } else {
+        // Desktop: Native built-in PDF viewer
+        container.innerHTML = `<iframe src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" width="100%" height="100%" style="border:none; margin: 0 auto; display: block; background: #fff; flex: 1;"></iframe>`;
     }
 }
 
