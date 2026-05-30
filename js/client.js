@@ -186,73 +186,132 @@ let customPdfPageNumIsPending = null;
 let customPdfCanvas = null;
 let customPdfCtx = null;
 
+let currentPdfDoc = null;
+let pdfPageObserver = null;
+
 async function openEbookModal(url, title) {
     document.getElementById('modal-ebook-title').innerText = title;
     const container = document.getElementById('modal-ebook-container');
     document.getElementById('ebook-modal').classList.remove('hidden');
     
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-        // Mobile fallback: Native Open Button + Direct Firebase URL Iframe
+    // Show loading state
+    container.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; background:#f1f5f9;">
+            <div class="loader" style="border:4px solid #e2e8f0; border-top:4px solid var(--accent-gold); border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite;"></div>
+            <p style="margin-top:16px; color:#475569; font-family:Outfit; font-weight:600;">Chargement et optimisation du document...</p>
+        </div>
+        <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+    `;
+
+    try {
+        if (!window.pdfjsLib) {
+            throw new Error("PDF.js n'est pas chargé");
+        }
+        
+        currentPdfDoc = await pdfjsLib.getDocument(url).promise;
+        const numPages = currentPdfDoc.numPages;
+        
+        // Get first page to calculate aspect ratio
+        const firstPage = await currentPdfDoc.getPage(1);
+        const containerWidth = container.clientWidth || window.innerWidth;
+        
+        // Calculate scale to fit width
+        const targetWidth = Math.min(containerWidth - 20, 1000); 
+        const unscaledViewport = firstPage.getViewport({ scale: 1.0 });
+        const scale = targetWidth / unscaledViewport.width;
+        const scaledViewport = firstPage.getViewport({ scale });
+        
+        const pageHeight = scaledViewport.height;
+        const pageWidth = scaledViewport.width;
+        
+        // Setup the scrolling container
+        container.innerHTML = `<div id="pdf-scroll-view" style="width:100%; height:100%; overflow-y:auto; background:#cbd5e1; display:flex; flex-direction:column; align-items:center; padding:15px 0;"></div>`;
+        const scrollView = document.getElementById('pdf-scroll-view');
+        
+        // Disconnect previous observer
+        if (pdfPageObserver) pdfPageObserver.disconnect();
+        
+        pdfPageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const pageNum = parseInt(entry.target.dataset.page);
+                if (entry.isIntersecting) {
+                    renderPdfPage(pageNum, entry.target, scale);
+                } else {
+                    // Memory optimization: clear canvas if it goes too far off-screen
+                    // We only do this if we want strict memory management
+                }
+            });
+        }, { root: scrollView, rootMargin: '1000px 0px' }); // Render a few pages ahead
+        
+        for (let i = 1; i <= numPages; i++) {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'pdf-page-container';
+            pageDiv.dataset.page = i;
+            pageDiv.dataset.rendered = "false";
+            pageDiv.style.width = `${pageWidth}px`;
+            pageDiv.style.height = `${pageHeight}px`;
+            pageDiv.style.backgroundColor = '#fff';
+            pageDiv.style.marginBottom = '15px';
+            pageDiv.style.boxShadow = '0 4px 10px rgba(0,0,0,0.15)';
+            pageDiv.style.position = 'relative';
+            
+            pageDiv.innerHTML = `
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#cbd5e1;">
+                    <span class="material-icons-round" style="font-size:32px;">hourglass_empty</span>
+                </div>
+                <div style="position:absolute; bottom:10px; right:10px; font-size:12px; color:#94a3b8; font-weight:bold;">${i} / ${numPages}</div>
+            `;
+            
+            scrollView.appendChild(pageDiv);
+            pdfPageObserver.observe(pageDiv);
+        }
+        
+    } catch (error) {
+        console.error("PDF Load Error:", error);
+        // Mobile fallback
         container.innerHTML = `
-            <div style="background: #f1f5f9; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; text-align: center; gap: 8px;">
-                <span style="font-size: 12px; color: #475569; font-family: 'Outfit';">Si le document bloque ou ne défile pas, cliquez ici :</span>
-                <a href="${url}" target="_blank" style="background: #eab308; color: #0f172a; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: Outfit; font-size: 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <span class="material-icons-round" style="font-size: 18px;">launch</span> Ouvrir le PDF en plein écran
+            <div style="background: #fef2f2; padding: 20px; text-align: center; border-bottom: 1px solid #fca5a5;">
+                <p style="color: #ef4444; font-weight: bold; margin-bottom: 10px;">Le lecteur natif ne peut pas ouvrir ce fichier.</p>
+                <a href="${url}" target="_blank" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
+                    <span class="material-icons-round">open_in_new</span> Ouvrir en plein écran
                 </a>
             </div>
-            <div style="width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; background: #fff; flex: 1;">
-                <iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe>
-            </div>
+            <iframe src="${url}" style="width:100%; height:100%; border:none; background:#fff; flex:1;"></iframe>
         `;
-    } else {
-        // Desktop: Native built-in PDF viewer
-        container.innerHTML = `<iframe src="${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" width="100%" height="100%" style="border:none; margin: 0 auto; display: block; background: #fff; flex: 1;"></iframe>`;
     }
 }
 
-function renderCustomPage(num) {
-    customPdfPageIsRendering = true;
-
-    customPdfDoc.getPage(num).then(page => {
-        const wrapper = document.getElementById('pdf-canvas-wrapper');
-        let viewport = page.getViewport({ scale: 1.5 });
+async function renderPdfPage(pageNum, containerDiv, scale) {
+    if (containerDiv.dataset.rendered === "true") return;
+    containerDiv.dataset.rendered = "true";
+    
+    try {
+        const page = await currentPdfDoc.getPage(pageNum);
+        // Use a higher scale for rendering to ensure crisp text on Retina/Mobile displays
+        const renderScale = window.devicePixelRatio || 2;
+        const viewport = page.getViewport({ scale: scale * renderScale });
         
-        // Scale down if it doesn't fit on mobile screens
-        if (wrapper && viewport.width > wrapper.clientWidth - 32) {
-            const scale = (wrapper.clientWidth - 32) / viewport.width;
-            viewport = page.getViewport({ scale: scale * 1.5 }); // adjust scale properly
-        }
-
-        customPdfCanvas.height = viewport.height;
-        customPdfCanvas.width = viewport.width;
-
-        const renderCtx = {
-            canvasContext: customPdfCtx,
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.display = 'block';
+        
+        const context = canvas.getContext('2d');
+        const renderContext = {
+            canvasContext: context,
             viewport: viewport
         };
-
-        page.render(renderCtx).promise.then(() => {
-            customPdfPageIsRendering = false;
-            if (customPdfPageNumIsPending !== null) {
-                renderCustomPage(customPdfPageNumIsPending);
-                customPdfPageNumIsPending = null;
-            }
-        });
-
-        document.getElementById('pdf-page-num').textContent = num;
         
-        // Scroll to top of page
-        if(wrapper) wrapper.scrollTop = 0;
-    });
-}
-
-function queueRenderCustomPage(num) {
-    if (customPdfPageIsRendering) {
-        customPdfPageNumIsPending = num;
-    } else {
-        renderCustomPage(num);
+        await page.render(renderContext).promise;
+        
+        containerDiv.innerHTML = '';
+        containerDiv.appendChild(canvas);
+        
+    } catch (err) {
+        console.error("Error rendering page", pageNum, err);
+        containerDiv.dataset.rendered = "false";
     }
 }
 
