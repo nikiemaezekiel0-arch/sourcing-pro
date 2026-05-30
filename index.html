@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SourcingDirectory Pro</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Driver.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+</head>
+<body>
+    <div class="bg-ambient"></div>
+
+    <div id="app">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="logo">
+                <span class="material-icons-round logo-icon">language</span>
+                SourcingDirectory<span class="text-warning">Pro</span>
+            </div>
+            <div id="nav-user-area" class="hidden" style="display: flex; gap: 10px; align-items: center;">
+                <select id="currency-selector" onchange="setCurrency(this.value)" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); border-radius: 4px; padding: 4px;">
+                    <option value="EUR">EUR (€)</option>
+                    <option value="CNY">CNY (¥)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="XOF">FCFA</option>
+                </select>
+                <select id="lang-selector" onchange="setLanguage(this.value)" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); border-radius: 4px; padding: 4px;">
+                    <option value="fr">FR</option>
+                    <option value="en">EN</option>
+                </select>
+                <button class="btn-secondary" onclick="logout()" data-i18n="btn_logout"><span class="material-icons-round">logout</span> Déconnexion</button>
+            </div>
+        </nav>
+
+        <!-- 1. AUTHENTICATION VIEW -->
+        <div id="auth-view" class="auth-wrapper">
+            <!-- Left side with image -->
+            <div class="auth-left">
+                <div class="auth-left-content">
+                    <h1>Maîtrisez l'import depuis la Chine.</h1>
+                    <p>Accédez au carnet d'adresses exclusif des meilleurs fournisseurs et formez-vous pour sourcer comme un pro.</p>
+                </div>
+            </div>
+            
+            <!-- Right side with form -->
+            <div class="auth-right">
+                <div class="glass-panel auth-box">
+                    <div class="text-center mb-6">
+                        <span class="material-icons-round text-warning" style="font-size: 48px;">lock_person</span>
+                        <h2 class="mt-2">Espace Privé</h2>
+                        <p class="text-muted text-sm mt-2">Connectez-vous à votre espace SourcingPro.</p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+                        <div class="form-group">
+                            <input type="email" id="login-email" class="input-control" placeholder="Adresse Email" required>
+                        </div>
+                        <div class="form-group mb-4">
+                            <input type="password" id="login-password" class="input-control" placeholder="Mot de passe" required>
+                        </div>
+                        <div class="text-right mb-4">
+                            <a href="#" class="text-warning text-sm hover-glow" style="text-decoration:none;" onclick="switchAuthMode('forgot')">Mot de passe oublié ?</a>
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center;">Se connecter</button>
+                        <p class="text-center text-sm mt-4 text-muted">Pas encore membre ? <a href="#" class="text-warning" onclick="switchAuthMode('register')">S'inscrire</a></p>
+                        <p class="text-center text-sm mt-2 text-muted"><a href="#" style="color:#888;" onclick="switchAuthMode('supplier-register')">I am a Supplier (Partner Sign Up)</a></p>
+                    </form>
+
+                    <!-- Forgot Password Form -->
+                    <form id="forgot-form" class="hidden" onsubmit="handlePasswordReset(event)">
+                        <p class="text-muted text-sm mb-4">Entrez votre adresse email pour recevoir un lien de réinitialisation sécurisé.</p>
+                        <div class="form-group mb-6">
+                            <input type="email" id="forgot-email" class="input-control" placeholder="Adresse Email" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center;">Réinitialiser</button>
+                        <p class="text-center text-sm mt-4 text-muted"><a href="#" class="text-warning" onclick="switchAuthMode('login')">Retour à la connexion</a></p>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+                        <div class="flex gap-2 form-group">
+                            <input type="text" id="reg-firstname" class="input-control" placeholder="Prénom" required style="flex:1;">
+                            <input type="text" id="reg-lastname" class="input-control" placeholder="Nom" required style="flex:1;">
+                        </div>
+                        <div class="form-group">
+                            <select id="reg-country" class="input-control" required>
+                                <option value="" disabled selected>Pays de résidence</option>
+                                <option value="Burkina Faso">Burkina Faso</option>
+                                <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                                <option value="Sénégal">Sénégal</option>
+                                <option value="Mali">Mali</option>
+                                <option value="Togo">Togo</option>
+                                <option value="Bénin">Bénin</option>
+                                <option value="Niger">Niger</option>
+                                <option value="Cameroun">Cameroun</option>
+                                <option value="Gabon">Gabon</option>
+                                <option value="Congo">Congo</option>
+                                <option value="RDC">RDC</option>
+                                <option value="Maroc">Maroc</option>
+                                <option value="Algérie">Algérie</option>
+                                <option value="Tunisie">Tunisie</option>
+                                <option value="France">France</option>
+                                <option value="Belgique">Belgique</option>
+                                <option value="Suisse">Suisse</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="reg-email" class="input-control" placeholder="Adresse Email" required>
+                        </div>
+                        <div class="form-group flex gap-2">
+                            <select id="reg-country-code" class="input-control" style="width: 130px; padding-right: 0.5rem;" required>
+                                <option value="" disabled selected>Indicatif</option>
+                                <option value="+226">🇧🇫 +226 (BFA)</option>
+                                <option value="+225">🇨🇮 +225 (CIV)</option>
+                                <option value="+221">🇸🇳 +221 (SEN)</option>
+                                <option value="+223">🇲🇱 +223 (MLI)</option>
+                                <option value="+228">🇹🇬 +228 (TGO)</option>
+                                <option value="+229">🇧🇯 +229 (BEN)</option>
+                                <option value="+227">🇳🇪 +227 (NER)</option>
+                                <option value="+237">🇨🇲 +237 (CMR)</option>
+                                <option value="+241">🇬🇦 +241 (GAB)</option>
+                                <option value="+242">🇨🇬 +242 (COG)</option>
+                                <option value="+243">🇨🇩 +243 (COD)</option>
+                                <option value="+212">🇲🇦 +212 (MAR)</option>
+                                <option value="+213">🇩🇿 +213 (DZA)</option>
+                                <option value="+216">🇹🇳 +216 (TUN)</option>
+                                <option value="+33">🇫🇷 +33 (FRA)</option>
+                                <option value="+32">🇧🇪 +32 (BEL)</option>
+                                <option value="+41">🇨🇭 +41 (CHE)</option>
+                                <option value="+1">🇺🇸/🇨🇦 +1</option>
+                                <option value="+44">🇬🇧 +44 (GBR)</option>
+                                <option value="+49">🇩🇪 +49 (DEU)</option>
+                                <option value="+86">🇨🇳 +86 (CHN)</option>
+                                <option value="+971">🇦🇪 +971 (ARE)</option>
+                            </select>
+                            <input type="tel" id="reg-phone" class="input-control" placeholder="Numéro sans indicatif" pattern="[0-9]{8,15}" title="Uniquement des chiffres, sans espaces" required style="flex:1;">
+                        </div>
+                        <div class="form-group mb-6">
+                            <input type="password" id="reg-password" class="input-control" placeholder="Mot de passe (8 car., 1 maj., 1 chiffre)" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center;">Créer mon compte</button>
+                        <p class="text-center text-sm mt-4 text-muted">Déjà inscrit ? <a href="#" class="text-warning" onclick="switchAuthMode('login')">Se connecter</a></p>
+                    </form>
+
+                    <!-- Supplier Register Form (English) -->
+                    <form id="supplier-register-form" class="hidden" onsubmit="handleSupplierRegister(event)">
+                        <h3 class="text-center text-warning mb-4" style="font-weight: 700;">Supplier Application</h3>
+                        <div class="form-group">
+                            <input type="text" id="sup-company" class="input-control" placeholder="Company Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="sup-contact" class="input-control" placeholder="Contact Person Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="sup-email" class="input-control" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group flex gap-2">
+                            <select id="sup-country-code" class="input-control" style="width: 110px; padding-right: 0.5rem;" required>
+                                <option value="+86">🇨🇳 +86</option>
+                                <option value="+852">🇭🇰 +852</option>
+                                <option value="+886">🇹🇼 +886</option>
+                                <option value="+1">🇺🇸 +1</option>
+                            </select>
+                            <input type="tel" id="sup-phone" class="input-control" placeholder="Phone / WhatsApp" pattern="[0-9]{8,15}" required style="flex:1;">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="sup-password" class="input-control" placeholder="Password (min 8 chars)" required>
+                        </div>
+                        <div class="form-group mb-6">
+                            <input type="text" id="sup-vip-code" class="input-control" placeholder="VIP Invitation Code" required style="border-color: var(--accent-gold);">
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center; background: var(--accent-gold); color: black;">Submit Application</button>
+                        <p class="text-center text-sm mt-4 text-muted">Already approved? <a href="#" class="text-warning" onclick="switchAuthMode('login')">Login here</a></p>
+                    </form>
+
+                    <!-- Supplier Registration Success Message -->
+                    <div id="supplier-register-success" class="hidden text-center py-6" style="display: flex; flex-direction: column; align-items: center;">
+                        <span class="material-icons-round text-success" style="font-size: 64px; color: var(--accent-gold); margin-bottom: 1rem;">check_circle</span>
+                        <h3 class="text-warning mb-2" style="font-weight: 700;">Application Received!</h3>
+                        <p class="text-muted mb-4 text-sm" style="line-height: 1.5;">Your supplier account is now <strong class="text-warning">pending administrator review</strong>.<br>You will be able to log in and set up your catalog once approved.</p>
+                        <button class="btn-primary w-full" style="justify-content:center;" onclick="switchAuthMode('login')">Return to Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. CLIENT DASHBOARD -->
+        <div id="client-dashboard" class="dashboard-container hidden">
+            <!-- Sidebar is minimal for client, mostly for favorites or user info -->
+            <div class="sidebar">
+                <div class="nav-item" id="client-nav-agent" onclick="switchClientTab('agent')">
+                    <span class="material-icons-round">storefront</span> <span data-i18n="nav_catalogue">Catalogue Agent</span>
+                </div>
+                <div class="nav-item active" id="client-nav-suppliers" onclick="switchClientTab('suppliers')">
+                    <span class="material-icons-round">explore</span> Fournisseurs <span id="premium-lock-icon" class="material-icons-round text-sm ml-1 text-accent-gold hidden">lock</span>
+                </div>
+                <div class="nav-item" id="client-nav-favorites" onclick="switchClientTab('favorites')">
+                    <span class="material-icons-round">favorite</span> Mes Favoris
+                </div>
+                <div class="nav-item" id="client-nav-trainings" onclick="switchClientTab('trainings')">
+                    <span class="material-icons-round">school</span> Ma Formation
+                </div>
+            </div>
+
+            <main class="main-content">
+                <!-- Suppliers View -->
+                <div id="client-view-suppliers">
+                    <div class="search-bar-container">
+                        <div class="search-bar">
+                            <span class="material-icons-round">search</span>
+                            <input type="text" id="search-input" class="input-control" placeholder="Rechercher un fournisseur, un produit, un mot-clé...">
+                        </div>
+                    </div>
+
+                    <div id="category-filters" class="category-filters">
+                        <!-- Injected by client.js -->
+                    </div>
+
+                    <div id="suppliers-grid" class="suppliers-grid">
+                        <!-- Injected by client.js -->
+                    </div>
+                </div>
+
+                <!-- Trainings View -->
+                <div id="client-view-trainings" class="hidden">
+                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button id="btn-client-train-modules" class="btn-primary" onclick="switchClientTrainingTab('modules')" style="padding: 0.5rem 1rem;">🎥 Modules Classiques</button>
+                        <button id="btn-client-train-ebooks" class="btn-secondary" onclick="switchClientTrainingTab('ebooks')" style="padding: 0.5rem 1rem;">📚 Pack Ebooks</button>
+                    </div>
+
+                    <div id="client-train-subview-modules">
+                        <!-- Dashboard View -->
+                        <div id="training-dashboard-view" class="training-dashboard">
+                        <div class="training-hero">
+                            <span class="t-chip" style="position:relative; top:0; right:0; margin-bottom:1rem; display:inline-block;">✨ Formation Complète</span>
+                            <h2 style="font-size: 2rem; font-weight:800; color:#fff; line-height:1.2; margin-bottom:0.5rem;">Import China Pro</h2>
+                            <p style="color:var(--text-muted); max-width:500px;">Maîtrise l'import depuis la Chine de A à Z. Une formation structurée pour sourcer, commander via agent et revendre avec profit.</p>
+                            <div class="training-stats">
+                                <div class="t-stat"><strong>4</strong><span>Modules</span></div>
+                                <div class="t-stat"><strong>3</strong><span>Plateformes</span></div>
+                                <div class="t-stat"><strong>x2-x3</strong><span>Marge</span></div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="font-size:1.2rem; font-weight:700; margin-top:1rem; color:#fff;">Parcours d'apprentissage</h3>
+                        <div class="modules-grid">
+                            <div class="module-card" onclick="openTrainingModule(1)">
+                                <span class="m-card-icon">🌏</span>
+                                <span class="m-card-num">Module 01</span>
+                                <h3 class="m-card-title">Plateformes Chinoises</h3>
+                                <p class="m-card-desc">Taobao, 1688, Weidian — comprendre les différences et savoir chercher.</p>
+                            </div>
+                            <div class="module-card" onclick="openTrainingModule(2)">
+                                <span class="m-card-icon">🤝</span>
+                                <span class="m-card-num">Module 02</span>
+                                <h3 class="m-card-title">Agents d'Achat</h3>
+                                <p class="m-card-desc">Choisir un bon agent, comprendre leur rôle et accéder aux meilleurs.</p>
+                            </div>
+                            <div class="module-card" onclick="openTrainingModule(3)">
+                                <span class="m-card-icon">🔍</span>
+                                <span class="m-card-num">Module 03</span>
+                                <h3 class="m-card-title">Sourcing & Qualité</h3>
+                                <p class="m-card-desc">Trouver les bons produits, vérifier la qualité, accéder aux officiels.</p>
+                            </div>
+                            <div class="module-card" onclick="openTrainingModule(4)">
+                                <span class="m-card-icon">💸</span>
+                                <span class="m-card-num">Module 04</span>
+                                <h3 class="m-card-title">Revente & Profit</h3>
+                                <p class="m-card-desc">Plateformes, prix, marges et stratégie pour maximiser tes profits.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reading View -->
+                    <div id="training-reading-view" class="training-reading-view hidden">
+                        <div class="tr-header">
+                            <button class="tr-back-btn" onclick="closeTrainingModule()">
+                                <span class="material-icons-round">arrow_back</span> Retour aux modules
+                            </button>
+                            <span id="tr-module-title" style="font-weight:700; color:var(--accent-gold); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Module</span>
+                        </div>
+                        
+                        <!-- Content Containers -->
+                        <div id="t-module-1" class="t-module-content hidden">
+                            <div class="t-section-header">
+                                <div class="t-section-badge">🌏</div>
+                                <div>
+                                    <span class="t-section-label">Module 01 · Fondamentaux</span>
+                                    <h2 class="t-section-title">Les 3 géants de l'e-commerce chinois</h2>
+                                    <p class="t-section-desc">Comprendre les différences entre Taobao, 1688 et Weidian.</p>
+                                </div>
+                            </div>
+                            <div class="t-grid-3">
+                                <div class="t-platform-card">
+                                    <div class="t-platform-top"><span class="t-chip">Débutant</span><span class="t-flag">🛍️</span><div class="t-name">Taobao</div><div class="t-sub">Amazon chinois</div></div>
+                                    <div class="t-platform-body">
+                                        <ul class="t-feature-list"><li><span class="t-dot">✓</span> Aucun MOQ (Achat à l'unité)</li><li><span class="t-dot warn">!</span> Site 100% chinois</li></ul>
+                                    </div>
+                                </div>
+                                <div class="t-platform-card">
+                                    <div class="t-platform-top"><span class="t-chip">B2B</span><span class="t-flag">🏭</span><div class="t-name">1688</div><div class="t-sub">Prix usine</div></div>
+                                    <div class="t-platform-body">
+                                        <ul class="t-feature-list"><li><span class="t-dot">✓</span> Prix ultra-compétitifs</li><li><span class="t-dot warn">!</span> MOQ élevé (100+)</li></ul>
+                                    </div>
+                                </div>
+                                <div class="t-platform-card">
+                                    <div class="t-platform-top"><span class="t-chip">Mobile</span><span class="t-flag">📱</span><div class="t-name">Weidian</div><div class="t-sub">Indépendants</div></div>
+                                    <div class="t-platform-body">
+                                        <ul class="t-feature-list"><li><span class="t-dot">✓</span> Tendances originales</li><li><span class="t-dot warn">!</span> Qualité variable</li></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr style="border-color:var(--glass-border); margin: 2rem 0;">
+                            
+                            <div class="t-section-header"><div class="t-section-badge">📖</div><div><h2 class="t-section-title">Créer son compte Taobao</h2></div></div>
+                            <div class="t-steps-list">
+                                <div class="t-step-item"><div class="t-step-num">1</div><div class="t-step-content"><h3>Navigateur Brave</h3><p>Utilise Brave ou Chrome pour traduire la page via clic droit.</p></div></div>
+                                <div class="t-step-item"><div class="t-step-num">2</div><div class="t-step-content"><h3>Inscription Numéro</h3><p>Valide ton numéro avec le SMS à 6 chiffres.</p></div></div>
+                                <div class="t-step-item"><div class="t-step-num">3</div><div class="t-step-content"><h3>CAPTCHA</h3><p>Sélectionne toutes les images identiques pour valider.</p></div></div>
+                            </div>
+
+                            <hr style="border-color:var(--glass-border); margin: 2rem 0;">
+                            <div class="t-section-header"><div class="t-section-badge">💱</div><div><h2 class="t-section-title">Convertir Yuan (¥) → Euro (€)</h2></div></div>
+                            <div class="t-callout success mb-4"><div><strong>Astuce rapide :</strong> Divise le prix en Yuan par 8 pour avoir l'Euro. (ex: ¥80 ≈ 10€)</div></div>
+                        </div>
+
+                        <div id="t-module-2" class="t-module-content hidden">
+                            <div class="t-section-header">
+                                <div class="t-section-badge">🤝</div>
+                                <div>
+                                    <span class="t-section-label">Module 02 · Intermédiaires</span>
+                                    <h2 class="t-section-title">L'agent d'achat</h2>
+                                    <p class="t-section-desc">Il paie, réceptionne, vérifie (QC) et expédie tes colis. Indispensable.</p>
+                                </div>
+                            </div>
+                            <div class="t-grid-2">
+                                <div class="t-agent-card">
+                                    <div class="t-agent-top"><div class="t-agent-name">NiuNiuBox</div><span class="t-tag" style="background:rgba(168,85,247,0.2);color:#c084fc;">Privé</span></div>
+                                    <p class="t-agent-desc">Agent récent et fiable, non saturé. Idéal pour Taobao & Weidian.</p>
+                                    <a href="https://niuniubox.com/?invite_code=nmnUY4kVilWe79L8" target="_blank" class="t-agent-link">🚀 Accéder</a>
+                                </div>
+                                <div class="t-agent-card">
+                                    <div class="t-agent-top"><div class="t-agent-name">RizzitGO</div><span class="t-tag" style="background:rgba(56,189,248,0.2);color:#38bdf8;">Privé</span></div>
+                                    <p class="t-agent-desc">Plateforme stable, service client dispo. Très bon équilibre.</p>
+                                    <a href="https://rizzitgo.com/?rno=297FB2" target="_blank" class="t-agent-link" style="background:#38bdf8;">🚀 Accéder</a>
+                                </div>
+                                <div class="t-agent-card" style="grid-column: 1 / -1;">
+                                    <div class="t-agent-top"><div class="t-agent-name">CH1NE Factory</div><span class="t-tag" style="background:rgba(249,115,22,0.2);color:#fb923c;">Grossiste</span></div>
+                                    <p class="t-agent-desc">Sourcing personnalisé direct usines (WhatsApp). High-tech, vêtements luxe.</p>
+                                    <div class="t-agent-feat"><div class="t-feat-item">📲 WhatsApp : +33 7 80 93 56 24</div></div>
+                                    <a href="https://wa.me/33780935624" target="_blank" class="t-agent-link" style="background:#fb923c; max-width:200px;">💬 WhatsApp</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="t-module-3" class="t-module-content hidden">
+                            <div class="t-section-header"><div class="t-section-badge">🔍</div><div><span class="t-section-label">Module 03 · Sourcing</span><h2 class="t-section-title">Trouver & Valider</h2></div></div>
+                            <div class="t-steps-list">
+                                <div class="t-step-item"><div class="t-step-num">1</div><div class="t-step-content"><h3>Recherche par image</h3><p>Sur Taobao, utilise l'icône appareil photo 📷 pour trouver n'importe quel article depuis une image Vinted ou TikTok.</p></div></div>
+                                <div class="t-step-item"><div class="t-step-num">2</div><div class="t-step-content"><h3>Validation Qualité (QC)</h3><p>Utilise <strong>uufinds.com/qcfinds</strong> pour voir les vraies photos d'autres acheteurs avant de commander.</p></div></div>
+                                <div class="t-step-item"><div class="t-step-num">3</div><div class="t-step-content"><h3>Fournisseurs Officiels (Tmall)</h3><p>Privilégie les boutiques Tmall Flagship (Nike, Zara, Apple) pour de l'authentique à 100%.</p></div></div>
+                            </div>
+                        </div>
+
+                        <div id="t-module-4" class="t-module-content hidden">
+                            <div class="t-section-header"><div class="t-section-badge">💸</div><div><span class="t-section-label">Module 04 · Business</span><h2 class="t-section-title">Revente & Rentabilité</h2></div></div>
+                            <div class="t-grid-2">
+                                <div class="t-info-card">
+                                    <div class="t-info-title">📊 Calcul de marge</div>
+                                    <p>Ajoute Prix produit + Frais livraison + Com. agent. Vise une marge de x2 à x3 sur le textile.</p>
+                                </div>
+                                <div class="t-info-card">
+                                    <div class="t-info-title">📦 Optimisation colis</div>
+                                    <p>Regroupe tes achats. Retire les boîtes inutiles. Fais emballer sous-vide les vêtements.</p>
+                                </div>
+                            </div>
+                            <h3 class="mt-4 mb-2 text-white font-bold">Meilleures plateformes</h3>
+                            <div class="t-grid-3">
+                                <div class="t-info-card text-center"><span style="font-size:2rem;">🟢</span><h4 class="font-bold text-white mt-2">Vinted</h4><p class="text-xs text-muted">Mode & Sneakers. Mondial Relay intégré.</p></div>
+                                <div class="t-info-card text-center"><span style="font-size:2rem;">🔵</span><h4 class="font-bold text-white mt-2">Leboncoin</h4><p class="text-xs text-muted">Zéro commission. Remise en main propre.</p></div>
+                                <div class="t-info-card text-center"><span style="font-size:2rem;">📱</span><h4 class="font-bold text-white mt-2">TikTok Shop</h4><p class="text-xs text-muted">Trafic viral. Redirection WhatsApp.</p></div>
+                            </div>
+                        </div>
+                        
+                        <div class="t-module-footer">
+                            <button class="btn-ghost" onclick="closeTrainingModule()">Quitter</button>
+                            <button id="tr-next-btn" class="btn-primary" onclick="nextTrainingModule()">Module suivant <span class="material-icons-round text-sm ml-2">arrow_forward</span></button>
+                        </div>
+                    </div>
+                    </div> <!-- End of client-train-subview-modules -->
+
+                    <!-- Ebooks Subview -->
+                    <div id="client-train-subview-ebooks" class="hidden">
+                        
+                        <!-- Premium Hero Banner -->
+                        <div class="ebook-hero-banner" style="position:relative; overflow:hidden; border-radius:24px; padding:3rem; margin-bottom:3rem; background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border:1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                            <!-- Abstract glowing orbs in background -->
+                            <div style="position:absolute; top:-50%; left:-10%; width:300px; height:300px; background:rgba(251, 191, 36, 0.15); filter:blur(100px); border-radius:50%;"></div>
+                            <div style="position:absolute; bottom:-50%; right:-10%; width:400px; height:400px; background:rgba(59, 130, 246, 0.15); filter:blur(120px); border-radius:50%;"></div>
+                            
+                            <div style="position:relative; z-index:1; display:flex; flex-direction:column; max-width:600px;">
+                                <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:0.4rem 1rem; border-radius:30px; border:1px solid rgba(255,255,255,0.1); width:fit-content; margin-bottom:1.5rem;">
+                                    <span class="material-icons-round" style="color:#FFE600; font-size:16px;">stars</span>
+                                    <span style="font-size:0.8rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#fff;">Espace Premium</span>
+                                </div>
+                                <h2 style="font-size: 2.8rem; font-weight:900; color:#fff; line-height:1.1; margin-bottom:1rem; font-family:'Outfit', sans-serif;">
+                                    Maîtrisez l'art du <span style="background: linear-gradient(135deg, #FFE600, #F59E0B); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Sourcing</span>
+                                </h2>
+                                <p style="font-size:1.1rem; color:rgba(255,255,255,0.6); line-height:1.6; margin-bottom:0;">
+                                    Découvrez nos guides exclusifs, stratégies avancées et secrets d'experts pour importer comme un professionnel.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-end mb-6">
+                            <h3 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin:0;">Tous nos Ebooks</h3>
+                            <div style="font-size: 0.9rem; color: var(--text-muted);">Mise à jour régulière</div>
+                        </div>
+
+                        <div id="client-ebooks-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+                            <!-- Injected by client.js -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Agent Catalogue View -->
+                <div id="client-view-agent" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 data-i18n="nav_catalogue">Catalogue Agent</h2>
+                        <button class="btn-primary flex items-center gap-2" onclick="openCartModal()">
+                            <span class="material-icons-round">shopping_cart</span>
+                            <span data-i18n="nav_cart">Panier</span>
+                            <span id="cart-count" style="background:var(--accent-gold); color:black; border-radius:50%; padding:2px 8px; font-weight:bold; font-size:12px;">0</span>
+                        </button>
+                    </div>
+
+                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button id="btn-client-agent-catalog" class="btn-primary" onclick="switchClientAgentTab('catalog')" style="padding: 0.5rem 1rem;">📦 Catalogue</button>
+                        <button id="btn-client-agent-orders" class="btn-secondary" onclick="switchClientAgentTab('orders')" style="padding: 0.5rem 1rem;">📝 Mes Commandes</button>
+                    </div>
+
+                    <div id="client-agent-subview-catalog">
+                        <div id="client-agent-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"></div>
+                    </div>
+                    
+                    <div id="client-agent-subview-orders" class="hidden">
+                        <div id="client-orders-list"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 3. SUPPLIER DASHBOARD -->
+        <div id="supplier-dashboard" class="dashboard-container hidden">
+            <div class="sidebar">
+                <div class="nav-item active" onclick="switchSupplierTab('profile')" id="nav-sp-profile">
+                    <span class="material-icons-round">store</span> Mon Profil
+                </div>
+                <div class="nav-item" onclick="switchSupplierTab('stats')" id="nav-sp-stats">
+                    <span class="material-icons-round">analytics</span> Statistiques
+                </div>
+            </div>
+            <main class="main-content">
+                <div class="search-bar-container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 class="text-warning">Supplier Dashboard</h2>
+                        <p class="text-muted">Manage your SourcingPro presence</p>
+                    </div>
+                    <div class="glass-panel" style="padding: 0.5rem 1rem; text-align: center; border-color: var(--accent-gold);">
+                        <span class="material-icons-round text-accent-gold">visibility</span>
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="sp-views-count">0</div>
+                        <div class="text-xs text-muted">Consultations (Catalogue)</div>
+                    </div>
+                </div>
+                
+                
+                <!-- Tab: Profile -->
+                <div id="sp-view-profile" class="glass-panel" style="max-width: 800px; margin: 2rem auto;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3>Company Profile</h3>
+                        <div class="flex gap-2">
+                            <button type="button" class="btn-ghost text-primary hidden" id="sp-preview-btn" onclick="openSupplierModal(currentSupplierProfile.id)">
+                                <span class="material-icons-round">visibility</span> Rendu Client
+                            </button>
+                            <button type="button" class="btn-ghost text-warning hidden" id="sp-edit-btn" onclick="setSupplierFormMode('edit')">
+                                <span class="material-icons-round">edit</span> Modifier
+                            </button>
+                        </div>
+                    </div>
+                    <form id="supplier-profile-form" onsubmit="handleSupplierProfileSave(event)">
+                        <div class="form-group mb-4">
+                            <label class="text-sm text-muted">Company Name</label>
+                            <input type="text" id="sp-name" class="input-control">
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="text-sm text-muted">Category</label>
+                            <select id="sp-category" class="input-control">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="text-sm text-muted">Company Description</label>
+                            <textarea id="sp-desc" class="input-control" rows="4"></textarea>
+                        </div>
+                        <div class="flex gap-4 mb-4">
+                            <div class="form-group" style="flex:1">
+                                <label class="text-sm text-muted">WhatsApp</label>
+                                <input type="text" id="sp-whatsapp" class="input-control">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label class="text-sm text-muted">WeChat ID</label>
+                                <input type="text" id="sp-wechat" class="input-control">
+                            </div>
+                        </div>
+                        
+                        <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
+                        
+                        <h3>Images & Media</h3>
+                        <div class="grid mb-6" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                            <!-- Card Front -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">Business Card (Front)</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-front" accept="image/*" onchange="previewSpImage(this, 'sp-preview-front')">
+                                    <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                </div>
+                                <img id="sp-preview-front" class="img-preview hidden">
+                            </div>
+                            <!-- Card Back -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">Business Card (Back)</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-back" accept="image/*" onchange="previewSpImage(this, 'sp-preview-back')">
+                                    <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                </div>
+                                <img id="sp-preview-back" class="img-preview hidden">
+                            </div>
+                            <!-- WhatsApp -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">WhatsApp QR Code</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-wa" accept="image/*" onchange="previewSpImage(this, 'sp-preview-wa')">
+                                    <span class="material-icons-round">qr_code_2</span><br>Upload
+                                </div>
+                                <img id="sp-preview-wa" class="img-preview hidden">
+                            </div>
+                            <!-- WeChat -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">WeChat QR Code</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-wc" accept="image/*" onchange="previewSpImage(this, 'sp-preview-wc')">
+                                    <span class="material-icons-round">qr_code_scanner</span><br>Upload
+                                </div>
+                                <img id="sp-preview-wc" class="img-preview hidden">
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-6">
+                            <label class="text-sm text-muted">PDF Catalog (Max 50MB)</label>
+                            <div class="file-upload-zone" style="max-width: 300px; padding:1.5rem;">
+                                <input type="file" id="sp-pdf" accept="application/pdf">
+                                <span class="material-icons-round" style="font-size: 32px; color: var(--accent-gold);">picture_as_pdf</span><br>
+                                <span style="display:inline-block; margin-top:5px;">Upload PDF</span>
+                            </div>
+                            <div id="sp-pdf-status" class="text-sm mt-1 text-warning"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" id="sp-save-btn">Save Profile & Publish</button>
+                    </form>
+                </div>
+
+                <!-- Tab: Statistics -->
+                <div id="sp-view-stats" class="hidden" style="max-width: 1000px; margin: 2rem auto;">
+                    <h3 class="mb-4">Statistiques de Visites</h3>
+                    
+                    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="glass-panel text-center" style="border-color: var(--accent-gold);">
+                            <span class="material-icons-round text-accent-gold" style="font-size: 32px;">today</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-today">0</div>
+                            <div class="text-sm text-muted">Aujourd'hui</div>
+                        </div>
+                        <div class="glass-panel text-center">
+                            <span class="material-icons-round text-primary" style="font-size: 32px;">date_range</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-week">0</div>
+                            <div class="text-sm text-muted">7 derniers jours</div>
+                        </div>
+                        <div class="glass-panel text-center">
+                            <span class="material-icons-round text-warning" style="font-size: 32px;">calendar_month</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-month">0</div>
+                            <div class="text-sm text-muted">30 derniers jours</div>
+                        </div>
+                        <div class="glass-panel text-center">
+                            <span class="material-icons-round text-success" style="font-size: 32px;">public</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-total">0</div>
+                            <div class="text-sm text-muted">Visites Totales</div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel">
+                        <h4 class="mb-4">Répartition par Pays</h4>
+                        <div id="stat-countries-container" style="display:flex; flex-direction:column; gap:10px;">
+                            <!-- Populated dynamically -->
+                            <p class="text-muted text-sm text-center">Aucune donnée disponible</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 4. ADMIN DASHBOARD -->
+        <div id="admin-dashboard" class="dashboard-container hidden">
+            <div class="sidebar">
+                <div class="nav-item active" id="admin-nav-users" onclick="switchAdminTab('users')">
+                    <span class="material-icons-round">group</span> Validations Clients
+                </div>
+                <div class="nav-item" id="admin-nav-categories" onclick="switchAdminTab('categories')">
+                    <span class="material-icons-round">category</span> Catégories
+                </div>
+                <div class="nav-item" id="admin-nav-suppliers" onclick="switchAdminTab('suppliers')">
+                    <span class="material-icons-round">business_center</span> Fournisseurs
+                </div>
+                <div class="nav-item" id="admin-nav-trainings" onclick="switchAdminTab('trainings')">
+                    <span class="material-icons-round">school</span> Ma Formation
+                </div>
+                <div class="nav-item" id="admin-nav-agent" onclick="switchAdminTab('agent')">
+                    <span class="material-icons-round">shopping_cart</span> Agent d'Achat
+                </div>
+            </div>
+
+            <main class="main-content">
+                <!-- Users View -->
+                <div id="admin-view-users" class="glass-panel">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-warning">group</span> Inscriptions & Utilisateurs</h3>
+                    <p class="text-muted text-sm mb-4">Validez manuellement les comptes après vérification de leur paiement.</p>
+                    
+                    <!-- Stats Counters -->
+                    <div class="flex gap-4 mb-6" style="flex-wrap: wrap;">
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem;">
+                            <span class="material-icons-round text-primary" style="font-size: 32px;">person</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-clients">0</div>
+                            <div class="text-muted text-sm">Clients Inscrits</div>
+                        </div>
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem;">
+                            <span class="material-icons-round text-warning" style="font-size: 32px;">store</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-suppliers">0</div>
+                            <div class="text-muted text-sm">Fournisseurs Inscrits</div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Charts -->
+                    <div class="flex gap-4 mb-8" style="flex-wrap: wrap;">
+                        <div class="glass-panel" style="flex: 1; min-width: 250px; text-align: center;">
+                            <h4 class="text-sm text-muted mb-4">Répartition des Accès Clients</h4>
+                            <canvas id="chart-roles" style="max-height: 250px; width: 100%;"></canvas>
+                        </div>
+                        <div class="glass-panel" style="flex: 1; min-width: 250px; text-align: center;">
+                            <h4 class="text-sm text-muted mb-4">Statut des Comptes</h4>
+                            <canvas id="chart-status" style="max-height: 250px; width: 100%;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search -->
+                    <div class="flex justify-between items-center mb-4 gap-4" style="flex-wrap: wrap;">
+                        <select id="admin-user-filter" class="input-control" style="max-width: 200px;" onchange="renderAdminUsers()">
+                            <option value="all">Tous les utilisateurs</option>
+                            <option value="client">Clients uniquement</option>
+                            <option value="supplier">Fournisseurs uniquement</option>
+                        </select>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="admin-table">
+                            <thead><tr><th>Utilisateur</th><th>Rôle</th><th>WhatsApp</th><th>Statut</th><th>Actions</th></tr></thead>
+                            <tbody id="admin-users-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Categories View -->
+                <div id="admin-view-categories" class="hidden">
+                    <div class="glass-panel mb-6">
+                        <h3 class="mb-4">Nouvelle Catégorie</h3>
+                        <form onsubmit="addCategory(event)" class="flex gap-4 items-end">
+                            <div class="form-group flex-1 mb-0">
+                                <label>Nom de la catégorie</label>
+                                <input type="text" id="cat-name" class="input-control" placeholder="ex: Sneakers">
+                            </div>
+                            <div class="form-group mb-0" style="width:150px;">
+                                <label>Icône (Material)</label>
+                                <input type="text" id="cat-icon" class="input-control" placeholder="ex: checkroom">
+                            </div>
+                            <button type="submit" class="btn-primary">Ajouter</button>
+                        </form>
+                    </div>
+                    <h3 class="mb-4">Catégories Existantes</h3>
+                    <div id="admin-categories-list"></div>
+                </div>
+
+                <!-- Suppliers View -->
+                <div id="admin-view-suppliers" class="hidden">
+                    <div class="glass-panel mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="m-0 mb-4">Ajouter un Fournisseur (1 par 1)</h3>
+                        </div>
+                        <form onsubmit="addSupplier(event)">
+                            <div class="flex gap-4 mb-4" style="flex-wrap:wrap;">
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Nom du Fournisseur *</label>
+                                    <input type="text" id="sup-name" class="input-control">
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Catégorie *</label>
+                                    <select id="sup-category" class="input-control"></select>
+                                </div>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label>Description (Que fait-il ? Que vend-il ?) *</label>
+                                <textarea id="sup-desc" class="input-control"></textarea>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="checkbox" id="sup-premium" style="width:18px; height:18px;">
+                                    Badge "Fournisseur Premium Vérifié"
+                                </label>
+                            </div>
+
+                            <h4 class="mb-4 mt-6 border-b pb-2 text-warning">Images & Médias</h4>
+                            
+                            <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                                <!-- Card Front -->
+                                <div class="form-group">
+                                    <label>Carte de visite (Recto)</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-front" accept="image/*" onchange="handleImageUpload('upload-front', 'preview-front')">
+                                        <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                    </div>
+                                    <img id="preview-front" class="img-preview hidden">
+                                </div>
+                                <!-- Card Back -->
+                                <div class="form-group">
+                                    <label>Carte de visite (Verso)</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-back" accept="image/*" onchange="handleImageUpload('upload-back', 'preview-back')">
+                                        <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                    </div>
+                                    <img id="preview-back" class="img-preview hidden">
+                                </div>
+                                <!-- WhatsApp -->
+                                <div class="form-group">
+                                    <label>QR Code WhatsApp</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-wa" accept="image/*" onchange="handleImageUpload('upload-wa', 'preview-wa')">
+                                        <span class="material-icons-round">qr_code_2</span><br>Upload
+                                    </div>
+                                    <img id="preview-wa" class="img-preview hidden">
+                                </div>
+                                <!-- WeChat -->
+                                <div class="form-group">
+                                    <label>QR Code WeChat</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-wc" accept="image/*" onchange="handleImageUpload('upload-wc', 'preview-wc')">
+                                        <span class="material-icons-round">qr_code_scanner</span><br>Upload
+                                    </div>
+                                    <img id="preview-wc" class="img-preview hidden">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-4 mb-6">
+                                <label>E-Catalogues (Format PDF)</label>
+                                <div class="file-upload-zone" style="max-width: 300px; margin-bottom:1rem; padding:1.5rem;" id="main-pdf-upload-zone">
+                                    <input type="file" id="upload-catalog" accept="application/pdf" multiple onchange="handlePdfUpload('upload-catalog', 'sup-catalog-data')">
+                                    <span class="material-icons-round" style="font-size: 32px; color: var(--accent-gold);">picture_as_pdf</span><br>
+                                    <span style="display:inline-block; margin-top:5px;">Uploader un PDF</span>
+                                </div>
+                                <div id="pdf-list-preview" class="flex flex-col gap-2 mb-2"></div>
+                                <button type="button" class="btn-secondary" style="max-width:300px; justify-content:center;" onclick="document.getElementById('upload-catalog').click()">
+                                    <span class="material-icons-round">add</span> Ajouter un autre PDF
+                                </button>
+                                <input type="hidden" id="sup-catalog-data">
+                            </div>
+
+                            <div class="flex gap-4">
+                                <button type="submit" id="btn-submit-supplier" class="btn-primary" style="flex:1; justify-content:center;">
+                                    <span class="material-icons-round" id="btn-submit-supplier-icon">save</span> 
+                                    <span id="btn-submit-supplier-text">Enregistrer le fournisseur</span>
+                                </button>
+                                <button type="button" id="btn-cancel-edit" class="btn-secondary hidden" onclick="cancelEditSupplier()" style="justify-content:center;">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <h3 class="mb-4">Liste des Fournisseurs</h3>
+                    
+                    <!-- Filtres Admin -->
+                    <div class="flex gap-4 mb-4" style="flex-wrap:wrap; background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                        <div class="form-group" style="flex:1; min-width:200px; margin-bottom:0;">
+                            <input type="text" id="admin-filter-text" class="input-control" placeholder="Rechercher (Nom, Description)..." oninput="renderAdminSuppliers()" style="margin-bottom:0;">
+                        </div>
+                        <div class="form-group" style="flex:1; min-width:150px; margin-bottom:0;">
+                            <select id="admin-filter-cat" class="input-control" onchange="renderAdminSuppliers()" style="margin-bottom:0;">
+                                <option value="all">Toutes les catégories</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:0; min-width:100px; display:flex; align-items:center; justify-content:center; margin-bottom:0;">
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:0.5rem; white-space:nowrap; margin-bottom:0;">
+                                <input type="checkbox" id="admin-filter-premium" style="width:18px; height:18px;" onchange="renderAdminSuppliers()"> Premium
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="admin-suppliers-list"></div>
+                </div>
+
+                <!-- Trainings View -->
+                <div id="admin-view-trainings" class="hidden">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">school</span> Gestion des Formations</h3>
+                    
+                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button id="btn-admin-train-modules" class="btn-primary" onclick="switchAdminTrainingTab('modules')" style="padding: 0.5rem 1rem;">🎥 Modules Classiques</button>
+                        <button id="btn-admin-train-ebooks" class="btn-secondary" onclick="switchAdminTrainingTab('ebooks')" style="padding: 0.5rem 1rem;">📚 Pack Ebooks</button>
+                    </div>
+
+                    <!-- Modules Subview -->
+                    <div id="admin-train-subview-modules">
+                        <div class="glass-panel mb-6">
+                            <h3 class="mb-4 text-primary flex items-center gap-2"><span class="material-icons-round">add_circle</span> Ajouter un Module</h3>
+                            <form onsubmit="addTraining(event)">
+                                <div class="form-group">
+                                    <label>Titre du module</label>
+                                    <input type="text" id="train-title" class="input-control" placeholder="Ex: Comment contacter un agent..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contenu explicatif</label>
+                                    <textarea id="train-content" class="input-control" rows="5" placeholder="Écrivez le contenu du cours ici..." required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Lien Vidéo / Image (Optionnel)</label>
+                                    <input type="url" id="train-media" class="input-control" placeholder="Lien YouTube, Vimeo, Drive, ou URL d'image...">
+                                    <small class="text-muted mt-1 inline-block">Collez le lien direct vers la ressource.</small>
+                                </div>
+                                <div class="flex gap-4">
+                                    <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
+                                        <span class="material-icons-round">save</span> <span id="btn-submit-training-text">Enregistrer le module</span>
+                                    </button>
+                                    <button type="button" id="btn-cancel-training" class="btn-secondary hidden" onclick="cancelEditTraining()" style="justify-content:center;">
+                                        Annuler
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="glass-panel mt-8">
+                            <h3 class="mb-4">Modules Existants</h3>
+                            <div id="admin-trainings-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Ebooks Subview -->
+                    <div id="admin-train-subview-ebooks" class="hidden">
+                        <div class="glass-panel mb-6">
+                            <h3 class="mb-4 text-warning flex items-center gap-2"><span class="material-icons-round">library_books</span> Ajouter un Ebook PDF</h3>
+                            <form onsubmit="addEbook(event)">
+                                <div class="form-group">
+                                    <label>Titre de l'Ebook</label>
+                                    <input type="text" id="ebook-title" class="input-control" placeholder="Ex: Guide Ultime du Sourcing 2026..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description / Texte explicatif</label>
+                                    <textarea id="ebook-desc" class="input-control" rows="3" placeholder="Ce livre vous apprendra..." required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fichier PDF <span id="ebook-file-required">(Requis)</span></label>
+                                    <input type="file" id="ebook-file" accept="application/pdf" class="input-control">
+                                    <small class="text-muted mt-1 inline-block text-warning">Le fichier sera uploadé sur Firebase Storage. Laissez vide lors d'une modification pour conserver l'ancien PDF.</small>
+                                </div>
+                                <div class="flex gap-4">
+                                    <button type="submit" class="btn-primary w-full" id="btn-submit-ebook">
+                                        <span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l'Ebook</span>
+                                    </button>
+                                    <button type="button" id="btn-cancel-ebook" class="btn-secondary hidden" onclick="cancelEditEbook()">Annuler</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="glass-panel mt-8">
+                            <h3 class="mb-4">Ebooks Existants</h3>
+                            <div id="admin-ebooks-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent d'Achat View -->
+                <div id="admin-view-agent" class="glass-panel hidden">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-warning">shopping_cart</span> Espace Agent d'Achat</h3>
+                    
+                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button id="btn-admin-agent-catalog" class="btn-primary" onclick="switchAdminAgentTab('catalog')" style="padding: 0.5rem 1rem;">📦 Catalogue</button>
+                        <button id="btn-admin-agent-orders" class="btn-secondary" onclick="switchAdminAgentTab('orders')" style="padding: 0.5rem 1rem;">📝 Commandes Clients</button>
+                    </div>
+
+                    <div id="admin-agent-subview-catalog">
+                        <p class="text-muted text-sm mb-4">Ajoutez manuellement les produits provenant de Taobao, Weidian ou 1688. La marge de 10% sera appliquée automatiquement pour le client.</p>
+                        
+                        <div class="glass-panel mb-8">
+                            <h4 class="mb-4 text-primary">Ajouter un produit</h4>
+                            <form id="admin-agent-form" onsubmit="addAgentProduct(event)">
+                                <div class="form-group mb-4">
+                                    <label>Lien Original (Taobao/Weidian)</label>
+                                    <input type="url" id="agent-prod-link" required placeholder="https://item.taobao.com/..." class="input-field">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Nom du produit</label>
+                                    <input type="text" id="agent-prod-name" required class="input-field">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Images du produit (Sélectionnez une ou plusieurs photos)</label>
+                                    <input type="file" id="agent-prod-images" multiple accept="image/*" class="input-field" onchange="previewAgentImages(this)">
+                                    <div id="agent-images-preview" class="flex gap-2 mt-2" style="overflow-x: auto; padding-bottom: 5px;"></div>
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Prix d'Achat (en CNY ¥)</label>
+                                    <input type="number" step="0.01" id="agent-prod-price" required class="input-field" placeholder="Ex: 89.00">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Couleurs / Modèles disponibles (Séparés par des virgules)</label>
+                                    <input type="text" id="agent-prod-colors" class="input-field" placeholder="Rouge, Bleu, Noir">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Tailles disponibles (Séparées par des virgules)</label>
+                                    <input type="text" id="agent-prod-sizes" class="input-field" placeholder="S, M, L, XL">
+                                </div>
+                                <button type="submit" class="btn-primary w-full">
+                                    <span class="material-icons-round">add_circle</span> Ajouter au Catalogue Agent
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="glass-panel mt-8">
+                            <h3 class="mb-4">Produits Importés</h3>
+                            <div id="admin-agent-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"></div>
+                        </div>
+                    </div>
+
+                    <div id="admin-agent-subview-orders" class="hidden">
+                        <h4 class="mb-4 text-warning">Gestion des Commandes Clients</h4>
+                        <p class="text-muted text-sm mb-4">Consultez les commandes de vos clients et mettez à jour leur statut.</p>
+                        
+                        <div id="admin-orders-list"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Share Access Modal -->
+    <div id="share-supplier-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'share-supplier-modal')">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <button class="close-btn" onclick="closeModal('share-supplier-modal')"><span class="material-icons-round">close</span></button>
+            <h3 class="mb-4 text-warning">Partager l'Accès Fournisseur</h3>
+            <p class="text-sm text-muted mb-4">Envoyez ce message au fournisseur pour qu'il prenne le contrôle de son compte.</p>
+            
+            <div class="form-group mb-4">
+                <label>Message (Anglais / Chinois)</label>
+                <textarea id="share-message-content" class="input-control" rows="8" readonly style="font-family: monospace; font-size: 12px; resize: none;"></textarea>
+            </div>
+            
+            <div class="flex gap-2" style="flex-direction: column;">
+                <button class="btn-primary w-full" id="btn-share-whatsapp" style="background: #25D366; color: white; justify-content:center; border:none;">
+                    <span class="material-icons-round">chat</span> Envoyer sur WhatsApp
+                </button>
+                <button class="btn-ghost w-full" id="btn-share-copy" style="justify-content:center;" onclick="copyShareMessage()">
+                    <span class="material-icons-round">content_copy</span> Copier pour WeChat
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPPLIER DETAILS MODAL (Client Side) -->
+    <div id="supplier-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'supplier-modal')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('supplier-modal')"><span class="material-icons-round" style="font-size:32px;">close</span></button>
+            
+            <div class="flex items-center gap-4 mb-4">
+                <div class="btn-icon" style="width:50px; height:50px; font-size:24px; pointer-events:none;"><span class="material-icons-round text-warning">business</span></div>
+                <div>
+                    <h2 id="modal-sup-name">Nom Fournisseur</h2>
+                    <p id="modal-sup-cat" class="text-warning text-sm flex items-center gap-1"></p>
+                </div>
+            </div>
+            
+            <div class="glass-panel mb-4" style="background:rgba(0,0,0,0.2); padding:1rem; border:none;">
+                <p id="modal-sup-desc" style="line-height:1.6;"></p>
+            </div>
+
+            <h4 class="mb-2 text-muted text-sm uppercase tracking-wider">Carte de visite (Survolez pour retourner, cliquez pour agrandir)</h4>
+            <!-- 3D Flip Card -->
+            <div id="modal-flip-card" class="flip-card-container hover-flip">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front" onclick="openLightbox([document.getElementById('card-front-img').src, document.getElementById('card-back-img').src])">
+                        <img id="card-front-img" src="" alt="Recto" style="cursor:zoom-in;">
+                        <div class="flip-hint"><span class="material-icons-round text-sm">360</span> Survolez</div>
+                    </div>
+                    <div class="flip-card-back" onclick="openLightbox([document.getElementById('card-front-img').src, document.getElementById('card-back-img').src])">
+                        <img id="card-back-img" src="" alt="Verso" style="cursor:zoom-in;">
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">Contacts Rapides (Cliquez pour agrandir)</h4>
+            <div id="modal-qr-container" class="qr-grid">
+                <!-- Injected via client.js -->
+            </div>
+
+            <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">E-Catalogues (Vue en Ligne)</h4>
+            <div id="modal-catalog-container" style="display:flex; flex-direction:column; gap:1rem;">
+                <!-- Injected via client.js -->
+            </div>
+            
+            <button class="btn-secondary w-full mt-6" onclick="closeModal('supplier-modal')" style="justify-content:center;">
+                <span class="material-icons-round">arrow_back</span> Retour aux fournisseurs
+            </button>
+        </div>
+    </div>
+
+    <!-- TRAINING DETAILS MODAL -->
+    <div id="training-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'training-modal')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()" style="max-width:800px;">
+            <button class="close-btn" onclick="closeModal('training-modal')"><span class="material-icons-round" style="font-size:32px;">close</span></button>
+            
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-white/10">
+                <div class="btn-icon" style="width:50px; height:50px; font-size:24px; pointer-events:none; background:var(--primary-color); color:white;"><span class="material-icons-round">school</span></div>
+                <div>
+                    <h2 id="modal-train-title" class="text-accent-gold m-0" style="font-size:1.8rem;">Titre de la formation</h2>
+                </div>
+            </div>
+            
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto; padding-right:10px;">
+                <div id="modal-train-content" class="text-white text-lg mb-8" style="white-space: pre-wrap; line-height: 1.8;">
+                    Contenu de la formation...
+                </div>
+                
+                <div id="modal-train-media-container" class="mt-6 pt-6 border-t border-white/10 hidden">
+                    <a id="modal-train-media-link" href="#" target="_blank" class="btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; text-decoration:none;">
+                        <span class="material-icons-round text-xl">play_circle</span>
+                        <span>Accéder à la ressource associée</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EBOOK READING MODAL -->
+    <div id="ebook-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'ebook-modal')">
+        <div class="modal-content glass-panel flex flex-col" onclick="event.stopPropagation()" style="max-width:1000px; width:95%; height:95vh; padding: 1rem; margin: auto;">
+            <div class="flex justify-between items-center mb-2 pb-2 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <span class="material-icons-round text-accent-gold" style="font-size:28px;">menu_book</span>
+                    <h2 id="modal-ebook-title" class="text-white m-0" style="font-size:1.3rem;">Titre de l'Ebook</h2>
+                </div>
+                <button class="btn-icon" onclick="closeModal('ebook-modal')" style="background: rgba(255,255,255,0.1);"><span class="material-icons-round text-white">close</span></button>
+            </div>
+            
+            <div id="modal-ebook-container" class="flex-1 w-full" style="background:#fff; border-radius:8px; overflow:hidden; display: flex; justify-content: center; align-items: center;">
+                <!-- Iframe injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX FOR IMAGES -->
+    <div id="lightbox-modal" class="modal-overlay hidden" style="z-index: 200; background:rgba(0,0,0,0.95);" onclick="closeModal('lightbox-modal')">
+        <button class="close-btn" style="top:2rem; right:2rem; opacity:1;"><span class="material-icons-round" style="font-size:48px; color:white;">close</span></button>
+        <div id="lightbox-container" class="flex justify-center items-center" style="width:100%; height:100%; padding:2rem; flex-wrap:wrap; gap:1rem; overflow-y:auto;" onclick="event.stopPropagation()">
+            <!-- Injected via client.js -->
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
+    
+    <!-- PDF.js for Custom Premium Ebook Reader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Driver.js for Guided Tour -->
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+
+    <!-- JS Scripts -->
+    <script src="js/i18n.js"></script>
+    <script src="js/currency.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-agent.js"></script>
+    <script src="js/client.js"></script>
+    <script src="js/client-agent.js"></script>
+    <script src="js/supplier.js"></script>
+    
+    <!-- Main Routing Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getCurrentUser();
+            const authView = document.getElementById('auth-view');
+            const clientDash = document.getElementById('client-dashboard');
+            const adminDash = document.getElementById('admin-dashboard');
+            const supplierDash = document.getElementById('supplier-dashboard');
+            const navUserArea = document.getElementById('nav-user-area');
+            
+            if (user) {
+                // User is logged in
+                authView.classList.add('hidden');
+                navUserArea.classList.remove('hidden');
+                
+                if (user.role === 'admin') {
+                    adminDash.classList.remove('hidden');
+                } else if (user.role === 'supplier' && user.status === 'active') {
+                    supplierDash.classList.remove('hidden');
+                    // Load supplier profile script
+                    if(typeof loadSupplierProfile === 'function') loadSupplierProfile();
+                } else if (user.role === 'client' && user.status === 'active') {
+                    clientDash.classList.remove('hidden');
+                } else {
+                    // Fallback if somehow pending user bypassed
+                    logout();
+                }
+            } else {
+                // Not logged in
+                authView.classList.remove('hidden');
+            }
+        });
+    </script>
+    
+    <div id="notification-container" class="notification-container"></div>
+</body>
+</html>
