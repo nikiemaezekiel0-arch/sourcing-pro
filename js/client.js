@@ -235,8 +235,15 @@ async function openEbookModal(url, title) {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
         if (isMobile) {
-            // Google Docs Viewer est le seul moyen fiable de scroller un PDF sur iOS sans problèmes de CORS
+            // Google Docs Viewer est capricieux sur les gros fichiers (page blanche). 
+            // On ajoute un bouton de secours robuste pour l'ouvrir nativement.
             container.innerHTML = `
+                <div style="background: #f1f5f9; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; text-align: center; gap: 8px;">
+                    <span style="font-size: 12px; color: #475569; font-family: 'Outfit';">Si le document ci-dessous est blanc, cliquez ici :</span>
+                    <a href="${url}" target="_blank" style="background: #eab308; color: #0f172a; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: Outfit; font-size: 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <span class="material-icons-round" style="font-size: 18px;">launch</span> Ouvrir le PDF nativement
+                    </a>
+                </div>
                 <div style="width: 100%; height: 100%; overflow: hidden; background: #fff; flex: 1;">
                     <iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true" width="100%" height="100%" style="border:none;"></iframe>
                 </div>
