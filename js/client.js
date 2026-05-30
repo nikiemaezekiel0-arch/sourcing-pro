@@ -235,10 +235,10 @@ async function openEbookModal(url, title) {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
         if (isMobile) {
-            // Use native iframe for mobile, wrapped in a scrolling div for iOS compatibility
+            // Google Docs Viewer est le seul moyen fiable de scroller un PDF sur iOS sans problèmes de CORS
             container.innerHTML = `
-                <div style="width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; background: #fff; flex: 1;">
-                    <iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe>
+                <div style="width: 100%; height: 100%; overflow: hidden; background: #fff; flex: 1;">
+                    <iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true" width="100%" height="100%" style="border:none;"></iframe>
                 </div>
             `;
         } else {
