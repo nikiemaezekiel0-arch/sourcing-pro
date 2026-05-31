@@ -96,18 +96,18 @@ function openAgentProductModal(id) {
                     ${colorsHtml ? `
                     <div class="form-group mb-4">
                         <label class="text-white" data-i18n="lbl_color">Couleur choisie</label>
-                        <select id="modal-sel-color" class="input-field" style="background:rgba(0,0,0,0.5);">${colorsHtml}</select>
+                        <select id="modal-sel-color" class="input-field" style="background:rgba(0,0,0,0.5); color:white;">${colorsHtml}</select>
                     </div>` : ''}
                     
                     ${sizesHtml ? `
                     <div class="form-group mb-4">
                         <label class="text-white" data-i18n="lbl_size">Taille choisie</label>
-                        <select id="modal-sel-size" class="input-field" style="background:rgba(0,0,0,0.5);">${sizesHtml}</select>
+                        <select id="modal-sel-size" class="input-field" style="background:rgba(0,0,0,0.5); color:white;">${sizesHtml}</select>
                     </div>` : ''}
                     
                     <div class="form-group mb-6">
                         <label class="text-white" data-i18n="lbl_quantity">Quantité souhaitée</label>
-                        <input type="number" id="modal-sel-qty" class="input-field" value="1" min="1" style="background:rgba(0,0,0,0.5);">
+                        <input type="number" id="modal-sel-qty" class="input-field" value="1" min="1" style="background:rgba(0,0,0,0.5); color:white;">
                     </div>
 
                     <button class="btn-primary w-full" style="padding:1rem; font-size:1.1rem; justify-content:center;" onclick="addToCart('${prod.id}')">
