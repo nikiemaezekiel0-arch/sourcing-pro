@@ -1,5 +1,11 @@
 // --- Client Portal Logic ---
 
+window.triggerHaptic = function() {
+    if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const user = getCurrentUser();
     if (user && user.role === 'client' && user.status === 'active') {

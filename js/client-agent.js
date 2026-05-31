@@ -123,9 +123,63 @@ function openAgentProductModal(id) {
                         <li>Contrôle qualité inclus avant expédition</li>
                     </ul>
                 </div>
+                <div class="mt-6 glass-panel" style="padding:1.5rem; background:rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3);">
+                    <h4 class="text-white mb-2 flex items-center gap-2"><span class="material-icons-round" style="color:#10b981;">insights</span> Calculateur de Rentabilité</h4>
+                    <p class="text-xs text-muted mb-4">Estimez votre marge nette en indiquant votre prix de revente. (Inclut la com. et 15% d'estimation de port).</p>
+                    <div class="form-group mb-4">
+                        <label class="text-white">Prix de revente espéré (<span id="calc-currency-symbol"></span>)</label>
+                        <input type="number" id="calc-resale-price" class="input-field" placeholder="Ex: 50" style="background:rgba(0,0,0,0.5); color:white;">
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white">Marge nette estimée :</span>
+                        <span id="calc-profit-result" class="font-bold text-2xl text-muted">--</span>
+                    </div>
+                </div>
             </div>
         </div>
     `;
+    
+    // Initialize Profitability Calculator
+    const calcInput = document.getElementById('calc-resale-price');
+    const calcResult = document.getElementById('calc-profit-result');
+    const calcSymbol = document.getElementById('calc-currency-symbol');
+    
+    const symbols = { CNY: '¥', EUR: '€', USD: '$', XOF: 'FCFA' };
+    const sym = typeof currentCurrency !== 'undefined' ? (symbols[currentCurrency] || '€') : '€';
+    if(calcSymbol) calcSymbol.textContent = sym;
+    
+    if(calcInput && calcResult) {
+        calcInput.addEventListener('input', (e) => {
+            const resale = parseFloat(e.target.value);
+            if(isNaN(resale) || resale <= 0) {
+                calcResult.textContent = '--';
+                calcResult.className = 'font-bold text-2xl text-muted';
+                return;
+            }
+            
+            // Total cost CNY = Purchase price + 10% agent + 15% shipping estimate
+            const costCNY = prod.priceCNY * 1.10 * 1.15;
+            let costConverted = 0;
+            if(typeof convertPrice === 'function') {
+                costConverted = parseFloat(convertPrice(costCNY));
+            } else {
+                costConverted = costCNY * 0.13;
+            }
+            
+            const profit = resale - costConverted;
+            const formattedProfit = typeof currentCurrency !== 'undefined' && currentCurrency === 'XOF' 
+                ? Math.round(profit).toLocaleString('fr-FR') 
+                : profit.toFixed(2);
+                
+            if(profit > 0) {
+                calcResult.textContent = '+' + formattedProfit + ' ' + sym;
+                calcResult.className = 'font-bold text-2xl text-success';
+            } else {
+                calcResult.textContent = formattedProfit + ' ' + sym;
+                calcResult.className = 'font-bold text-2xl text-danger';
+            }
+        });
+    }
     
     // Update cart count specifically in the detail view
     const detailCartCount = document.getElementById('detail-cart-count');
@@ -158,6 +212,7 @@ function closeProductDetailView() {
 
 
 function addToCart(productId) {
+    if(window.triggerHaptic) window.triggerHaptic();
     const db = getDB();
     const prod = db.agent_products.find(p => p.id === productId);
     
@@ -187,6 +242,7 @@ function addToCart(productId) {
 }
 
 function openCartModal() {
+    if(window.triggerHaptic) window.triggerHaptic();
     let modal = document.getElementById('cart-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -237,7 +293,13 @@ function openCartModal() {
                 <input type="text" id="checkout-name" required placeholder="Votre Nom & Prénom" class="input-field mb-2" value="${getCurrentUser()?.name || ''}">
                 <input type="text" id="checkout-phone" required placeholder="Numéro de Téléphone" class="input-field mb-2" value="${getCurrentUser()?.phone || ''}">
                 <textarea id="checkout-address" required placeholder="Adresse complète de livraison" class="input-field mb-4" rows="3"></textarea>
-                <button type="submit" class="btn-primary w-full">Valider la commande (Paiement manuel)</button>
+                
+                <div class="flex flex-col gap-2">
+                    <button type="submit" class="btn-primary w-full justify-center">Valider la commande (Paiement manuel)</button>
+                    <button type="button" class="btn-secondary w-full justify-center flex items-center gap-2" onclick="generateCartPDF()">
+                        <span class="material-icons-round">picture_as_pdf</span> Télécharger le Devis / Bon de Commande
+                    </button>
+                </div>
             </form>
             ` : ''}
         </div>
@@ -248,6 +310,7 @@ function openCartModal() {
 }
 
 function removeFromCart(cartId) {
+    if(window.triggerHaptic) window.triggerHaptic();
     cart = cart.filter(i => i.cartId !== cartId);
     saveCart();
     openCartModal(); // Refresh
@@ -418,3 +481,121 @@ window.addEventListener('currency_updated', () => {
 });
 
 document.addEventListener('DOMContentLoaded', updateCartCount);
+
+function generateCartPDF() {
+    if(window.triggerHaptic) window.triggerHaptic();
+    if(cart.length === 0) {
+        showNotification("Votre panier est vide.", "danger");
+        return;
+    }
+    
+    showNotification("Génération du PDF en cours...", "success");
+    
+    const invoiceDiv = document.createElement('div');
+    invoiceDiv.style.padding = '40px';
+    invoiceDiv.style.fontFamily = 'Arial, sans-serif';
+    invoiceDiv.style.color = '#333';
+    invoiceDiv.style.backgroundColor = '#fff';
+    invoiceDiv.style.position = 'absolute';
+    invoiceDiv.style.left = '-9999px';
+    invoiceDiv.style.top = '-9999px';
+    
+    const user = getCurrentUser();
+    const date = new Date().toLocaleDateString('fr-FR');
+    
+    let totalCNY = 0;
+    let itemsHtml = '';
+    
+    cart.forEach((item, i) => {
+        const lineTotal = item.priceCNY * item.qty;
+        totalCNY += lineTotal;
+        itemsHtml += `
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 12px 8px;">${i+1}</td>
+                <td style="padding: 12px 8px;"><strong>${item.name}</strong><br><small style="color:#666;">Coul: ${item.color} | Taille: ${item.size}</small></td>
+                <td style="padding: 12px 8px; text-align:center;">${item.qty}</td>
+                <td style="padding: 12px 8px; text-align:right;">${formatPrice(lineTotal)}</td>
+            </tr>
+        `;
+    });
+
+    invoiceDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px; border-bottom:2px solid #FBBF24; padding-bottom:20px;">
+            <div>
+                <h1 style="color:#000; margin:0; font-size:28px;">SOURCING<span style="color:#FBBF24;">PRO</span></h1>
+                <p style="color:#666; margin:5px 0 0 0; font-size:14px;">Votre partenaire d'importation B2B</p>
+            </div>
+            <div style="text-align:right;">
+                <h2 style="margin:0; color:#333;">DEVIS / BON DE COMMANDE</h2>
+                <p style="margin:5px 0 0 0; color:#666;">Date : ${date}</p>
+            </div>
+        </div>
+        
+        <div style="margin-bottom:40px;">
+            <h3 style="margin:0 0 10px 0; color:#333; border-bottom:1px solid #eee; padding-bottom:5px;">Informations Client</h3>
+            <p style="margin:0; font-size:14px; line-height:1.6;">
+                <strong>Nom :</strong> ${user?.name || 'Client'}<br>
+                <strong>Email :</strong> ${user?.email || 'N/A'}<br>
+                <strong>Téléphone :</strong> ${user?.phone || 'N/A'}
+            </p>
+        </div>
+        
+        <table style="width:100%; border-collapse:collapse; margin-bottom:40px;">
+            <thead>
+                <tr style="background-color:#f8f9fa;">
+                    <th style="padding:12px 8px; text-align:left; border-bottom:2px solid #ddd;">#</th>
+                    <th style="padding:12px 8px; text-align:left; border-bottom:2px solid #ddd;">Description du produit</th>
+                    <th style="padding:12px 8px; text-align:center; border-bottom:2px solid #ddd;">Quantité</th>
+                    <th style="padding:12px 8px; text-align:right; border-bottom:2px solid #ddd;">Sous-total</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${itemsHtml}
+            </tbody>
+        </table>
+        
+        <div style="display:flex; justify-content:flex-end;">
+            <div style="width:300px; background:#f8f9fa; padding:20px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <strong style="color:#333;">Total (Articles) :</strong>
+                    <span style="color:#333;">${formatPrice(totalCNY)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; color:#666;">
+                    <span>Frais de port :</span>
+                    <span>Sur devis final</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; padding-top:10px; margin-top:10px;">
+                    <strong style="color:#000; font-size:18px;">TOTAL ESTIMÉ :</strong>
+                    <strong style="color:#FBBF24; font-size:18px;">${formatPrice(totalCNY)}</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top:60px; text-align:center; color:#666; font-size:12px; border-top:1px solid #eee; padding-top:20px;">
+            <p>Document généré automatiquement par SourcingPro App.<br>Veuillez transférer ce document à votre agent pour validation finale des frais d'expédition.</p>
+        </div>
+    `;
+
+    document.body.appendChild(invoiceDiv);
+    
+    const opt = {
+        margin:       1,
+        filename:     'Devis_SourcingPro.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    if(typeof html2pdf !== 'undefined') {
+        html2pdf().set(opt).from(invoiceDiv).save().then(() => {
+            if(document.body.contains(invoiceDiv)) document.body.removeChild(invoiceDiv);
+        }).catch(err => {
+            console.error('PDF Generation error:', err);
+            showNotification("Erreur lors de la génération du PDF", "danger");
+            if(document.body.contains(invoiceDiv)) document.body.removeChild(invoiceDiv);
+        });
+    } else {
+        showNotification("L'outil PDF n'est pas encore chargé.", "danger");
+        if(document.body.contains(invoiceDiv)) document.body.removeChild(invoiceDiv);
+    }
+}
