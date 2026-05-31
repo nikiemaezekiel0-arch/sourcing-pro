@@ -71,6 +71,10 @@ function switchClientTab(tab) {
         if(nav) nav.classList.remove('active');
     });
     
+    // Always ensure the product detail view is hidden when switching tabs
+    const detailView = document.getElementById('client-product-detail-view');
+    if (detailView) detailView.classList.add('hidden');
+    
     // Manage favorites vs suppliers UI state
     const suppliersView = document.getElementById('client-view-suppliers');
     const favoritesNav = document.getElementById('client-nav-favorites');
