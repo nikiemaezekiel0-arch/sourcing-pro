@@ -551,6 +551,19 @@ function openSupplierModal(id) {
     document.getElementById('modal-sup-cat').innerHTML = `<span class="material-icons-round text-sm">${cat ? cat.icon : 'store'}</span> ${cat ? cat.name : 'Autre'}`;
     document.getElementById('modal-sup-desc').textContent = sup.description;
     
+    const linkContainer = document.getElementById('modal-sup-link-container');
+    if (sup.link) {
+        linkContainer.innerHTML = `
+            <a href="${sup.link}" target="_blank" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-size:0.9rem;">
+                <span class="material-icons-round text-sm">language</span> Visiter le lien web
+            </a>
+        `;
+        linkContainer.classList.remove('hidden');
+    } else {
+        linkContainer.classList.add('hidden');
+        linkContainer.innerHTML = '';
+    }
+    
     // 3D Flip Card
     const cardContainer = document.getElementById('modal-flip-card');
     let frontImg = sup.images && sup.images[0] ? sup.images[0] : sup.cardFront;

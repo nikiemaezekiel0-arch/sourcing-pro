@@ -239,6 +239,7 @@ async function updateUserStatus(userId, status, planType = 'standard') {
                         name: user.company || user.name,
                         categoryId: '',
                         description: 'Profil en attente de configuration par le fournisseur.',
+                        link: '',
                         isPremium: false,
                         views: 0
                     };
@@ -457,6 +458,7 @@ async function addSupplier(e) {
     const name = document.getElementById('sup-name').value;
     const categoryId = document.getElementById('sup-category').value;
     const description = document.getElementById('sup-desc').value;
+    const link = document.getElementById('sup-link').value.trim();
     const isPremium = document.getElementById('sup-premium').checked;
     
     if(!name || !categoryId || !description) {
@@ -484,7 +486,7 @@ async function addSupplier(e) {
         if(index !== -1) {
             const updatedSup = {
                 id: currentEditSupplierId,
-                name, categoryId, description, isPremium,
+                name, categoryId, description, link, isPremium,
                 cardFront: getValidImage(cardFront),
                 cardBack: getValidImage(cardBack),
                 qrWhatsApp: getValidImage(qrWhatsApp),
@@ -512,7 +514,7 @@ async function addSupplier(e) {
         const newSup = {
             id: generateId('sup_'),
             userId: newUserId,
-            name, categoryId, description, isPremium,
+            name, categoryId, description, link, isPremium,
             cardFront: getValidImage(cardFront),
             cardBack: getValidImage(cardBack),
             qrWhatsApp: getValidImage(qrWhatsApp),
@@ -610,6 +612,7 @@ function editSupplier(id) {
     document.getElementById('sup-name').value = sup.name;
     document.getElementById('sup-category').value = sup.categoryId;
     document.getElementById('sup-desc').value = sup.description;
+    document.getElementById('sup-link').value = sup.link || '';
     document.getElementById('sup-premium').checked = sup.isPremium;
     
     // Set images
