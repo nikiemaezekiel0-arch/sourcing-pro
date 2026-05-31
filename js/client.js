@@ -642,12 +642,17 @@ function openSupplierModal(id) {
         let html = '';
         pdfs.forEach((pdfUrl, index) => {
             html += `
-                <div class="glass-panel" style="padding:0.5rem; border:1px solid var(--accent-gold); margin-bottom: 1rem;">
-                    <div class="flex justify-between items-center mb-2 px-2">
-                        <span class="font-bold text-sm text-warning">Catalogue ${index + 1}</span>
-                        <a href="${pdfUrl}" target="_blank" class="btn-ghost text-xs text-primary"><span class="material-icons-round" style="font-size:16px;">open_in_new</span> Ouvrir en grand</a>
+                <div class="glass-panel" style="padding:1rem; border:1px solid var(--glass-border); margin-bottom: 1rem; display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="material-icons-round" style="font-size:32px; color:var(--accent-gold);">picture_as_pdf</span>
+                        <div>
+                            <div class="font-bold text-md text-white">Catalogue Produit ${pdfs.length > 1 ? index + 1 : ''}</div>
+                            <div class="text-xs text-muted">Cliquez pour afficher en grand</div>
+                        </div>
                     </div>
-                    <iframe src="${pdfUrl}#toolbar=0" style="width:100%; height:600px; border:none; border-radius:8px;"></iframe>
+                    <button class="btn-primary" onclick="openEbookModal('${pdfUrl}', 'Catalogue du Fournisseur')">
+                        <span class="material-icons-round text-sm">fullscreen</span> Ouvrir
+                    </button>
                 </div>
             `;
         });
