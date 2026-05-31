@@ -71,9 +71,11 @@ function switchClientTab(tab) {
         if(nav) nav.classList.remove('active');
     });
     
-    // Always ensure the product detail view is hidden when switching tabs
+    // Always ensure the product detail view and cart view are hidden when switching tabs
     const detailView = document.getElementById('client-product-detail-view');
     if (detailView) detailView.classList.add('hidden');
+    const cartView = document.getElementById('client-cart-view');
+    if (cartView) cartView.classList.add('hidden');
     
     // Manage favorites vs suppliers UI state
     const suppliersView = document.getElementById('client-view-suppliers');

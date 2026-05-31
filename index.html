@@ -438,7 +438,7 @@
                 <div id="client-view-agent" class="hidden">
                     <div class="flex justify-between items-center mb-6">
                         <h2 data-i18n="nav_catalogue">Catalogue Agent</h2>
-                        <button class="btn-primary flex items-center gap-2" onclick="openCartModal()">
+                        <button class="btn-primary flex items-center gap-2" onclick="openCartView()">
                             <span class="material-icons-round">shopping_cart</span>
                             <span data-i18n="nav_cart">Panier</span>
                             <span id="cart-count" style="background:var(--accent-gold); color:black; border-radius:50%; padding:2px 8px; font-weight:bold; font-size:12px;">0</span>
@@ -465,13 +465,25 @@
                         <button class="btn-ghost flex items-center gap-2 text-white" onclick="closeProductDetailView()">
                             <span class="material-icons-round">arrow_back</span> Retour au catalogue
                         </button>
-                        <button class="btn-primary flex items-center gap-2" onclick="openCartModal()">
+                        <button class="btn-primary flex items-center gap-2" onclick="openCartView()">
                             <span class="material-icons-round">shopping_cart</span>
                             <span data-i18n="nav_cart">Panier</span>
                             <span id="detail-cart-count" style="background:var(--accent-gold); color:black; border-radius:50%; padding:2px 8px; font-weight:bold; font-size:12px;">0</span>
                         </button>
                     </div>
                     <div id="product-detail-content" class="glass-panel" style="padding: 2rem;">
+                        <!-- Injected by client-agent.js -->
+                    </div>
+                </div>
+
+                <!-- Cart Page View -->
+                <div id="client-cart-view" class="hidden" style="animation: fadeInUp 0.3s ease;">
+                    <div class="flex justify-between items-center mb-6">
+                        <button class="btn-ghost flex items-center gap-2 text-white" onclick="closeCartView()">
+                            <span class="material-icons-round">arrow_back</span> Retour
+                        </button>
+                    </div>
+                    <div id="cart-view-content" class="glass-panel" style="padding: 2rem;">
                         <!-- Injected by client-agent.js -->
                     </div>
                 </div>

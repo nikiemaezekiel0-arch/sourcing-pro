@@ -241,15 +241,19 @@ function addToCart(productId) {
     showNotification("Produit ajouté au panier !", "success");
 }
 
-function openCartModal() {
+function openCartView() {
     if(window.triggerHaptic) window.triggerHaptic();
-    let modal = document.getElementById('cart-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'cart-modal';
-        modal.className = 'modal hidden';
-        document.body.appendChild(modal);
-    }
+    
+    // Hide other views
+    ['suppliers', 'trainings', 'agent'].forEach(t => {
+        const v = document.getElementById(`client-view-${t}`);
+        if(v) v.classList.add('hidden');
+    });
+    const detailView = document.getElementById('client-product-detail-view');
+    if(detailView) detailView.classList.add('hidden');
+    
+    const cartContainer = document.getElementById('cart-view-content');
+    if(!cartContainer) return;
 
     let itemsHtml = '';
     let totalCNY = 0;
@@ -274,46 +278,51 @@ function openCartModal() {
         itemsHtml = '<p class="text-center text-muted py-8">Votre panier est vide.</p>';
     }
 
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <span class="close-btn material-icons-round" onclick="document.getElementById('cart-modal').classList.add('hidden')">close</span>
-            <h2 class="text-2xl font-bold mb-6" data-i18n="nav_cart">Mon Panier</h2>
-            
-            <div style="max-height:300px; overflow-y:auto; margin-bottom:20px;">
-                ${itemsHtml}
-            </div>
-            
-            ${cart.length > 0 ? `
-            <div class="flex justify-between items-center mb-6 font-bold text-lg">
-                <span data-i18n="txt_total">Total :</span>
-                <span class="text-warning">${formatPrice(totalCNY)}</span>
-            </div>
-            <form onsubmit="checkout(event)">
-                <h4 class="mb-2">Informations de livraison</h4>
-                <input type="text" id="checkout-name" required placeholder="Votre Nom & Prénom" class="input-field mb-2" value="${getCurrentUser()?.name || ''}">
-                <input type="text" id="checkout-phone" required placeholder="Numéro de Téléphone" class="input-field mb-2" value="${getCurrentUser()?.phone || ''}">
-                <textarea id="checkout-address" required placeholder="Adresse complète de livraison" class="input-field mb-4" rows="3"></textarea>
-                
-                <div class="flex flex-col gap-2">
-                    <button type="submit" class="btn-primary w-full justify-center">Valider la commande (Paiement manuel)</button>
-                    <button type="button" class="btn-secondary w-full justify-center flex items-center gap-2" onclick="generateCartPDF()">
-                        <span class="material-icons-round">picture_as_pdf</span> Télécharger le Devis / Bon de Commande
-                    </button>
-                </div>
-            </form>
-            ` : ''}
+    cartContainer.innerHTML = `
+        <h2 class="text-2xl font-bold mb-6" data-i18n="nav_cart">Mon Panier</h2>
+        
+        <div style="max-height:400px; overflow-y:auto; margin-bottom:20px;">
+            ${itemsHtml}
         </div>
+        
+        ${cart.length > 0 ? `
+        <div class="flex justify-between items-center mb-6 font-bold text-lg">
+            <span data-i18n="txt_total">Total :</span>
+            <span class="text-warning">${formatPrice(totalCNY)}</span>
+        </div>
+        <form onsubmit="checkout(event)">
+            <h4 class="mb-2">Informations de livraison</h4>
+            <input type="text" id="checkout-name" required placeholder="Votre Nom & Prénom" class="input-field mb-2" value="${getCurrentUser()?.name || ''}">
+            <input type="text" id="checkout-phone" required placeholder="Numéro de Téléphone" class="input-field mb-2" value="${getCurrentUser()?.phone || ''}">
+            <textarea id="checkout-address" required placeholder="Adresse complète de livraison" class="input-field mb-4" rows="3"></textarea>
+            
+            <div class="flex flex-col gap-2">
+                <button type="submit" class="btn-primary w-full justify-center">Valider la commande (Paiement manuel)</button>
+                <button type="button" class="btn-secondary w-full justify-center flex items-center gap-2" onclick="generateCartPDF()">
+                    <span class="material-icons-round">picture_as_pdf</span> Télécharger le Devis / Bon de Commande
+                </button>
+            </div>
+        </form>
+        ` : ''}
     `;
     
     if (typeof applyTranslations === 'function') applyTranslations();
-    modal.classList.remove('hidden');
+    document.getElementById('client-cart-view').classList.remove('hidden');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function closeCartView() {
+    document.getElementById('client-cart-view').classList.add('hidden');
+    // Return to agent view by default
+    document.getElementById('client-view-agent').classList.remove('hidden');
+    switchClientAgentTab('catalog');
 }
 
 function removeFromCart(cartId) {
     if(window.triggerHaptic) window.triggerHaptic();
     cart = cart.filter(i => i.cartId !== cartId);
     saveCart();
-    openCartModal(); // Refresh
+    openCartView(); // Refresh
 }
 
 async function checkout(event) {
@@ -469,9 +478,9 @@ window.addEventListener('currency_updated', () => {
     if (currentTab && currentTab.id === 'client-nav-agent') {
         renderClientAgentProducts();
     }
-    const cartModal = document.getElementById('cart-modal');
-    if (cartModal && !cartModal.classList.contains('hidden')) {
-        openCartModal();
+    const cartView = document.getElementById('client-cart-view');
+    if (cartView && !cartView.classList.contains('hidden')) {
+        openCartView();
     }
     const productModal = document.getElementById('agent-product-modal');
     if (productModal && !productModal.classList.contains('hidden')) {
