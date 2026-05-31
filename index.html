@@ -458,6 +458,23 @@
                         <div id="client-orders-list"></div>
                     </div>
                 </div>
+
+                <!-- Product Detail Page View -->
+                <div id="client-product-detail-view" class="hidden" style="animation: fadeInUp 0.3s ease;">
+                    <div class="flex justify-between items-center mb-6">
+                        <button class="btn-ghost flex items-center gap-2 text-white" onclick="closeProductDetailView()">
+                            <span class="material-icons-round">arrow_back</span> Retour au catalogue
+                        </button>
+                        <button class="btn-primary flex items-center gap-2" onclick="openCartModal()">
+                            <span class="material-icons-round">shopping_cart</span>
+                            <span data-i18n="nav_cart">Panier</span>
+                            <span id="detail-cart-count" style="background:var(--accent-gold); color:black; border-radius:50%; padding:2px 8px; font-weight:bold; font-size:12px;">0</span>
+                        </button>
+                    </div>
+                    <div id="product-detail-content" class="glass-panel" style="padding: 2rem;">
+                        <!-- Injected by client-agent.js -->
+                    </div>
+                </div>
             </main>
         </div>
 

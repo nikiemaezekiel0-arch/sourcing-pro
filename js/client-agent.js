@@ -63,72 +63,99 @@ function openAgentProductModal(id) {
 
     const sellingPriceCNY = prod.priceCNY * 1.10;
 
-    let modal = document.getElementById('agent-product-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'agent-product-modal';
-        modal.className = 'modal hidden';
-        document.body.appendChild(modal);
-    }
-
     let colorsHtml = prod.colors.map(c => `<option value="${c}">${c}</option>`).join('');
     let sizesHtml = prod.sizes.map(s => `<option value="${s}">${s}</option>`).join('');
 
     const images = prod.images || (prod.image ? [prod.image] : []);
     let carouselHtml = '';
     if (images.length > 1) {
-        let slides = images.map(src => `<img src="${src}" style="width:100%; flex-shrink:0; object-fit:cover; border-radius:8px; scroll-snap-align:start;">`).join('');
+        let slides = images.map(src => `<img src="${src}" style="width:100%; flex-shrink:0; object-fit:cover; border-radius:12px; scroll-snap-align:start;">`).join('');
         carouselHtml = `
             <div style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px; padding-bottom:10px; -webkit-overflow-scrolling:touch;">
                 ${slides}
             </div>
-            <div class="text-center text-xs text-muted">Faites glisser pour voir plus d'images ↔️</div>
+            <div class="text-center text-xs text-muted mt-2">Faites glisser pour voir plus d'images ↔️</div>
         `;
     } else {
         const singleImage = images.length > 0 ? images[0] : 'https://via.placeholder.com/400?text=No+Image';
-        carouselHtml = `<img src="${singleImage}" style="width:100%; border-radius:8px;">`;
+        carouselHtml = `<img src="${singleImage}" style="width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2);">`;
     }
 
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 700px;">
-            <span class="close-btn material-icons-round" onclick="document.getElementById('agent-product-modal').classList.add('hidden')">close</span>
-            <div class="flex flex-col md:flex-row gap-6">
-                <div style="flex:1; min-width:0;">
-                    ${carouselHtml}
-                </div>
-                <div style="flex:1; display:flex; flex-direction:column; gap:15px;">
-                    <h2 class="text-2xl font-bold">${prod.name}</h2>
-                    <div class="text-warning font-bold text-3xl">${formatPrice(sellingPriceCNY)}</div>
-                    <div class="text-muted text-xs" data-i18n="txt_price_calculated">Le prix inclut la commission (10%)</div>
-                    
+    const detailContainer = document.getElementById('product-detail-content');
+    detailContainer.innerHTML = `
+        <div class="flex flex-col md:flex-row gap-8">
+            <div style="flex:1.2; min-width:0;">
+                ${carouselHtml}
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:20px;">
+                <h2 class="text-3xl font-bold text-white m-0">${prod.name}</h2>
+                <div class="text-warning font-bold text-4xl">${formatPrice(sellingPriceCNY)}</div>
+                <div class="text-muted text-sm" data-i18n="txt_price_calculated">Le prix inclut la commission SourcingPro (10%)</div>
+                
+                <div class="glass-panel" style="padding:1.5rem; background:rgba(255,255,255,0.02); margin-top:10px;">
                     ${colorsHtml ? `
-                    <div class="form-group">
-                        <label data-i18n="lbl_color">Couleur</label>
-                        <select id="modal-sel-color" class="input-field">${colorsHtml}</select>
+                    <div class="form-group mb-4">
+                        <label class="text-white" data-i18n="lbl_color">Couleur choisie</label>
+                        <select id="modal-sel-color" class="input-field" style="background:rgba(0,0,0,0.5);">${colorsHtml}</select>
                     </div>` : ''}
                     
                     ${sizesHtml ? `
-                    <div class="form-group">
-                        <label data-i18n="lbl_size">Taille</label>
-                        <select id="modal-sel-size" class="input-field">${sizesHtml}</select>
+                    <div class="form-group mb-4">
+                        <label class="text-white" data-i18n="lbl_size">Taille choisie</label>
+                        <select id="modal-sel-size" class="input-field" style="background:rgba(0,0,0,0.5);">${sizesHtml}</select>
                     </div>` : ''}
                     
-                    <div class="form-group">
-                        <label data-i18n="lbl_quantity">Quantité</label>
-                        <input type="number" id="modal-sel-qty" class="input-field" value="1" min="1">
+                    <div class="form-group mb-6">
+                        <label class="text-white" data-i18n="lbl_quantity">Quantité souhaitée</label>
+                        <input type="number" id="modal-sel-qty" class="input-field" value="1" min="1" style="background:rgba(0,0,0,0.5);">
                     </div>
 
-                    <button class="btn-primary mt-auto" onclick="addToCart('${prod.id}')">
+                    <button class="btn-primary w-full" style="padding:1rem; font-size:1.1rem; justify-content:center;" onclick="addToCart('${prod.id}')">
                         <span class="material-icons-round">add_shopping_cart</span> Ajouter au Panier
                     </button>
+                </div>
+                
+                <div class="mt-4">
+                    <h4 class="text-white mb-2">À propos de cet article</h4>
+                    <ul style="padding-left:1.5rem; color:#94a3b8; line-height:1.6; list-style-type:disc;">
+                        <li>Vérifié par nos agents SourcingPro</li>
+                        <li>Possibilité d'achat groupé avec vos autres commandes</li>
+                        <li>Contrôle qualité inclus avant expédition</li>
+                    </ul>
                 </div>
             </div>
         </div>
     `;
     
+    // Update cart count specifically in the detail view
+    const detailCartCount = document.getElementById('detail-cart-count');
+    if (detailCartCount) detailCartCount.textContent = cart.length;
+    
     if (typeof applyTranslations === 'function') applyTranslations();
-    modal.classList.remove('hidden');
+    
+    // Hide catalog and show detail page
+    document.getElementById('client-agent-subview-catalog').classList.add('hidden');
+    document.getElementById('client-agent-subview-orders').classList.add('hidden');
+    // Hide the tab buttons header from the catalog view to make it a true "page"
+    document.querySelector('#client-view-agent > .flex.gap-4.mb-6').classList.add('hidden');
+    document.querySelector('#client-view-agent > .flex.justify-between.items-center.mb-6').classList.add('hidden');
+    
+    document.getElementById('client-product-detail-view').classList.remove('hidden');
+    
+    window.scrollTo({top: 0, behavior: 'smooth'});
 }
+
+function closeProductDetailView() {
+    document.getElementById('client-product-detail-view').classList.add('hidden');
+    
+    // Restore catalog UI
+    document.querySelector('#client-view-agent > .flex.gap-4.mb-6').classList.remove('hidden');
+    document.querySelector('#client-view-agent > .flex.justify-between.items-center.mb-6').classList.remove('hidden');
+    document.getElementById('client-agent-subview-catalog').classList.remove('hidden');
+    
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
 
 function addToCart(productId) {
     const db = getDB();
@@ -151,7 +178,11 @@ function addToCart(productId) {
     
     cart.push(item);
     saveCart();
-    document.getElementById('agent-product-modal').classList.add('hidden');
+    
+    // Update local cart count
+    const detailCartCount = document.getElementById('detail-cart-count');
+    if (detailCartCount) detailCartCount.textContent = cart.length;
+    
     showNotification("Produit ajouté au panier !", "success");
 }
 
