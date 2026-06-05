@@ -243,6 +243,7 @@
 
                     <div id="client-train-subview-modules">
                         <!-- SaaS Premium Dashboard View -->
+                        <!-- SaaS Premium Dashboard View -->
                         <div id="training-dashboard-view" class="training-dashboard">
                             
                             <!-- Progress Card -->
@@ -250,39 +251,39 @@
                                 <div class="saas-progress-left">
                                     <h2 class="saas-progress-title">Import China Pro</h2>
                                     <div class="saas-progress-stats">
-                                        <span>Progression globale : <strong style="color:var(--accent-gold);">25%</strong></span>
-                                        <span>1 module terminé</span>
-                                        <span>3 modules restants</span>
+                                        <span>Progression globale : <strong id="saas-progress-percent" style="color:var(--accent-gold);">0%</strong></span>
+                                        <span id="saas-progress-done-text">0 module terminé</span>
+                                        <span id="saas-progress-left-text">4 modules restants</span>
                                     </div>
                                     <div class="saas-progress-bar-bg">
-                                        <div class="saas-progress-bar-fill" style="width: 25%;"></div>
+                                        <div id="saas-progress-fill" class="saas-progress-bar-fill" style="width: 0%;"></div>
                                     </div>
                                 </div>
                                 <div class="saas-progress-right mt-4" style="margin-top: 0;">
-                                    <button class="btn-primary" onclick="openTrainingModule(2)" style="font-size: 0.95rem;">
-                                        <span class="material-icons-round">play_circle</span> Reprendre le module en cours
+                                    <button id="saas-progress-cta" class="btn-primary" onclick="openTrainingModule(1)" style="font-size: 0.95rem;">
+                                        <span class="material-icons-round">play_circle</span> Commencer la formation
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Timeline -->
                             <div class="saas-timeline">
-                                <div class="saas-timeline-item done">
+                                <div id="tl-item-1" class="saas-timeline-item active">
                                     <div class="saas-timeline-icon">🌏</div>
                                     <div class="saas-timeline-text mt-2">01</div>
                                 </div>
-                                <div class="saas-timeline-connector done"></div>
-                                <div class="saas-timeline-item active">
+                                <div id="tl-conn-1" class="saas-timeline-connector"></div>
+                                <div id="tl-item-2" class="saas-timeline-item locked">
                                     <div class="saas-timeline-icon">🤝</div>
                                     <div class="saas-timeline-text mt-2">02</div>
                                 </div>
-                                <div class="saas-timeline-connector"></div>
-                                <div class="saas-timeline-item locked">
+                                <div id="tl-conn-2" class="saas-timeline-connector"></div>
+                                <div id="tl-item-3" class="saas-timeline-item locked">
                                     <div class="saas-timeline-icon">🔍</div>
                                     <div class="saas-timeline-text mt-2">03</div>
                                 </div>
-                                <div class="saas-timeline-connector"></div>
-                                <div class="saas-timeline-item locked">
+                                <div id="tl-conn-3" class="saas-timeline-connector"></div>
+                                <div id="tl-item-4" class="saas-timeline-item locked">
                                     <div class="saas-timeline-icon">💸</div>
                                     <div class="saas-timeline-text mt-2">04</div>
                                 </div>
@@ -293,7 +294,7 @@
                             <div class="saas-module-grid">
                                 
                                 <!-- Module 1 -->
-                                <div class="saas-module-card done">
+                                <div id="saas-mod-1" class="saas-module-card active">
                                     <div class="saas-module-header">
                                         <span class="saas-module-num">Module 01</span>
                                         <span class="saas-module-icon">🌏</span>
@@ -304,14 +305,14 @@
                                         <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 6 leçons</span>
                                         <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 1h15</span>
                                     </div>
-                                    <div class="saas-module-footer">
-                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">check_circle</span> Terminé</span>
-                                        <button class="btn-secondary" onclick="openTrainingModule(1)" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Revoir</button>
+                                    <div class="saas-module-footer" id="saas-mod-footer-1">
+                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">play_arrow</span> En cours</span>
+                                        <button class="saas-btn-continue" onclick="openTrainingModule(1)">Continuer</button>
                                     </div>
                                 </div>
 
                                 <!-- Module 2 -->
-                                <div class="saas-module-card active">
+                                <div id="saas-mod-2" class="saas-module-card locked">
                                     <div class="saas-module-header">
                                         <span class="saas-module-num">Module 02</span>
                                         <span class="saas-module-icon">🤝</span>
@@ -322,14 +323,13 @@
                                         <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 8 leçons</span>
                                         <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 1h45</span>
                                     </div>
-                                    <div class="saas-module-footer">
-                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">play_arrow</span> En cours</span>
-                                        <button class="saas-btn-continue" onclick="openTrainingModule(2)">Continuer</button>
+                                    <div class="saas-module-footer" id="saas-mod-footer-2">
+                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
                                     </div>
                                 </div>
 
                                 <!-- Module 3 -->
-                                <div class="saas-module-card locked">
+                                <div id="saas-mod-3" class="saas-module-card locked">
                                     <div class="saas-module-header">
                                         <span class="saas-module-num">Module 03</span>
                                         <span class="saas-module-icon">🔍</span>
@@ -340,13 +340,13 @@
                                         <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 12 leçons</span>
                                         <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 2h30</span>
                                     </div>
-                                    <div class="saas-module-footer">
+                                    <div class="saas-module-footer" id="saas-mod-footer-3">
                                         <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
                                     </div>
                                 </div>
 
                                 <!-- Module 4 -->
-                                <div class="saas-module-card locked">
+                                <div id="saas-mod-4" class="saas-module-card locked">
                                     <div class="saas-module-header">
                                         <span class="saas-module-num">Module 04</span>
                                         <span class="saas-module-icon">💸</span>
@@ -357,7 +357,7 @@
                                         <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 10 leçons</span>
                                         <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 2h15</span>
                                     </div>
-                                    <div class="saas-module-footer">
+                                    <div class="saas-module-footer" id="saas-mod-footer-4">
                                         <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
                                     </div>
                                 </div>
@@ -506,6 +506,7 @@
                         <div class="t-module-footer">
                             <button class="btn-ghost" onclick="closeTrainingModule()">Quitter</button>
                             <button id="tr-next-btn" class="btn-primary" onclick="nextTrainingModule()">Module suivant <span class="material-icons-round text-sm ml-2">arrow_forward</span></button>
+                            <button id="tr-finish-btn" class="btn-primary hidden" onclick="finishTraining()" style="background:var(--success); color:white;">Terminer la formation <span class="material-icons-round text-sm ml-2">emoji_events</span></button>
                         </div>
                     </div>
                     </div> <!-- End of client-train-subview-modules -->

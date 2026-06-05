@@ -135,6 +135,7 @@ function renderClientTrainings() {
     switchClientTrainingTab('modules');
     // The new learning path is hardcoded in index.html (Dashboard view).
     // This function ensures we are in the dashboard state initially if we just switch tabs.
+    updateTrainingProgressUI();
     closeTrainingModule();
 }
 
@@ -359,13 +360,18 @@ window.openTrainingModule = function(moduleNumber) {
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Handle "Next" button visibility
+    // Handle "Next" and "Finish" buttons visibility
     const nextBtn = document.getElementById('tr-next-btn');
-    if(nextBtn) {
+    const finishBtn = document.getElementById('tr-finish-btn');
+    
+    if(nextBtn && finishBtn) {
         if(moduleNumber >= 4) {
             nextBtn.style.display = 'none';
+            finishBtn.style.display = 'inline-flex';
+            finishBtn.classList.remove('hidden');
         } else {
             nextBtn.style.display = 'inline-flex';
+            finishBtn.style.display = 'none';
         }
     }
 };
@@ -383,9 +389,162 @@ window.closeTrainingModule = function() {
     }
 };
 
+function getTrainingProgress() {
+    const user = getCurrentUser();
+    if (!user) return { completed: [], current: 1 };
+    if (!user.trainingProgress) {
+        user.trainingProgress = { completed: [], current: 1 };
+        saveDoc('users', user); // Assuming saveDoc works on users and we have user.id. Actually let's check if we can save user
+        // wait, let's just do a safe update via saveDoc if we have user id
+        if(user.id) {
+            saveDoc('users', user);
+            setCurrentUser(user);
+        }
+    }
+    return user.trainingProgress;
+}
+
+window.markModuleAsCompleted = function(moduleNum) {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    if (!user.trainingProgress) {
+        user.trainingProgress = { completed: [], current: 1 };
+    }
+    
+    if (!user.trainingProgress.completed.includes(moduleNum)) {
+        user.trainingProgress.completed.push(moduleNum);
+    }
+    
+    if (moduleNum === user.trainingProgress.current && moduleNum < 4) {
+        user.trainingProgress.current = moduleNum + 1;
+    }
+    
+    if(user.id) {
+        saveDoc('users', user);
+        setCurrentUser(user);
+    }
+    
+    updateTrainingProgressUI();
+};
+
+window.updateTrainingProgressUI = function() {
+    const progress = getTrainingProgress();
+    const totalModules = 4;
+    const completedCount = progress.completed.length;
+    const percent = Math.round((completedCount / totalModules) * 100);
+    
+    // Update Progress Card
+    const elText = document.getElementById('saas-progress-percent');
+    if(elText) elText.innerText = `${percent}%`;
+    
+    const elDone = document.getElementById('saas-progress-done-text');
+    if(elDone) elDone.innerText = `${completedCount} module${completedCount > 1 ? 's' : ''} terminé${completedCount > 1 ? 's' : ''}`;
+    
+    const elLeft = document.getElementById('saas-progress-left-text');
+    const leftCount = totalModules - completedCount;
+    if(elLeft) elLeft.innerText = `${leftCount} module${leftCount > 1 ? 's' : ''} restant${leftCount > 1 ? 's' : ''}`;
+    
+    const elFill = document.getElementById('saas-progress-fill');
+    if(elFill) elFill.style.width = `${percent}%`;
+    
+    const elCta = document.getElementById('saas-progress-cta');
+    if(elCta) {
+        if(completedCount === totalModules) {
+            elCta.innerHTML = `<span class="material-icons-round">emoji_events</span> Formation terminée !`;
+            elCta.onclick = null;
+            elCta.style.background = 'var(--success)';
+            elCta.style.color = 'white';
+            elCta.className = 'btn-primary';
+        } else {
+            elCta.innerHTML = `<span class="material-icons-round">play_circle</span> Reprendre le module ${progress.current}`;
+            elCta.onclick = () => openTrainingModule(progress.current);
+            elCta.style.background = '';
+            elCta.style.color = '';
+            elCta.className = 'btn-primary';
+        }
+    }
+
+    // Update Timeline & Cards
+    for(let i=1; i<=totalModules; i++) {
+        const isDone = progress.completed.includes(i);
+        const isActive = progress.current === i;
+        const isLocked = !isDone && !isActive;
+
+        // Timeline
+        const tlItem = document.getElementById(`tl-item-${i}`);
+        if(tlItem) {
+            tlItem.className = 'saas-timeline-item ' + (isDone ? 'done' : isActive ? 'active' : 'locked');
+        }
+        if(i < totalModules) {
+            const tlConn = document.getElementById(`tl-conn-${i}`);
+            if(tlConn) tlConn.className = 'saas-timeline-connector ' + (isDone ? 'done' : '');
+        }
+
+        // Card
+        const card = document.getElementById(`saas-mod-${i}`);
+        if(card) {
+            card.className = 'saas-module-card ' + (isDone ? 'done' : isActive ? 'active' : 'locked');
+            
+            const badge = card.querySelector('.saas-status-badge');
+            const footerBtn = card.querySelector('.btn-secondary, .saas-btn-continue');
+            const footer = document.getElementById(`saas-mod-footer-${i}`);
+            
+            if(isDone) {
+                if(badge) badge.innerHTML = `<span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">check_circle</span> Terminé`;
+                if(!footerBtn && footer) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-secondary';
+                    btn.style = 'padding: 0.4rem 0.8rem; font-size: 0.8rem;';
+                    btn.innerText = 'Revoir';
+                    btn.onclick = () => openTrainingModule(i);
+                    footer.appendChild(btn);
+                } else if(footerBtn) {
+                    footerBtn.className = 'btn-secondary';
+                    footerBtn.style = 'padding: 0.4rem 0.8rem; font-size: 0.8rem;';
+                    footerBtn.innerText = 'Revoir';
+                    footerBtn.onclick = () => openTrainingModule(i);
+                }
+            } else if(isActive) {
+                if(badge) badge.innerHTML = `<span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">play_arrow</span> En cours`;
+                if(!footerBtn && footer) {
+                    const btn = document.createElement('button');
+                    btn.className = 'saas-btn-continue';
+                    btn.innerText = 'Continuer';
+                    btn.onclick = () => openTrainingModule(i);
+                    footer.appendChild(btn);
+                } else if(footerBtn) {
+                    footerBtn.className = 'saas-btn-continue';
+                    footerBtn.style = '';
+                    footerBtn.innerText = 'Continuer';
+                    footerBtn.onclick = () => openTrainingModule(i);
+                }
+            } else {
+                if(badge) badge.innerHTML = `<span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé`;
+                if(footerBtn) footerBtn.remove();
+            }
+        }
+    }
+};
+
 window.nextTrainingModule = function() {
+    // Mark current module as completed when clicking next
+    if (currentTrainingModule > 0) {
+        markModuleAsCompleted(currentTrainingModule);
+    }
+
     if(currentTrainingModule > 0 && currentTrainingModule < 4) {
         openTrainingModule(currentTrainingModule + 1);
+    } else {
+        closeTrainingModule();
+    }
+};
+
+window.finishTraining = function() {
+    if (currentTrainingModule === 4) {
+        markModuleAsCompleted(4);
+        closeTrainingModule();
+        showNotification("Félicitations ! Vous avez terminé la formation.", "success");
     }
 };
 
