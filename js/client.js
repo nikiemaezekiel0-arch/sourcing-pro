@@ -27,6 +27,7 @@ function initClientPortal() {
     } else {
         // Premium or admin: show everything, default to suppliers
         switchClientTab('suppliers');
+        renderClientStats();
         renderClientCategories();
         renderClientSuppliers();
     }
@@ -39,6 +40,7 @@ function initClientPortal() {
     // Listen to changes
     window.addEventListener('db_updated', () => {
         if(user && user.planType !== 'standard') {
+            renderClientStats();
             renderClientCategories();
             renderClientSuppliers();
         }
@@ -386,6 +388,50 @@ window.nextTrainingModule = function() {
         openTrainingModule(currentTrainingModule + 1);
     }
 };
+
+function renderClientStats() {
+    const db = getDB();
+    const banner = document.getElementById('client-stats-banner');
+    if (!banner) return;
+    
+    const activeSuppliers = (db.users || []).filter(u => u.role === 'supplier' && u.status === 'active');
+    const activeClients = (db.users || []).filter(u => u.role === 'client' && u.status === 'active');
+    
+    const catCounts = {};
+    activeSuppliers.forEach(s => {
+        if(s.categories) {
+            s.categories.forEach(c => {
+                catCounts[c] = (catCounts[c] || 0) + 1;
+            });
+        }
+    });
+    
+    let catText = '';
+    const sortedCats = Object.keys(catCounts).sort((a,b) => catCounts[b] - catCounts[a]);
+    if (sortedCats.length > 0) {
+        catText = sortedCats.slice(0, 3).map(c => {
+            const catObj = db.categories.find(x => x.id === c);
+            return `<span style="display:inline-block; margin-right:8px; margin-bottom:4px; padding:2px 8px; background:rgba(255,255,255,0.1); border-radius:12px; font-size:0.75rem;">${catObj ? catObj.name : c}: <strong>${catCounts[c]}</strong></span>`;
+        }).join('');
+    } else {
+        catText = '<span class="text-muted text-sm">Aucune donnée</span>';
+    }
+
+    banner.innerHTML = `
+        <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid var(--accent-gold); display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 2.2rem; font-weight: 800; color: #fff; line-height: 1;">${activeSuppliers.length}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">Fournisseurs</div>
+        </div>
+        <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid #38bdf8; display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 2.2rem; font-weight: 800; color: #fff; line-height: 1;">${activeClients.length}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">Acheteurs Actifs</div>
+        </div>
+        <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid #a855f7; display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: 1px;">Top Catégories</div>
+            <div style="display: flex; flex-wrap: wrap;">${catText}</div>
+        </div>
+    `;
+}
 
 function renderClientCategories() {
     const db = getDB();
