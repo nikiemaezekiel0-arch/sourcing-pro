@@ -242,47 +242,154 @@
                     </div>
 
                     <div id="client-train-subview-modules">
-                        <!-- Dashboard View -->
+                        <!-- SaaS Premium Dashboard View -->
                         <div id="training-dashboard-view" class="training-dashboard">
-                        <div class="training-hero">
-                            <span class="t-chip" style="position:relative; top:0; right:0; margin-bottom:1rem; display:inline-block;">✨ Formation Complète</span>
-                            <h2 style="font-size: 2rem; font-weight:800; color:#fff; line-height:1.2; margin-bottom:0.5rem;">Import China Pro</h2>
-                            <p style="color:var(--text-muted); max-width:500px;">Maîtrise l'import depuis la Chine de A à Z. Une formation structurée pour sourcer, commander via agent et revendre avec profit.</p>
-                            <div class="training-stats">
-                                <div class="t-stat"><strong>4</strong><span>Modules</span></div>
-                                <div class="t-stat"><strong>3</strong><span>Plateformes</span></div>
-                                <div class="t-stat"><strong>x2-x3</strong><span>Marge</span></div>
+                            
+                            <!-- Progress Card -->
+                            <div class="saas-progress-card">
+                                <div class="saas-progress-left">
+                                    <h2 class="saas-progress-title">Import China Pro</h2>
+                                    <div class="saas-progress-stats">
+                                        <span>Progression globale : <strong style="color:var(--accent-gold);">25%</strong></span>
+                                        <span>1 module terminé</span>
+                                        <span>3 modules restants</span>
+                                    </div>
+                                    <div class="saas-progress-bar-bg">
+                                        <div class="saas-progress-bar-fill" style="width: 25%;"></div>
+                                    </div>
+                                </div>
+                                <div class="saas-progress-right mt-4" style="margin-top: 0;">
+                                    <button class="btn-primary" onclick="openTrainingModule(2)" style="font-size: 0.95rem;">
+                                        <span class="material-icons-round">play_circle</span> Reprendre le module en cours
+                                    </button>
+                                </div>
                             </div>
+
+                            <!-- Timeline -->
+                            <div class="saas-timeline">
+                                <div class="saas-timeline-item done">
+                                    <div class="saas-timeline-icon">🌏</div>
+                                    <div class="saas-timeline-text mt-2">01</div>
+                                </div>
+                                <div class="saas-timeline-connector done"></div>
+                                <div class="saas-timeline-item active">
+                                    <div class="saas-timeline-icon">🤝</div>
+                                    <div class="saas-timeline-text mt-2">02</div>
+                                </div>
+                                <div class="saas-timeline-connector"></div>
+                                <div class="saas-timeline-item locked">
+                                    <div class="saas-timeline-icon">🔍</div>
+                                    <div class="saas-timeline-text mt-2">03</div>
+                                </div>
+                                <div class="saas-timeline-connector"></div>
+                                <div class="saas-timeline-item locked">
+                                    <div class="saas-timeline-icon">💸</div>
+                                    <div class="saas-timeline-text mt-2">04</div>
+                                </div>
+                            </div>
+
+                            <!-- Modules Grid -->
+                            <h3 style="font-size:1.2rem; font-weight:800; color:#fff; margin-bottom: 1rem;">Parcours d'apprentissage</h3>
+                            <div class="saas-module-grid">
+                                
+                                <!-- Module 1 -->
+                                <div class="saas-module-card done">
+                                    <div class="saas-module-header">
+                                        <span class="saas-module-num">Module 01</span>
+                                        <span class="saas-module-icon">🌏</span>
+                                    </div>
+                                    <h3 class="saas-module-title">Plateformes Chinoises</h3>
+                                    <p class="saas-module-desc">Taobao, 1688, Weidian — comprendre les différences et savoir chercher.</p>
+                                    <div class="saas-module-meta">
+                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 6 leçons</span>
+                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 1h15</span>
+                                    </div>
+                                    <div class="saas-module-footer">
+                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">check_circle</span> Terminé</span>
+                                        <button class="btn-secondary" onclick="openTrainingModule(1)" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Revoir</button>
+                                    </div>
+                                </div>
+
+                                <!-- Module 2 -->
+                                <div class="saas-module-card active">
+                                    <div class="saas-module-header">
+                                        <span class="saas-module-num">Module 02</span>
+                                        <span class="saas-module-icon">🤝</span>
+                                    </div>
+                                    <h3 class="saas-module-title">Agents d'Achat</h3>
+                                    <p class="saas-module-desc">Choisir un bon agent, comprendre leur rôle et accéder aux meilleurs.</p>
+                                    <div class="saas-module-meta">
+                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 8 leçons</span>
+                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 1h45</span>
+                                    </div>
+                                    <div class="saas-module-footer">
+                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">play_arrow</span> En cours</span>
+                                        <button class="saas-btn-continue" onclick="openTrainingModule(2)">Continuer</button>
+                                    </div>
+                                </div>
+
+                                <!-- Module 3 -->
+                                <div class="saas-module-card locked">
+                                    <div class="saas-module-header">
+                                        <span class="saas-module-num">Module 03</span>
+                                        <span class="saas-module-icon">🔍</span>
+                                    </div>
+                                    <h3 class="saas-module-title">Sourcing & Qualité</h3>
+                                    <p class="saas-module-desc">Trouver les bons produits, vérifier la qualité, accéder aux officiels.</p>
+                                    <div class="saas-module-meta">
+                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 12 leçons</span>
+                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 2h30</span>
+                                    </div>
+                                    <div class="saas-module-footer">
+                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
+                                    </div>
+                                </div>
+
+                                <!-- Module 4 -->
+                                <div class="saas-module-card locked">
+                                    <div class="saas-module-header">
+                                        <span class="saas-module-num">Module 04</span>
+                                        <span class="saas-module-icon">💸</span>
+                                    </div>
+                                    <h3 class="saas-module-title">Revente & Profit</h3>
+                                    <p class="saas-module-desc">Plateformes, prix, marges et stratégie pour maximiser tes profits.</p>
+                                    <div class="saas-module-meta">
+                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 10 leçons</span>
+                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 2h15</span>
+                                    </div>
+                                    <div class="saas-module-footer">
+                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- KPI Stats Grid -->
+                            <div class="saas-kpi-grid">
+                                <div class="saas-kpi-card">
+                                    <div class="saas-kpi-icon" style="color: #3b82f6;"><span class="material-icons-round">library_books</span></div>
+                                    <div class="saas-kpi-content">
+                                        <h4>36</h4>
+                                        <span>Leçons totales</span>
+                                    </div>
+                                </div>
+                                <div class="saas-kpi-card">
+                                    <div class="saas-kpi-icon" style="color: #10b981;"><span class="material-icons-round">language</span></div>
+                                    <div class="saas-kpi-content">
+                                        <h4>3 Plateformes</h4>
+                                        <span>Maîtrisées</span>
+                                    </div>
+                                </div>
+                                <div class="saas-kpi-card">
+                                    <div class="saas-kpi-icon" style="color: var(--accent-gold);"><span class="material-icons-round">trending_up</span></div>
+                                    <div class="saas-kpi-content">
+                                        <h4>x2 à x3</h4>
+                                        <span>Marge estimée</span>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
-                        
-                        <h3 style="font-size:1.2rem; font-weight:700; margin-top:1rem; color:#fff;">Parcours d'apprentissage</h3>
-                        <div class="modules-grid">
-                            <div class="module-card" onclick="openTrainingModule(1)">
-                                <span class="m-card-icon">🌏</span>
-                                <span class="m-card-num">Module 01</span>
-                                <h3 class="m-card-title">Plateformes Chinoises</h3>
-                                <p class="m-card-desc">Taobao, 1688, Weidian — comprendre les différences et savoir chercher.</p>
-                            </div>
-                            <div class="module-card" onclick="openTrainingModule(2)">
-                                <span class="m-card-icon">🤝</span>
-                                <span class="m-card-num">Module 02</span>
-                                <h3 class="m-card-title">Agents d'Achat</h3>
-                                <p class="m-card-desc">Choisir un bon agent, comprendre leur rôle et accéder aux meilleurs.</p>
-                            </div>
-                            <div class="module-card" onclick="openTrainingModule(3)">
-                                <span class="m-card-icon">🔍</span>
-                                <span class="m-card-num">Module 03</span>
-                                <h3 class="m-card-title">Sourcing & Qualité</h3>
-                                <p class="m-card-desc">Trouver les bons produits, vérifier la qualité, accéder aux officiels.</p>
-                            </div>
-                            <div class="module-card" onclick="openTrainingModule(4)">
-                                <span class="m-card-icon">💸</span>
-                                <span class="m-card-num">Module 04</span>
-                                <h3 class="m-card-title">Revente & Profit</h3>
-                                <p class="m-card-desc">Plateformes, prix, marges et stratégie pour maximiser tes profits.</p>
-                            </div>
-                        </div>
-                    </div>
                     
                     <!-- Reading View -->
                     <div id="training-reading-view" class="training-reading-view hidden">
