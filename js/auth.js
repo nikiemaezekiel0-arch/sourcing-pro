@@ -191,6 +191,23 @@ async function handleRegister(event) {
         
         await saveDoc('users', newUser);
         
+        // Notify Telegram via backend
+        try {
+            // For production, change to your actual deployed backend URL
+            const BACKEND_URL = window.TELEGRAM_BACKEND_URL || 'http://localhost:3000';
+            await fetch(`${BACKEND_URL}/api/v1/notify-registration`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: uid,
+                    name: newUser.name,
+                    email: newUser.email
+                })
+            });
+        } catch (webhookErr) {
+            console.error("Failed to notify Telegram backend:", webhookErr);
+        }
+        
         // Sign out the newly created user immediately since they are pending approval
         await auth.signOut();
         
