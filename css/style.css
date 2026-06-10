@@ -1049,3 +1049,149 @@ textarea.input-control { resize: vertical; min-height: 100px; }
     .saas-timeline-connector { min-width: 40px; }
 }
 
+/* ==========================================================================
+   EBOOKS PREMIUM GRID (DARK MODE)
+   ========================================================================== */
+
+.ebook-premium-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .ebook-premium-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .ebook-premium-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ebook-premium-card {
+    background: #0D1117;
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1rem;
+    cursor: pointer;
+    box-shadow: inset 0 0 20px rgba(255, 230, 0, 0.02), 0 10px 30px rgba(0,0,0,0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ebook-premium-card:hover {
+    transform: translateY(-5px);
+    box-shadow: inset 0 0 20px rgba(255, 230, 0, 0.05), 0 15px 40px rgba(0,0,0,0.6);
+}
+
+/* Internal Glow */
+.ebook-premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at top left, rgba(255, 230, 0, 0.05), transparent 60%);
+    pointer-events: none;
+}
+
+.ebook-premium-cover-container {
+    flex: 0 0 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+}
+
+.ebook-premium-cover {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background: linear-gradient(135deg, #1f2937, #111827);
+    border-radius: 4px 8px 8px 4px;
+    box-shadow: -3px 0 5px rgba(0,0,0,0.5), inset 4px 0 8px rgba(255,255,255,0.1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    text-align: center;
+    transform: rotateY(-15deg);
+    transition: transform 0.3s;
+}
+
+.ebook-premium-card:hover .ebook-premium-cover {
+    transform: rotateY(-5deg) scale(1.05);
+}
+
+.ebook-premium-cover::before {
+    content: '';
+    position: absolute;
+    left: 4px; top: 0; bottom: 0; width: 2px;
+    background: rgba(255,255,255,0.2);
+}
+
+.ebook-premium-cover-title {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    word-break: break-word;
+}
+
+.ebook-premium-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0; /* for truncation */
+}
+
+.ebook-premium-meta {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.ebook-premium-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.3;
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ebook-premium-btn {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: auto;
+}
+
+.ebook-premium-card:hover .ebook-premium-btn {
+    opacity: 0.9;
+}
+

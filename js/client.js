@@ -169,25 +169,22 @@ function renderClientEbooks() {
         const pages = Math.floor(Math.random() * 200) + 100;
         
         const card = document.createElement('div');
-        card.className = 'v2-card';
+        card.className = 'ebook-premium-card';
         card.onclick = () => openEbookModal(ebook.fileUrl, ebook.title);
         
         card.innerHTML = `
-            <div class="v2-cover-container">
-                <div class="v2-cover">
-                    <div class="v2-cover-title">${ebook.title.substring(0, 20)}${ebook.title.length > 20 ? '...' : ''}</div>
-                    <div class="v2-meta">
-                        <div style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Sourcing Pro</div>
-                    </div>
+            <div class="ebook-premium-cover-container">
+                <div class="ebook-premium-cover">
+                    <div class="ebook-premium-cover-title">${ebook.title}</div>
                 </div>
             </div>
             
-            <div class="v2-title">${ebook.title}</div>
-            <div class="v2-desc">${ebook.description}</div>
-            <div class="v2-tags">${category} • ${pages} pages</div>
-            
-            <div class="v2-actions">
-                <button class="v2-btn" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">Lire l'Ebook</button>
+            <div class="ebook-premium-content">
+                <div>
+                    <div class="ebook-premium-meta">[ ${category.toUpperCase()} • ${pages} PAGES ]</div>
+                    <div class="ebook-premium-title" title="${ebook.title.replace(/"/g, '&quot;')}">${ebook.title}</div>
+                </div>
+                <button class="ebook-premium-btn" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">LIRE L'EBOOK</button>
             </div>
         `;
         list.appendChild(card);
