@@ -38,6 +38,8 @@ function renderClientAgentProducts() {
     if (products.length <= 1) {
         products = [...products, ...mockProducts];
     }
+    
+    window.currentRenderedProducts = products;
 
     products.forEach(prod => {
         const sellingPriceCNY = prod.priceCNY * 1.10; // +10% commission
@@ -74,13 +76,14 @@ function renderClientAgentProducts() {
 
 function openAgentProductModal(id) {
     const db = getDB();
-    const prod = db.agent_products.find(p => p.id === id);
+    const allProds = window.currentRenderedProducts || db.agent_products || [];
+    const prod = allProds.find(p => p.id === id);
     if (!prod) return;
 
     const sellingPriceCNY = prod.priceCNY * 1.10;
 
-    let colorsHtml = prod.colors.map(c => `<option value="${c}">${c}</option>`).join('');
-    let sizesHtml = prod.sizes.map(s => `<option value="${s}">${s}</option>`).join('');
+    let colorsHtml = (prod.colors || []).map(c => `<option value="${c}">${c}</option>`).join('');
+    let sizesHtml = (prod.sizes || []).map(s => `<option value="${s}">${s}</option>`).join('');
 
     const images = prod.images || (prod.image ? [prod.image] : []);
     let carouselHtml = '';
