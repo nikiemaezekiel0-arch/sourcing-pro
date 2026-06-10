@@ -1249,7 +1249,7 @@
                 
                 <!-- Agent Catalogue View -->
                 <div id="client-view-agent" class="hidden">
-                    <div class="flex justify-between items-center mb-6">
+                    <div id="client-agent-header-title" class="flex justify-between items-center mb-6">
                         <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem; letter-spacing: -0.5px;">Catalogue Produits</h2>
                         <button style="background-color: #f59e0b; color: #0f172a; border: none; border-radius: 50px; padding: 0.6rem 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" onclick="openCartView()" class="hover-grow">
                             <span class="material-icons-round" style="font-size: 20px;">shopping_cart</span>
@@ -1258,7 +1258,7 @@
                         </button>
                     </div>
 
-                    <div class="flex gap-4 mb-8" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                    <div id="client-agent-header-tabs" class="flex gap-4 mb-8" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
                         <button id="btn-client-agent-catalog" onclick="switchClientAgentTab('catalog')" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; border: none; background: #f59e0b; color: #0f172a;">Catalogue</button>
                         <button id="btn-client-agent-orders" onclick="switchClientAgentTab('orders')" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; background: transparent; color: #ffffff; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 6px;"><span class="material-icons-round" style="font-size: 18px; color: rgba(255,255,255,0.6);">receipt_long</span> Mes Commandes</button>
                     </div>

@@ -196,8 +196,10 @@ function openAgentProductModal(id) {
     document.getElementById('client-agent-subview-catalog').classList.add('hidden');
     document.getElementById('client-agent-subview-orders').classList.add('hidden');
     // Hide the tab buttons header from the catalog view to make it a true "page"
-    document.querySelector('#client-view-agent > .flex.gap-4.mb-6').classList.add('hidden');
-    document.querySelector('#client-view-agent > .flex.justify-between.items-center.mb-6').classList.add('hidden');
+    const headerTabs = document.getElementById('client-agent-header-tabs');
+    const headerTitle = document.getElementById('client-agent-header-title');
+    if (headerTabs) headerTabs.classList.add('hidden');
+    if (headerTitle) headerTitle.classList.add('hidden');
     
     document.getElementById('client-product-detail-view').classList.remove('hidden');
     
@@ -208,8 +210,11 @@ function closeProductDetailView() {
     document.getElementById('client-product-detail-view').classList.add('hidden');
     
     // Restore catalog UI
-    document.querySelector('#client-view-agent > .flex.gap-4.mb-6').classList.remove('hidden');
-    document.querySelector('#client-view-agent > .flex.justify-between.items-center.mb-6').classList.remove('hidden');
+    const headerTabs = document.getElementById('client-agent-header-tabs');
+    const headerTitle = document.getElementById('client-agent-header-title');
+    if (headerTabs) headerTabs.classList.remove('hidden');
+    if (headerTitle) headerTitle.classList.remove('hidden');
+    
     document.getElementById('client-agent-subview-catalog').classList.remove('hidden');
     
     window.scrollTo({top: 0, behavior: 'smooth'});
