@@ -583,7 +583,7 @@ function renderClientStats() {
         </div>
         <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid #38bdf8; display: flex; flex-direction: column; justify-content: center;">
             <div style="font-size: 2.2rem; font-weight: 800; color: #fff; line-height: 1;">${activeClients.length}</div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">Acheteurs Actifs</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">Membres</div>
         </div>
         <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid #a855f7; display: flex; flex-direction: column; justify-content: center;">
             <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: 1px;">Top Catégories</div>
