@@ -561,32 +561,48 @@ function renderClientStats() {
             });
         }
     });
-    
-    let catText = '';
-    const sortedCats = Object.keys(catCounts).sort((a,b) => catCounts[b] - catCounts[a]);
-    if (sortedCats.length > 0) {
-        catText = sortedCats.slice(0, 3).map(c => {
-            const catObj = db.categories.find(x => x.id === c);
-            return `<span style="display:inline-block; margin-right:8px; margin-bottom:4px; padding:2px 8px; background:rgba(255,255,255,0.1); border-radius:12px; font-size:0.75rem;">${catObj ? catObj.name : c}: <strong>${catCounts[c]}</strong></span>`;
-        }).join('');
-    } else {
-        catText = '<span class="text-muted text-sm">Aucune donnée</span>';
-    }
-
-    banner.innerHTML = `
-        <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid var(--accent-gold); display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 2.2rem; font-weight: 800; color: #fff; line-height: 1;">${activeSuppliers.length}</div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">Fournisseurs</div>
+    let html = `
+        <div style="display: flex; align-items: center; gap: 12px; background: rgba(15, 23, 30, 0.6); border: 1px solid var(--accent-gold); border-radius: 9999px; padding: 6px 20px 6px 6px;">
+            <div style="background: var(--accent-gold); color: #000; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span class="material-icons-round" style="font-size: 20px;">inventory_2</span>
+            </div>
+            <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                <span style="font-size: 1.2rem; font-weight: 800; color: #fff;">${activeSuppliers.length}</span>
+                <span style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Fournisseurs</span>
+            </div>
         </div>
-        <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid #38bdf8; display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 2.2rem; font-weight: 800; color: #fff; line-height: 1;">${activeClients.length}</div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">Membres</div>
-        </div>
-        <div class="glass-panel hover-grow" style="padding: 1.5rem; border-left: 4px solid #a855f7; display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: 1px;">Top Catégories</div>
-            <div style="display: flex; flex-wrap: wrap;">${catText}</div>
+        
+        <div style="display: flex; align-items: center; gap: 12px; background: rgba(15, 23, 30, 0.6); border: 1px solid #38bdf8; border-radius: 9999px; padding: 6px 20px 6px 6px;">
+            <div style="background: #38bdf8; color: #000; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span class="material-icons-round" style="font-size: 20px;">groups</span>
+            </div>
+            <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                <span style="font-size: 1.2rem; font-weight: 800; color: #fff;">${activeClients.length}</span>
+                <span style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Membres</span>
+            </div>
         </div>
     `;
+
+    const sortedCats = Object.keys(catCounts).sort((a,b) => catCounts[b] - catCounts[a]);
+    if (sortedCats.length > 0) {
+        let catText = sortedCats.slice(0, 3).map(c => {
+            const catObj = db.categories.find(x => x.id === c);
+            return `<span style="font-weight:700; color:#fff;">${catObj ? catObj.name : c}</span> <span style="opacity:0.6; font-size:0.7rem;">(${catCounts[c]})</span>`;
+        }).join('<span style="margin: 0 6px; opacity:0.3;">|</span>');
+        
+        html += `
+        <div style="display: flex; align-items: center; gap: 12px; background: rgba(15, 23, 30, 0.6); border: 1px solid #a855f7; border-radius: 9999px; padding: 6px 20px 6px 6px;">
+            <div style="background: #a855f7; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span class="material-icons-round" style="font-size: 20px;">category</span>
+            </div>
+            <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                <span style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Top Catégories</span>
+                <div style="font-size: 0.8rem; display: flex; align-items: center;">${catText}</div>
+            </div>
+        </div>`;
+    }
+
+    banner.innerHTML = html;
 }
 
 function renderClientCategories() {
