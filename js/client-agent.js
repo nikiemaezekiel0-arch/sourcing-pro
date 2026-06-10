@@ -22,22 +22,8 @@ function renderClientAgentProducts() {
 
     list.innerHTML = '';
     
-    // Use existing products or fallback to empty array
+    // Use existing products from the database
     let products = db.agent_products || [];
-    
-    // Per the user's mock data requirement to demonstrate the grid arrangement:
-    const mockProducts = [
-        { id: 'mock1', name: 'Puxi Slippers', priceCNY: 0.70 * 8, image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500&q=80', colors: [], sizes: [] },
-        { id: 'mock2', name: 'Zenith Water Bottle (750ml)', priceCNY: 22.99 * 8, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&q=80', colors: [], sizes: [] },
-        { id: 'mock3', name: 'Aethelred Watch', priceCNY: 249.99 * 8, image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=500&q=80', colors: [], sizes: [] },
-        { id: 'mock4', name: 'Onyx Knife Set', priceCNY: 189.99 * 8, image: 'https://images.unsplash.com/photo-1593618998160-e34014e67546?w=500&q=80', colors: [], sizes: [] },
-        { id: 'mock5', name: 'Regal Leather Moccasins', priceCNY: 99.99 * 8, image: 'https://images.unsplash.com/photo-1614252209800-410a726618e7?w=500&q=80', colors: [], sizes: [] },
-        { id: 'mock6', name: 'Nexus Tech Hub', priceCNY: 59.99 * 8, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80', colors: [], sizes: [] }
-    ];
-
-    if (products.length <= 1) {
-        products = [...products, ...mockProducts];
-    }
     
     window.currentRenderedProducts = products;
 
