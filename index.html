@@ -1250,21 +1250,21 @@
                 <!-- Agent Catalogue View -->
                 <div id="client-view-agent" class="hidden">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 data-i18n="nav_catalogue">Catalogue Agent</h2>
-                        <button class="btn-primary flex items-center gap-2" onclick="openCartView()">
-                            <span class="material-icons-round">shopping_cart</span>
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem; letter-spacing: -0.5px;">Catalogue Produits</h2>
+                        <button style="background-color: #f59e0b; color: #0f172a; border: none; border-radius: 50px; padding: 0.6rem 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" onclick="openCartView()" class="hover-grow">
+                            <span class="material-icons-round" style="font-size: 20px;">shopping_cart</span>
                             <span data-i18n="nav_cart">Panier</span>
-                            <span id="cart-count" style="background:var(--accent-gold); color:black; border-radius:50%; padding:2px 8px; font-weight:bold; font-size:12px;">0</span>
+                            <span id="cart-count" style="background: #0f172a; color: #f59e0b; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; margin-left: 4px;">0</span>
                         </button>
                     </div>
 
-                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <button id="btn-client-agent-catalog" class="btn-primary" onclick="switchClientAgentTab('catalog')" style="padding: 0.5rem 1rem;">📦 Catalogue</button>
-                        <button id="btn-client-agent-orders" class="btn-secondary" onclick="switchClientAgentTab('orders')" style="padding: 0.5rem 1rem;">📝 Mes Commandes</button>
+                    <div class="flex gap-4 mb-8" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                        <button id="btn-client-agent-catalog" onclick="switchClientAgentTab('catalog')" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; border: none; background: #f59e0b; color: #0f172a;">Catalogue</button>
+                        <button id="btn-client-agent-orders" onclick="switchClientAgentTab('orders')" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; background: transparent; color: #ffffff; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 6px;"><span class="material-icons-round" style="font-size: 18px; color: rgba(255,255,255,0.6);">receipt_long</span> Mes Commandes</button>
                     </div>
 
                     <div id="client-agent-subview-catalog">
-                        <div id="client-agent-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"></div>
+                        <div id="client-agent-list" class="ecommerce-grid"></div>
                     </div>
                     
                     <div id="client-agent-subview-orders" class="hidden">

@@ -22,32 +22,48 @@ function renderClientAgentProducts() {
 
     list.innerHTML = '';
     
-    if (!db.agent_products || db.agent_products.length === 0) {
-        list.innerHTML = '<p class="text-muted" data-i18n="txt_no_products">Aucun produit disponible pour le moment.</p>';
-        return;
+    // Use existing products or fallback to empty array
+    let products = db.agent_products || [];
+    
+    // Per the user's mock data requirement to demonstrate the grid arrangement:
+    const mockProducts = [
+        { id: 'mock1', name: 'Puxi Slippers', priceCNY: 0.70 * 8, image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500&q=80', colors: [], sizes: [] },
+        { id: 'mock2', name: 'Zenith Water Bottle (750ml)', priceCNY: 22.99 * 8, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&q=80', colors: [], sizes: [] },
+        { id: 'mock3', name: 'Aethelred Watch', priceCNY: 249.99 * 8, image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=500&q=80', colors: [], sizes: [] },
+        { id: 'mock4', name: 'Onyx Knife Set', priceCNY: 189.99 * 8, image: 'https://images.unsplash.com/photo-1593618998160-e34014e67546?w=500&q=80', colors: [], sizes: [] },
+        { id: 'mock5', name: 'Regal Leather Moccasins', priceCNY: 99.99 * 8, image: 'https://images.unsplash.com/photo-1614252209800-410a726618e7?w=500&q=80', colors: [], sizes: [] },
+        { id: 'mock6', name: 'Nexus Tech Hub', priceCNY: 59.99 * 8, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80', colors: [], sizes: [] }
+    ];
+
+    if (products.length <= 1) {
+        products = [...products, ...mockProducts];
     }
 
-    db.agent_products.forEach(prod => {
+    products.forEach(prod => {
         const sellingPriceCNY = prod.priceCNY * 1.10; // +10% commission
         
         const images = prod.images || (prod.image ? [prod.image] : []);
         const firstImage = images.length > 0 ? images[0] : 'https://via.placeholder.com/250?text=No+Image';
 
         const card = document.createElement('div');
-        card.className = 'glass-panel hover-grow cursor-pointer flex flex-col gap-2 relative';
+        card.className = 'ecommerce-card';
         card.onclick = () => openAgentProductModal(prod.id);
+        
         card.innerHTML = `
-            <div style="position:relative; width:100%; height:250px; border-radius:8px; overflow:hidden; margin-bottom:10px;">
-                <img src="${firstImage}" alt="Product" style="width:100%; height:100%; object-fit:cover;">
-                ${images.length > 1 ? `<div style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.7); color:white; padding:2px 8px; border-radius:12px; font-size:12px;"><span class="material-icons-round" style="font-size:12px; vertical-align:middle;">photo_library</span> ${images.length}</div>` : ''}
+            <div class="ecommerce-image-container">
+                <img src="${firstImage}" alt="${prod.name}" class="ecommerce-image">
+                <div class="ecommerce-overlay">
+                    <div class="ecommerce-quick-view">
+                        <span class="material-icons-round" style="font-size: 18px;">visibility</span>
+                        Aperçu rapide
+                    </div>
+                </div>
+                ${images.length > 1 ? `<div style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.7); color:white; padding:2px 8px; border-radius:12px; font-size:12px; z-index:2;"><span class="material-icons-round" style="font-size:12px; vertical-align:middle;">photo_library</span> ${images.length}</div>` : ''}
             </div>
-            <div class="font-bold text-lg">${prod.name}</div>
-            <div class="text-warning font-bold text-xl mb-2">${formatPrice(sellingPriceCNY)}</div>
-            <div class="flex gap-2 text-xs text-muted mt-auto">
-                <span>Couleurs: ${prod.colors.length || 0}</span> | 
-                <span>Tailles: ${prod.sizes.length || 0}</span>
+            <div class="ecommerce-info">
+                <h3 class="ecommerce-name">${prod.name}</h3>
+                <div class="ecommerce-price">${formatPrice(sellingPriceCNY)}</div>
             </div>
-            <button class="btn-primary w-full mt-2" data-i18n="btn_view_product">Voir le produit</button>
         `;
         list.appendChild(card);
     });
