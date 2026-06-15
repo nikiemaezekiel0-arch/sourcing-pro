@@ -25,6 +25,31 @@ function renderClientAgentProducts() {
     // Use existing products from the database
     let products = db.agent_products || [];
     
+    // Skeleton Loaders for Catalog
+    if (!db._isLoaded && products.length === 0) {
+        let skeletons = '';
+        for (let i = 0; i < 4; i++) {
+            skeletons += `
+            <div class="ecommerce-card" style="pointer-events:none; padding:0; display:flex; flex-direction:column;">
+                <div class="skeleton skeleton-img"></div>
+                <div style="padding:1rem;">
+                    <div class="skeleton skeleton-text" style="width:70%;"></div>
+                    <div class="skeleton skeleton-text" style="width:40%; height:20px;"></div>
+                </div>
+            </div>`;
+        }
+        list.innerHTML = skeletons;
+        return;
+    }
+
+    if (products.length === 0) {
+        list.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">
+            <span class="material-icons-round">inventory_2</span>
+            <p>Aucun produit dans le catalogue pour le moment.</p>
+        </div>`;
+        return;
+    }
+
     window.currentRenderedProducts = products;
 
     products.forEach(prod => {

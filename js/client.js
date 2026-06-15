@@ -47,13 +47,22 @@ function initClientPortal() {
         renderClientTrainings();
     });
 
-    // Search functionality
+    // Utility function for debouncing
+    function debounce(func, timeout = 300) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => { func.apply(this, args); }, timeout);
+        };
+    }
+
+    // Search functionality with debounce
     const searchInput = document.getElementById('search-input');
     if(searchInput) {
-        searchInput.addEventListener('input', (e) => {
+        searchInput.addEventListener('input', debounce((e) => {
             const term = e.target.value.toLowerCase();
             renderClientSuppliers(currentCategoryFilter, term);
-        });
+        }, 300));
     }
 }
 
@@ -691,6 +700,28 @@ function renderClientSuppliers(categoryId = currentCategoryFilter, searchTerm = 
     
     const trigger = document.getElementById('load-more-trigger');
     
+    // Skeleton Loaders
+    if (!db._isLoaded && filtered.length === 0) {
+        let skeletons = '';
+        for (let i = 0; i < 6; i++) {
+            skeletons += `
+            <div class="supplier-card glass-panel" style="pointer-events:none;">
+                <div class="card-header skeleton" style="height:24px; width:40%; border-radius:12px;"></div>
+                <div class="supplier-info">
+                    <div class="skeleton" style="height:60px; width:60px; border-radius:50%; margin-right:1rem;"></div>
+                    <div style="flex:1;">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text skeleton-text-short"></div>
+                    </div>
+                </div>
+                <div class="skeleton skeleton-btn"></div>
+            </div>`;
+        }
+        container.innerHTML = skeletons;
+        if (trigger) trigger.style.display = 'none';
+        return;
+    }
+
     if (filtered.length === 0) {
         container.innerHTML = `<div class="empty-state">
             <span class="material-icons-round">search_off</span>

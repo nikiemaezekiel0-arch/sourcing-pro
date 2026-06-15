@@ -55,12 +55,18 @@ let localDB = {
 
 // Initialize Database structure and real-time listeners
 function initDB() {
-    ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders'].forEach(collectionName => {
+    let collectionsLoaded = 0;
+    const collections = ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders'];
+    collections.forEach(collectionName => {
         firestore.collection(collectionName).onSnapshot(snapshot => {
             localDB[collectionName] = [];
             snapshot.forEach(doc => {
                 localDB[collectionName].push({ ...doc.data(), id: doc.id });
             });
+            collectionsLoaded++;
+            if (collectionsLoaded >= collections.length) {
+                localDB._isLoaded = true;
+            }
             window.dispatchEvent(new Event('db_updated'));
         }, error => {
             console.error("Firebase Snapshot Error:", error);
