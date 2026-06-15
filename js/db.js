@@ -73,16 +73,8 @@ function initDB() {
         });
     });
 
-    // Populate initial test data if DB is completely empty (runs once)
-    setTimeout(() => {
-        if (localDB.users.length === 0) {
-            saveDoc('users', { id: 'usr_admin1', name: 'Administrateur', phone: 'admin', password: 'admin', role: 'admin', status: 'active' });
-            saveDoc('categories', { id: 'cat_1', name: 'Électronique', icon: 'devices' });
-            saveDoc('categories', { id: 'cat_2', name: 'Vêtements & Mode', icon: 'checkroom' });
-            saveDoc('categories', { id: 'cat_3', name: 'Maison & Décoration', icon: 'chair' });
-            saveDoc('categories', { id: 'cat_4', name: 'Matériel Industriel', icon: 'factory' });
-        }
-    }, 5000);
+    // The database test data populator has been removed because 
+    // it conflicts with Firebase Security Rules when non-admins connect.
 }
 
 // Get the full database object (synchronous)
@@ -92,6 +84,7 @@ function getDB() {
 
 // Helper to save a single document to Firebase
 async function saveDoc(collectionName, docObj) {
+    console.trace("DEBUG: saveDoc called for", collectionName, docObj.id);
     try {
         await firestore.collection(collectionName).doc(docObj.id).set(docObj);
         return true;

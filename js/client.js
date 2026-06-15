@@ -400,9 +400,9 @@ function getTrainingProgress() {
     if (!user) return { completed: [], current: 1 };
     if (!user.trainingProgress) {
         user.trainingProgress = { completed: [], current: 1 };
-        saveDoc('users', user); // Assuming saveDoc works on users and we have user.id. Actually let's check if we can save user
         // wait, let's just do a safe update via saveDoc if we have user id
-        if(user.id) {
+        // but only if the user is a real authenticated user!
+        if (user.id && user.id !== 'usr_admin1' && user.id !== 'usr_client1' && user.id !== 'usr_supplier1') {
             saveDoc('users', user);
             setCurrentUser(user);
         }
@@ -426,7 +426,7 @@ window.markModuleAsCompleted = function(moduleNum) {
         user.trainingProgress.current = moduleNum + 1;
     }
     
-    if(user.id) {
+    if(user.id && user.id !== 'usr_admin1' && user.id !== 'usr_client1' && user.id !== 'usr_supplier1') {
         saveDoc('users', user);
         setCurrentUser(user);
     }
