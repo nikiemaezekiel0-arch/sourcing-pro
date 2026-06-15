@@ -118,12 +118,28 @@ async function handleLogin(event) {
         
         // --- DEMO ACCESS LOGIC ---
         if (userDoc.planType === 'demo') {
+            // Retrieve or generate a local device ID
+            let localDeviceId = localStorage.getItem('demoDeviceId');
+            if (!localDeviceId) {
+                localDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('demoDeviceId', localDeviceId);
+            }
+
             if (userDoc.demoStatus === 'unused') {
-                // First login: activate the 3-hour timer
+                // First login: activate the 1-hour timer and bind to device
                 userDoc.demoStatus = 'active';
-                userDoc.demoExpiresAt = Date.now() + (3 * 60 * 60 * 1000); // 3 hours
+                userDoc.demoExpiresAt = Date.now() + (1 * 60 * 60 * 1000); // 1 hour
+                userDoc.demoDeviceId = localDeviceId; // Bind device
                 await saveDoc('users', userDoc);
             } else if (userDoc.demoStatus === 'active') {
+                // Device check
+                if (userDoc.demoDeviceId && userDoc.demoDeviceId !== localDeviceId) {
+                    await auth.signOut();
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                    return showNotification("Cet accès Démo est déjà utilisé sur un autre appareil.", 'error');
+                }
+
                 // Check expiration
                 if (Date.now() > userDoc.demoExpiresAt) {
                     await auth.signOut();

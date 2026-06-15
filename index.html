@@ -1520,7 +1520,7 @@
                             <option value="supplier">Fournisseurs uniquement</option>
                         </select>
                         <button type="button" class="btn-primary" onclick="generateDemoAccess()" style="background: var(--accent-blue); color: white;">
-                            <span class="material-icons-round">timer</span> Générer Accès Démo (3H)
+                            <span class="material-icons-round">timer</span> Générer Accès Démo (1H)
                         </button>
                     </div>
 
@@ -1993,12 +1993,21 @@
         <span class="material-icons-round" style="font-size: 80px; color: var(--danger); margin-bottom: 20px;">timer_off</span>
         <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Votre pass Démo a expiré</h1>
         <p style="font-size: 1.2rem; max-width: 600px; color: var(--text-muted); margin-bottom: 2rem;">
-            Votre accès temporaire de 3 heures est maintenant terminé. Pour continuer à profiter de notre catalogue complet et de nos outils exclusifs, veuillez passer à la version Premium.
+            Votre accès temporaire de 1 heure est maintenant terminé. Pour continuer à profiter de notre catalogue complet et de nos outils exclusifs, veuillez passer à la version Premium.
         </p>
         <a href="https://wa.me/" target="_blank" class="btn-primary" style="font-size: 1.1rem; padding: 15px 30px; display: inline-flex; align-items: center; gap: 10px;">
             <span class="material-icons-round">whatsapp</span>
             Contacter l'administrateur
         </a>
+    </div>
+
+    <!-- DEMO FLOATING TIMER -->
+    <div id="demo-floating-timer" class="hidden" style="position: fixed; bottom: 20px; right: 20px; background: rgba(15, 23, 42, 0.9); border: 2px solid var(--danger); border-radius: var(--radius-md); padding: 10px 20px; z-index: 9999; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3); backdrop-filter: blur(10px);">
+        <span class="material-icons-round" style="color: var(--danger); animation: pulse 2s infinite;">hourglass_top</span>
+        <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Temps restant</span>
+            <span id="demo-timer-clock" style="font-size: 1.2rem; font-weight: bold; color: white; font-family: monospace;">--:--</span>
+        </div>
     </div>
 
     <!-- Firebase SDKs -->

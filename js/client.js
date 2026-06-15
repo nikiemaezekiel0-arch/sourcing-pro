@@ -16,19 +16,37 @@ document.addEventListener('DOMContentLoaded', () => {
 function initClientPortal() {
     const user = getCurrentUser();
     
-    // --- DEMO CHECKER ---
+    // --- DEMO CHECKER & TIMER ---
     if (user && user.planType === 'demo') {
+        const timerWidget = document.getElementById('demo-floating-timer');
+        const clockEl = document.getElementById('demo-timer-clock');
+        
+        if (timerWidget) timerWidget.classList.remove('hidden');
+
         setInterval(() => {
             const db = getDB();
             const liveUser = db.users.find(u => u.id === user.id);
             if (liveUser && liveUser.demoStatus === 'active') {
-                if (Date.now() > liveUser.demoExpiresAt) {
+                const remainingMs = liveUser.demoExpiresAt - Date.now();
+                
+                if (remainingMs <= 0) {
+                    // Expired
+                    if (clockEl) clockEl.innerText = "00:00";
                     firebase.auth().signOut().then(() => {
                         document.getElementById('demo-expired-overlay').classList.remove('hidden');
+                        if (timerWidget) timerWidget.classList.add('hidden');
                     });
+                } else {
+                    // Update visual timer
+                    const totalSec = Math.floor(remainingMs / 1000);
+                    const mins = Math.floor(totalSec / 60);
+                    const secs = totalSec % 60;
+                    if (clockEl) {
+                        clockEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    }
                 }
             }
-        }, 60000); // Check every 60 seconds
+        }, 1000); // Check and update every second
     }
     
     // Check access based on plan

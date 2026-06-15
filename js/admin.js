@@ -132,7 +132,7 @@ function switchAdminAgentTab(subtab) {
 
 // --- Demo Access Management ---
 window.generateDemoAccess = async function() {
-    if(!confirm("Voulez-vous vraiment générer un accès Démo de 3H ?")) return;
+    if(!confirm("Voulez-vous vraiment générer un accès Démo de 1H ?")) return;
     
     const demoCode = Math.random().toString(36).substr(2, 4).toUpperCase();
     const email = `demo_${demoCode}@sourcingpro.demo`;
@@ -166,7 +166,7 @@ window.generateDemoAccess = async function() {
 
         await saveDoc('users', newUser);
 
-        alert(`✅ Accès Démo généré avec succès !\n\nEmail : ${email}\nMot de passe : ${password}\n\nEnvoyez ces identifiants au prospect. Les 3 heures commenceront à sa première connexion.`);
+        alert(`✅ Accès Démo généré avec succès !\n\nEmail : ${email}\nMot de passe : ${password}\n\nEnvoyez ces identifiants au prospect. L'heure de démo commencera à sa première connexion.`);
 
     } catch (e) {
         console.error("Erreur génération démo :", e);
