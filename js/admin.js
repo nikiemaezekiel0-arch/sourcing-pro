@@ -130,6 +130,53 @@ function switchAdminAgentTab(subtab) {
     }
 }
 
+// --- Demo Access Management ---
+window.generateDemoAccess = async function() {
+    if(!confirm("Voulez-vous vraiment générer un accès Démo de 3H ?")) return;
+    
+    const demoCode = Math.random().toString(36).substr(2, 4).toUpperCase();
+    const email = `demo_${demoCode}@sourcingpro.demo`;
+    const password = `Demo-${demoCode}`;
+    const newUserId = generateId('usr_');
+
+    // Mettre l'UI en attente
+    const btn = document.querySelector('button[onclick="generateDemoAccess()"]');
+    const ogHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="material-icons-round rotate">sync</span> Génération...';
+    btn.disabled = true;
+
+    try {
+        // Utiliser une App Firebase Secondaire pour ne pas déconnecter l'Admin
+        const secondaryApp = firebase.initializeApp(firebaseConfig, "SecondaryApp");
+        const userCredential = await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
+        await secondaryApp.auth().signOut();
+        await secondaryApp.delete(); // cleanup
+
+        const newUser = {
+            id: userCredential.user.uid,
+            name: `Visiteur Démo (${demoCode})`,
+            email: email,
+            phone: 'N/A',
+            role: 'client',
+            planType: 'demo',
+            demoStatus: 'unused',
+            status: 'active',
+            createdAt: new Date().toISOString()
+        };
+
+        await saveDoc('users', newUser);
+
+        alert(`✅ Accès Démo généré avec succès !\n\nEmail : ${email}\nMot de passe : ${password}\n\nEnvoyez ces identifiants au prospect. Les 3 heures commenceront à sa première connexion.`);
+
+    } catch (e) {
+        console.error("Erreur génération démo :", e);
+        alert("Erreur lors de la création de l'accès démo : " + e.message);
+    } finally {
+        btn.innerHTML = ogHtml;
+        btn.disabled = false;
+    }
+};
+
 // --- Users Management ---
 function renderAdminUsers() {
     const db = getDB();

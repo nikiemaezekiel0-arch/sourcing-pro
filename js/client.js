@@ -16,6 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
 function initClientPortal() {
     const user = getCurrentUser();
     
+    // --- DEMO CHECKER ---
+    if (user && user.planType === 'demo') {
+        setInterval(() => {
+            const db = getDB();
+            const liveUser = db.users.find(u => u.id === user.id);
+            if (liveUser && liveUser.demoStatus === 'active') {
+                if (Date.now() > liveUser.demoExpiresAt) {
+                    firebase.auth().signOut().then(() => {
+                        document.getElementById('demo-expired-overlay').classList.remove('hidden');
+                    });
+                }
+            }
+        }, 60000); // Check every 60 seconds
+    }
+    
     // Check access based on plan
     if (user && user.planType === 'standard') {
         // Standard user: hide suppliers tab and show training

@@ -116,6 +116,25 @@ async function handleLogin(event) {
             return showNotification("Votre demande d'inscription a été refusée.", 'error');
         }
         
+        // --- DEMO ACCESS LOGIC ---
+        if (userDoc.planType === 'demo') {
+            if (userDoc.demoStatus === 'unused') {
+                // First login: activate the 3-hour timer
+                userDoc.demoStatus = 'active';
+                userDoc.demoExpiresAt = Date.now() + (3 * 60 * 60 * 1000); // 3 hours
+                await saveDoc('users', userDoc);
+            } else if (userDoc.demoStatus === 'active') {
+                // Check expiration
+                if (Date.now() > userDoc.demoExpiresAt) {
+                    await auth.signOut();
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                    document.getElementById('demo-expired-overlay').classList.remove('hidden');
+                    return; // Block login
+                }
+            }
+        }
+        
         // Success
         setCurrentUser(userDoc);
         showNotification('Connexion réussie !', 'success');
