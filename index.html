@@ -1572,17 +1572,27 @@
                 <!-- Categories View -->
                 <div id="admin-view-categories" class="hidden">
                     <div class="glass-panel mb-6">
-                        <h3 class="mb-4">Nouvelle Catégorie</h3>
-                        <form onsubmit="addCategory(event)" class="flex gap-4 items-end">
-                            <div class="form-group flex-1 mb-0">
-                                <label>Nom de la catégorie</label>
-                                <input type="text" id="cat-name" class="input-control" placeholder="ex: Sneakers">
+                        <h3 id="cat-form-title" class="mb-4">Nouvelle Catégorie</h3>
+                        <form onsubmit="addCategory(event)">
+                            <input type="hidden" id="cat-id" value="">
+                            <div class="flex gap-4 items-end mb-4 flex-wrap">
+                                <div class="form-group flex-1 mb-0" style="min-width: 200px;">
+                                    <label>Nom de la catégorie</label>
+                                    <input type="text" id="cat-name" class="input-control" placeholder="ex: Sneakers" required>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="submit" id="cat-submit-btn" class="btn-primary">Ajouter</button>
+                                    <button type="button" id="cat-cancel-btn" class="btn-secondary hidden" onclick="cancelEditCategory()">Annuler</button>
+                                </div>
                             </div>
-                            <div class="form-group mb-0" style="width:150px;">
-                                <label>Icône (Material)</label>
-                                <input type="text" id="cat-icon" class="input-control" placeholder="ex: checkroom">
+                            
+                            <div class="form-group mb-0">
+                                <label>Choisissez une Icône :</label>
+                                <input type="hidden" id="cat-icon" value="category">
+                                <div id="icon-picker-grid" class="flex gap-2 flex-wrap mt-2 p-2" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: rgba(0,0,0,0.2);">
+                                    <!-- Icons injected via JS -->
+                                </div>
                             </div>
-                            <button type="submit" class="btn-primary">Ajouter</button>
                         </form>
                     </div>
                     <h3 class="mb-4">Catégories Existantes</h3>
@@ -2085,15 +2095,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=8"></script>
-    <script src="js/currency.js?v=8"></script>
-    <script src="js/db.js?v=8"></script>
-    <script src="js/auth.js?v=8"></script>
-    <script src="js/admin.js?v=8"></script>
-    <script src="js/admin-agent.js?v=8"></script>
-    <script src="js/client.js?v=8"></script>
-    <script src="js/client-agent.js?v=8"></script>
-    <script src="js/supplier.js?v=8"></script>
+    <script src="js/i18n.js?v=9"></script>
+    <script src="js/currency.js?v=9"></script>
+    <script src="js/db.js?v=9"></script>
+    <script src="js/auth.js?v=9"></script>
+    <script src="js/admin.js?v=9"></script>
+    <script src="js/admin-agent.js?v=9"></script>
+    <script src="js/client.js?v=9"></script>
+    <script src="js/client-agent.js?v=9"></script>
+    <script src="js/supplier.js?v=9"></script>
     
     <!-- Main Routing Logic -->
     <script>

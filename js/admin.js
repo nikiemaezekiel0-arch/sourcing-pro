@@ -328,6 +328,34 @@ async function deleteUser(id) {
 }
 
 // --- Categories Management ---
+const CATEGORY_ICONS = [
+    'category', 'checkroom', 'diamond', 'watch', 'shopping_bag', 'local_shipping', 'storefront', 
+    'spa', 'health_and_safety', 'fitness_center', 'sports_esports', 'phone_iphone', 'computer', 
+    'chair', 'kitchen', 'brush', 'palette', 'child_friendly', 'toys', 'pets', 'auto_awesome',
+    'shopping_cart', 'inventory_2', 'bolt', 'eco', 'home', 'construction', 'car_rental', 'fastfood'
+];
+
+function renderIconPicker(selectedIcon = 'category') {
+    const grid = document.getElementById('icon-picker-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = CATEGORY_ICONS.map(icon => `
+        <button type="button" 
+                onclick="selectCategoryIcon('${icon}')" 
+                class="btn-icon" 
+                style="width: 40px; height: 40px; border-radius: 8px; ${icon === selectedIcon ? 'background: var(--accent-blue); border: 2px solid #fff;' : 'background: rgba(255,255,255,0.05);'}"
+                title="${icon}">
+            <span class="material-icons-round" style="font-size: 20px; ${icon === selectedIcon ? 'color: #fff;' : 'color: var(--text-muted);'}">${icon}</span>
+        </button>
+    `).join('');
+    
+    document.getElementById('cat-icon').value = selectedIcon;
+}
+
+window.selectCategoryIcon = function(icon) {
+    renderIconPicker(icon);
+}
+
 function renderAdminCategories() {
     const db = getDB();
     const list = document.getElementById('admin-categories-list');
@@ -341,28 +369,76 @@ function renderAdminCategories() {
                     <span class="material-icons-round text-primary" style="font-size:2rem;">${cat.icon}</span>
                     <span class="font-bold">${cat.name}</span>
                 </div>
-                <button class="btn-icon danger" onclick="deleteCategory('${cat.id}')"><span class="material-icons-round">delete</span></button>
+                <div class="flex gap-2">
+                    <button class="btn-icon" style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue);" onclick="editCategory('${cat.id}')"><span class="material-icons-round">edit</span></button>
+                    <button class="btn-icon danger" onclick="deleteCategory('${cat.id}')"><span class="material-icons-round">delete</span></button>
+                </div>
             </div>
         `;
     });
+    
+    if (document.getElementById('icon-picker-grid') && document.getElementById('icon-picker-grid').innerHTML.trim() === '') {
+        renderIconPicker();
+    }
+}
+
+window.editCategory = function(id) {
+    const db = getDB();
+    const cat = db.categories.find(c => c.id === id);
+    if (!cat) return;
+    
+    document.getElementById('cat-id').value = cat.id;
+    document.getElementById('cat-name').value = cat.name;
+    renderIconPicker(cat.icon);
+    
+    document.getElementById('cat-form-title').innerText = "Modifier la Catégorie";
+    document.getElementById('cat-submit-btn').innerText = "Mettre à jour";
+    document.getElementById('cat-cancel-btn').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.cancelEditCategory = function() {
+    document.getElementById('cat-id').value = '';
+    document.getElementById('cat-name').value = '';
+    renderIconPicker('category');
+    
+    document.getElementById('cat-form-title').innerText = "Nouvelle Catégorie";
+    document.getElementById('cat-submit-btn').innerText = "Ajouter";
+    document.getElementById('cat-cancel-btn').classList.add('hidden');
 }
 
 async function addCategory(e) {
     e.preventDefault();
+    const id = document.getElementById('cat-id').value;
     const name = document.getElementById('cat-name').value;
     const icon = document.getElementById('cat-icon').value || 'category';
     
     if(!name) return showNotification('Nom requis', 'error');
     
-    await saveDoc('categories', { id: generateId('cat_'), name, icon });
+    if (id) {
+        // Update existing
+        const db = getDB();
+        const catIndex = db.categories.findIndex(c => c.id === id);
+        if (catIndex > -1) {
+            db.categories[catIndex].name = name;
+            db.categories[catIndex].icon = icon;
+            await saveDoc('categories', db.categories[catIndex]);
+            showNotification('Catégorie mise à jour', 'success');
+        }
+    } else {
+        // Add new
+        await saveDoc('categories', { id: generateId('cat_'), name, icon });
+        showNotification('Catégorie ajoutée', 'success');
+    }
     
-    document.getElementById('cat-name').value = '';
-    showNotification('Catégorie ajoutée', 'success');
+    cancelEditCategory();
+    renderAdminCategories(); // Ensure UI refreshes
 }
 
 async function deleteCategory(id) {
-    if(!confirm("Êtes-vous sûr ?")) return;
+    if(!confirm("Êtes-vous sûr de vouloir supprimer cette catégorie ?")) return;
     await deleteDoc('categories', id);
+    renderAdminCategories();
 }
 
 function populateCategorySelect() {
