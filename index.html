@@ -1478,6 +1478,9 @@
                 <div class="nav-item" id="admin-nav-agent" onclick="switchAdminTab('agent')">
                     <span class="material-icons-round">shopping_cart</span> Agent d'Achat
                 </div>
+                <div class="nav-item" id="admin-nav-demos" onclick="switchAdminTab('demos')">
+                    <span class="material-icons-round">timer</span> Accès Démo
+                </div>
             </div>
 
             <main class="main-content">
@@ -1528,6 +1531,40 @@
                         <table class="admin-table">
                             <thead><tr><th>Utilisateur</th><th>Rôle</th><th>WhatsApp</th><th>Statut</th><th>Actions</th></tr></thead>
                             <tbody id="admin-users-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Demos View -->
+                <div id="admin-view-demos" class="hidden glass-panel">
+                    <div class="flex justify-between items-start mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="mb-2 flex items-center gap-2"><span class="material-icons-round text-warning">timer</span> Gestion des Accès Démo</h3>
+                            <p class="text-muted text-sm">Générez et suivez en direct les sessions de démonstration de vos prospects.</p>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="generateDemoAccess()" style="background: var(--accent-blue); color: white;">
+                            <span class="material-icons-round">timer</span> Générer Accès Démo (1H)
+                        </button>
+                    </div>
+
+                    <!-- Stats Counters -->
+                    <div class="flex gap-4 mb-6" style="flex-wrap: wrap;">
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem; border-color: var(--accent-gold);">
+                            <span class="material-icons-round text-warning" style="font-size: 32px;">hourglass_top</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-demos-active">0</div>
+                            <div class="text-muted text-sm">Démos en Cours</div>
+                        </div>
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem;">
+                            <span class="material-icons-round text-muted" style="font-size: 32px;">pause_circle_filled</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-demos-waiting">0</div>
+                            <div class="text-muted text-sm">En Attente (Inutilisés)</div>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="admin-table">
+                            <thead><tr><th>Prospect</th><th>Email</th><th>Statut</th><th>Temps Restant</th><th>Actions</th></tr></thead>
+                            <tbody id="admin-demos-tbody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -2007,6 +2044,22 @@
         <div style="display: flex; flex-direction: column;">
             <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Temps restant</span>
             <span id="demo-timer-clock" style="font-size: 1.2rem; font-weight: bold; color: white; font-family: monospace;">--:--</span>
+        </div>
+    </div>
+
+    <!-- DEMO NAME MODAL -->
+    <div id="demo-name-modal" class="hidden" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(10,10,15,0.95); backdrop-filter: blur(10px); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div class="glass-panel" style="max-width: 450px; width: 90%; text-align: center; padding: 2.5rem;">
+            <span class="material-icons-round text-warning" style="font-size: 64px; margin-bottom: 1rem;">person_add</span>
+            <h2 style="margin-bottom: 1rem;">Bienvenue dans votre espace Démo !</h2>
+            <p class="text-muted mb-6" style="line-height: 1.6;">Pour personnaliser votre expérience et démarrer votre session de 1 Heure, veuillez nous indiquer votre nom complet.</p>
+            
+            <form onsubmit="activateDemoSession(event)" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <input type="text" id="demo-name-input" class="input-control" placeholder="Entrez votre Prénom et Nom..." required style="text-align: center; font-size: 1.1rem; padding: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                    <span class="material-icons-round">play_circle</span> Démarrer ma session (1H)
+                </button>
+            </form>
         </div>
     </div>
 

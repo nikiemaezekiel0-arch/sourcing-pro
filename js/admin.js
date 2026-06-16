@@ -85,7 +85,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'categories', 'suppliers', 'trainings', 'agent'].forEach(t => {
+    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -106,6 +106,9 @@ function switchAdminTab(tab) {
     }
     if(tab === 'agent') {
         switchAdminAgentTab('catalog'); // Default to catalog
+    }
+    if(tab === 'demos') {
+        if(typeof renderAdminDemos === 'function') renderAdminDemos();
     }
 }
 
@@ -183,9 +186,10 @@ function renderAdminUsers() {
     const tbody = document.getElementById('admin-users-tbody');
     if(!tbody) return;
     
-    // Update Counters
-    const totalClients = db.users.filter(u => u.role === 'client').length;
-    const totalSuppliers = db.users.filter(u => u.role === 'supplier').length;
+    // Update Counters (excluding demos)
+    const realUsers = db.users.filter(u => u.planType !== 'demo');
+    const totalClients = realUsers.filter(u => u.role === 'client').length;
+    const totalSuppliers = realUsers.filter(u => u.role === 'supplier').length;
     const elClients = document.getElementById('admin-count-clients');
     const elSuppliers = document.getElementById('admin-count-suppliers');
     if (elClients) elClients.innerText = totalClients;
@@ -200,7 +204,7 @@ function renderAdminUsers() {
     const filterVal = document.getElementById('admin-user-filter') ? document.getElementById('admin-user-filter').value : 'all';
     
     tbody.innerHTML = '';
-    let usersList = db.users.filter(u => u.role === 'client' || u.role === 'supplier');
+    let usersList = db.users.filter(u => u.planType !== 'demo' && (u.role === 'client' || u.role === 'supplier'));
     
     if (filterVal !== 'all') {
         usersList = usersList.filter(u => u.role === filterVal);
@@ -1167,4 +1171,81 @@ function renderAdminCharts(users) {
             }
         }
     });
+}
+
+// --- Admin Demos View ---
+let demoTimerInterval = null;
+
+window.renderAdminDemos = function() {
+    const db = getDB();
+    const tbody = document.getElementById('admin-demos-tbody');
+    if(!tbody) return;
+
+    const demosList = db.users.filter(u => u.planType === 'demo');
+    
+    // Update Counters
+    const connectedDemos = demosList.filter(u => u.demoStatus === 'active' || u.demoStatus === 'expired').length;
+    const waitingDemos = demosList.filter(u => u.demoStatus === 'unused').length;
+    
+    const elActive = document.getElementById('admin-count-demos-active');
+    const elWaiting = document.getElementById('admin-count-demos-waiting');
+    if(elActive) elActive.innerText = connectedDemos;
+    if(elWaiting) elWaiting.innerText = waitingDemos;
+
+    tbody.innerHTML = '';
+
+    if (demosList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Aucun compte démo généré</td></tr>`;
+        return;
+    }
+
+    demosList.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(u => {
+        let statusHtml = '';
+        let timerHtml = '--:--';
+        
+        if (u.demoStatus === 'unused') {
+            statusHtml = '<span class="badge" style="background: rgba(148, 163, 184, 0.2); color: var(--text-secondary);">En Attente</span>';
+            timerHtml = '1 Heure (non démarré)';
+        } else if (u.demoStatus === 'active') {
+            const remaining = u.demoExpiresAt - Date.now();
+            if (remaining <= 0) {
+                statusHtml = '<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">Expiré</span>';
+                timerHtml = '00:00';
+            } else {
+                statusHtml = '<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">En Cours</span>';
+                const totalSec = Math.floor(remaining / 1000);
+                const mins = Math.floor(totalSec / 60).toString().padStart(2, '0');
+                const secs = (totalSec % 60).toString().padStart(2, '0');
+                timerHtml = `<span style="font-family: monospace; font-size: 1.1rem; color: var(--success); font-weight: bold;">${mins}:${secs}</span>`;
+            }
+        } else {
+            statusHtml = '<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">Expiré</span>';
+            timerHtml = '00:00';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <div class="font-bold">${u.name || '<i>En attente du nom...</i>'}</div>
+            </td>
+            <td class="text-muted text-sm">${u.email}</td>
+            <td>${statusHtml}</td>
+            <td>${timerHtml}</td>
+            <td>
+                <button onclick="deleteUser('${u.id}')" class="btn-icon danger" title="Supprimer"><span class="material-icons-round">delete</span></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Setup live timer loop
+    if (demoTimerInterval) clearInterval(demoTimerInterval);
+    demoTimerInterval = setInterval(() => {
+        const view = document.getElementById('admin-view-demos');
+        if (view && !view.classList.contains('hidden')) {
+            renderAdminDemos();
+        } else {
+            clearInterval(demoTimerInterval);
+        }
+    }, 1000);
 }

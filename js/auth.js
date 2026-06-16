@@ -118,7 +118,6 @@ async function handleLogin(event) {
         
         // --- DEMO ACCESS LOGIC ---
         if (userDoc.planType === 'demo') {
-            // Retrieve or generate a local device ID
             let localDeviceId = localStorage.getItem('demoDeviceId');
             if (!localDeviceId) {
                 localDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
@@ -126,11 +125,12 @@ async function handleLogin(event) {
             }
 
             if (userDoc.demoStatus === 'unused') {
-                // First login: activate the 1-hour timer and bind to device
-                userDoc.demoStatus = 'active';
-                userDoc.demoExpiresAt = Date.now() + (1 * 60 * 60 * 1000); // 1 hour
-                userDoc.demoDeviceId = localDeviceId; // Bind device
-                await saveDoc('users', userDoc);
+                // Intercept first login, ask for name
+                window.pendingDemoUser = userDoc;
+                document.getElementById('demo-name-modal').classList.remove('hidden');
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+                return; // Stop login flow until name is provided
             } else if (userDoc.demoStatus === 'active') {
                 // Device check
                 if (userDoc.demoDeviceId && userDoc.demoDeviceId !== localDeviceId) {
@@ -172,6 +172,39 @@ async function handleLogin(event) {
         showNotification(errorMsg, 'error');
         btn.innerHTML = ogText;
         btn.disabled = false;
+    }
+}
+
+window.activateDemoSession = async function(event) {
+    event.preventDefault();
+    const nameInput = document.getElementById('demo-name-input').value.trim();
+    if (!nameInput || !window.pendingDemoUser) return;
+
+    const userDoc = window.pendingDemoUser;
+    const localDeviceId = localStorage.getItem('demoDeviceId');
+
+    try {
+        const btn = event.target.querySelector('button[type="submit"]');
+        btn.innerHTML = '<span class="material-icons-round rotate">sync</span> Activation...';
+        btn.disabled = true;
+
+        userDoc.name = nameInput;
+        userDoc.demoStatus = 'active';
+        userDoc.demoExpiresAt = Date.now() + (1 * 60 * 60 * 1000); // 1 hour
+        userDoc.demoDeviceId = localDeviceId;
+
+        await saveDoc('users', userDoc);
+
+        document.getElementById('demo-name-modal').classList.add('hidden');
+        setCurrentUser(userDoc);
+        showNotification('Session Démo activée !', 'success');
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    } catch(e) {
+        console.error(e);
+        alert("Erreur d'activation. Veuillez réessayer.");
     }
 }
 
