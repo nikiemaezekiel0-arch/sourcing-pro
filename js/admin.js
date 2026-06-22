@@ -1497,14 +1497,36 @@ async function deleteVintedProduct(id) {
 function renderVintedStock() {
     const db = getDB();
     const list = document.getElementById('admin-stock-list');
+    
+    const profitCounter = document.getElementById('admin-stock-total-profit');
+    const revenueCounter = document.getElementById('admin-stock-total-revenue');
+    const costsCounter = document.getElementById('admin-stock-total-costs');
+    
     if(!list) return;
     
     list.innerHTML = '';
+    let totalProfit = 0;
+    let totalRevenue = 0;
+    let totalCosts = 0;
     
     // Sort descending by creation date
     const sortedStock = [...db.vinted_stock].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
     sortedStock.forEach(p => {
+        let productProfit = 0;
+        
+        if(p.sales && p.sales.length > 0) {
+            p.sales.forEach(sale => {
+                const shipping = sale.shippingCost || 0;
+                const profit = sale.sellPrice - p.purchasePrice - shipping;
+                
+                productProfit += profit;
+                totalProfit += profit;
+                totalRevenue += sale.sellPrice;
+                totalCosts += (p.purchasePrice + shipping);
+            });
+        }
+    
         let stockStatus = '';
         if(p.availableQty > 0) {
             stockStatus = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">En Stock (${p.availableQty})</span>`;
@@ -1530,10 +1552,14 @@ function renderVintedStock() {
                 <h4 style="font-size: 1.1rem; margin-bottom: 5px;">${p.title}</h4>
                 <div class="text-sm text-muted mb-2">Couleur: ${p.color || 'N/A'}</div>
                 
-                <div class="grid-layout" style="grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 0.9rem;">
                     <div style="background: var(--bg-body); padding: 8px; border-radius: 6px;">
                         <div class="text-muted text-xs">Prix Achat</div>
                         <div class="font-bold">${p.purchasePrice} €</div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px;">
+                        <div class="text-muted text-xs">Bénéfice (Sur Ventes)</div>
+                        <div class="font-bold" style="color: var(--success);">${productProfit > 0 ? '+' : ''}${productProfit.toFixed(2)} €</div>
                     </div>
                 </div>
                 
@@ -1554,6 +1580,16 @@ function renderVintedStock() {
         `;
         list.appendChild(card);
     });
+    
+    if(profitCounter) {
+        profitCounter.innerText = totalProfit > 0 ? `+${totalProfit.toFixed(2)} €` : `${totalProfit.toFixed(2)} €`;
+    }
+    if(revenueCounter) {
+        revenueCounter.innerText = `${totalRevenue.toFixed(2)} €`;
+    }
+    if(costsCounter) {
+        costsCounter.innerText = `${totalCosts.toFixed(2)} €`;
+    }
 }
 
 function renderVintedSales() {
