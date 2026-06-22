@@ -21,6 +21,7 @@ function initAdminPortal() {
         renderAdminSuppliers();
         populateCategorySelect();
         if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
+        if(typeof renderVintedStock === 'function') renderVintedStock();
         
     // Update Charts if they exist
         if (typeof renderAdminCharts === 'function') {
@@ -85,7 +86,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos'].forEach(t => {
+    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -109,6 +110,9 @@ function switchAdminTab(tab) {
     }
     if(tab === 'demos') {
         if(typeof renderAdminDemos === 'function') renderAdminDemos();
+    }
+    if(tab === 'stock') {
+        if(typeof renderVintedStock === 'function') renderVintedStock();
     }
 }
 
@@ -1325,3 +1329,219 @@ window.renderAdminDemos = function() {
         }
     }, 1000);
 }
+
+
+// --- VINTED / LEBONCOIN STOCK MANAGEMENT ---
+
+async function addVintedProduct(e) {
+    e.preventDefault();
+    const title = document.getElementById('vinted-title').value;
+    const color = document.getElementById('vinted-color').value;
+    const purchasePrice = parseFloat(document.getElementById('vinted-purchase-price').value);
+    const qty = parseInt(document.getElementById('vinted-qty').value);
+    const photo = document.getElementById('vinted-preview-photo').src;
+    
+    if(!title || isNaN(purchasePrice) || isNaN(qty) || qty < 1) {
+        alert("Veuillez remplir correctement tous les champs obligatoires.");
+        return;
+    }
+    
+    const validPhoto = (photo && photo.startsWith('data:')) ? photo : '';
+    
+    const newStock = {
+        id: generateId('vst_'),
+        title,
+        color,
+        purchasePrice,
+        initialQty: qty,
+        availableQty: qty,
+        soldQty: 0,
+        photo: validPhoto,
+        sales: [], // Will track individual sales: { price, bordereau, status }
+        createdAt: new Date().toISOString()
+    };
+    
+    await saveDoc('vinted_stock', newStock);
+    
+    // Reset form
+    document.getElementById('vinted-title').value = '';
+    document.getElementById('vinted-color').value = '';
+    document.getElementById('vinted-purchase-price').value = '';
+    document.getElementById('vinted-qty').value = '1';
+    document.getElementById('vinted-preview-photo').src = '';
+    document.getElementById('vinted-preview-photo').classList.add('hidden');
+    document.getElementById('vinted-upload-photo').value = '';
+    
+    alert("✅ Produit ajouté au stock avec succès !");
+}
+
+function cancelEditVinted() {
+    // Basic cancel logic if edit mode is ever implemented
+}
+
+async function markProductSold(id) {
+    const db = getDB();
+    const product = db.vinted_stock.find(p => p.id === id);
+    if(!product) return;
+    if(product.availableQty <= 0) {
+        alert("Rupture de stock !");
+        return;
+    }
+
+    const sellPriceStr = prompt(`Entrez le prix de VENTE final pour "${product.title}" (€) :`);
+    if(!sellPriceStr) return;
+    const sellPrice = parseFloat(sellPriceStr.replace(',', '.'));
+    if(isNaN(sellPrice)) {
+        alert("Prix invalide.");
+        return;
+    }
+    
+    const bordereau = prompt(`Entrez le LIEN du bordereau d'expédition (Optionnel) :`);
+    
+    product.availableQty -= 1;
+    product.soldQty += 1;
+    
+    if(!product.sales) product.sales = [];
+    
+    product.sales.push({
+        saleId: generateId('vsl_'),
+        sellPrice: sellPrice,
+        bordereau: bordereau || '',
+        status: 'à expédier',
+        date: new Date().toISOString()
+    });
+    
+    await saveDoc('vinted_stock', product);
+}
+
+async function markProductShipped(productId, saleId) {
+    const db = getDB();
+    const product = db.vinted_stock.find(p => p.id === productId);
+    if(!product || !product.sales) return;
+    
+    const sale = product.sales.find(s => s.saleId === saleId);
+    if(!sale) return;
+    
+    if(confirm("Confirmez-vous que ce colis a bien été déposé/expédié ?")) {
+        sale.status = 'envoyé';
+        await saveDoc('vinted_stock', product);
+    }
+}
+
+async function deleteVintedProduct(id) {
+    if(confirm("Voulez-vous vraiment supprimer ce produit de votre stock ? (Action irréversible)")) {
+        await deleteDoc('vinted_stock', id);
+    }
+}
+
+function renderVintedStock() {
+    const db = getDB();
+    const list = document.getElementById('admin-stock-list');
+    const profitCounter = document.getElementById('admin-stock-total-profit');
+    if(!list) return;
+    
+    list.innerHTML = '';
+    let totalProfit = 0;
+    
+    // Sort descending by creation date
+    const sortedStock = [...db.vinted_stock].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    sortedStock.forEach(p => {
+        // Calculate profit for this product
+        let productProfit = 0;
+        let salesHtml = '';
+        
+        if(p.sales && p.sales.length > 0) {
+            salesHtml += `<div class="mt-3"><strong class="text-sm">Détail des ventes :</strong><ul style="list-style:none; padding:0; margin:0; margin-top:5px; font-size: 0.85rem;">`;
+            p.sales.forEach((sale, index) => {
+                const profit = sale.sellPrice - p.purchasePrice;
+                productProfit += profit;
+                
+                let actionBtn = '';
+                let statusBadge = '';
+                
+                if(sale.status === 'à expédier') {
+                    statusBadge = `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger); font-size:0.7rem;">À Expédier</span>`;
+                    actionBtn = `<button class="btn-primary" style="padding: 2px 8px; font-size:0.7rem;" onclick="markProductShipped('${p.id}', '${sale.saleId}')">Expédié ?</button>`;
+                } else {
+                    statusBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success); font-size:0.7rem;">Envoyé</span>`;
+                }
+                
+                const bordereauLink = sale.bordereau ? `<a href="${sale.bordereau}" target="_blank" style="color:var(--primary); text-decoration:underline;">Bordereau</a>` : 'Aucun bordereau';
+                
+                salesHtml += `
+                    <li style="background: var(--bg-card); padding: 8px; border-radius: 6px; margin-bottom: 5px; border: 1px solid var(--border-color);">
+                        <div class="flex justify-between items-center mb-1">
+                            <span>Vente #${index+1} - <strong>${sale.sellPrice}€</strong></span>
+                            ${statusBadge}
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>${bordereauLink}</span>
+                            ${actionBtn}
+                        </div>
+                    </li>
+                `;
+            });
+            salesHtml += `</ul></div>`;
+        }
+        
+        totalProfit += productProfit;
+        
+        let stockStatus = '';
+        if(p.availableQty > 0) {
+            stockStatus = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">En Stock (${p.availableQty})</span>`;
+        } else {
+            stockStatus = `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">Rupture</span>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'glass-panel flex flex-col justify-between';
+        card.style.padding = '15px';
+        
+        const photoUrl = p.photo || 'https://via.placeholder.com/150?text=No+Photo';
+        
+        card.innerHTML = `
+            <div>
+                <div class="flex justify-between items-start mb-3">
+                    <img src="${photoUrl}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div class="flex gap-2">
+                        ${stockStatus}
+                        <button onclick="deleteVintedProduct('${p.id}')" class="btn-icon danger text-sm" title="Supprimer"><span class="material-icons-round">delete</span></button>
+                    </div>
+                </div>
+                <h4 style="font-size: 1.1rem; margin-bottom: 5px;">${p.title}</h4>
+                <div class="text-sm text-muted mb-2">Couleur: ${p.color || 'N/A'}</div>
+                
+                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                    <div style="background: var(--bg-body); padding: 8px; border-radius: 6px;">
+                        <div class="text-muted text-xs">Prix Achat</div>
+                        <div class="font-bold">${p.purchasePrice} €</div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px;">
+                        <div class="text-muted text-xs">Bénéfice (Sur les ventes)</div>
+                        <div class="font-bold" style="color: var(--success);">${productProfit > 0 ? '+' : ''}${productProfit} €</div>
+                    </div>
+                </div>
+                
+                <div class="text-sm mb-3">
+                    Quantité totale : <strong>${p.initialQty}</strong><br>
+                    Vendus : <strong>${p.soldQty}</strong>
+                </div>
+                
+                ${salesHtml}
+            </div>
+            
+            <div class="mt-4 pt-3" style="border-top: 1px solid var(--border-color);">
+                <button class="btn-primary w-full" onclick="markProductSold('${p.id}')" ${p.availableQty <= 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                    <span class="material-icons-round">sell</span> Marquer Vendu (1)
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+    
+    if(profitCounter) {
+        profitCounter.innerText = totalProfit > 0 ? `+${totalProfit.toFixed(2)} €` : `${totalProfit.toFixed(2)} €`;
+    }
+}
+

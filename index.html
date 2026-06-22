@@ -1481,6 +1481,9 @@
                 <div class="nav-item" id="admin-nav-demos" onclick="switchAdminTab('demos')">
                     <span class="material-icons-round">timer</span> Accès Démo
                 </div>
+                <div class="nav-item" id="admin-nav-stock" onclick="switchAdminTab('stock')">
+                    <span class="material-icons-round">inventory_2</span> Gestion Stocks (Vinted)
+                </div>
             </div>
 
             <main class="main-content">
@@ -1855,6 +1858,64 @@
                         <div id="admin-orders-list"></div>
                     </div>
                 </div>
+
+                <!-- Stock Vinted View -->
+                <div id="admin-view-stock" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">inventory_2</span> Gestion Stocks (Vinted & Leboncoin)</h3>
+                            <p class="text-muted text-sm">Gérez votre inventaire personnel et suivez vos bénéfices.</p>
+                        </div>
+                        <div class="glass-panel" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px 20px;">
+                            <div class="text-sm text-muted">Bénéfice Net Total</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: #10b981;" id="admin-stock-total-profit">0,00 €</div>
+                        </div>
+                    </div>
+
+                    <!-- Add Stock Form -->
+                    <div class="glass-panel mb-6">
+                        <h4 class="mb-4">Ajouter un produit au stock</h4>
+                        <form onsubmit="addVintedProduct(event)">
+                            <input type="hidden" id="vinted-id" value="">
+                            
+                            <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                                <div class="form-group">
+                                    <label>Titre du Produit *</label>
+                                    <input type="text" id="vinted-title" class="input-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Couleur</label>
+                                    <input type="text" id="vinted-color" class="input-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Prix d'Achat Unitaire (€) *</label>
+                                    <input type="number" step="0.01" id="vinted-purchase-price" class="input-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantité Initiale *</label>
+                                    <input type="number" id="vinted-qty" class="input-control" min="1" value="1" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label>Photo du produit *</label>
+                                <input type="file" id="vinted-upload-photo" class="input-control" accept="image/*" onchange="handleImageUpload('vinted-upload-photo', 'vinted-preview-photo')">
+                                <img id="vinted-preview-photo" src="" class="hidden mt-2" style="max-height: 150px; border-radius: 8px;">
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button type="submit" id="btn-submit-vinted" class="btn-primary">
+                                    <span class="material-icons-round">add</span> Ajouter au Stock
+                                </button>
+                                <button type="button" id="btn-cancel-vinted" class="btn-secondary hidden" onclick="cancelEditVinted()">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <h4 class="mb-4">Votre Inventaire Actuel</h4>
+                    <div id="admin-stock-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+                </div>
+
             </main>
         </div>
     </div>
