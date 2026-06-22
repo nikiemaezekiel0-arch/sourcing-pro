@@ -22,6 +22,7 @@ function initAdminPortal() {
         populateCategorySelect();
         if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
         if(typeof renderVintedStock === 'function') renderVintedStock();
+        if(typeof renderVintedSales === 'function') renderVintedSales();
         
     // Update Charts if they exist
         if (typeof renderAdminCharts === 'function') {
@@ -86,7 +87,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock'].forEach(t => {
+    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock', 'sales'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -113,6 +114,9 @@ function switchAdminTab(tab) {
     }
     if(tab === 'stock') {
         if(typeof renderVintedStock === 'function') renderVintedStock();
+    }
+    if(tab === 'sales') {
+        if(typeof renderVintedSales === 'function') renderVintedSales();
     }
 }
 
@@ -1493,58 +1497,14 @@ async function deleteVintedProduct(id) {
 function renderVintedStock() {
     const db = getDB();
     const list = document.getElementById('admin-stock-list');
-    const profitCounter = document.getElementById('admin-stock-total-profit');
     if(!list) return;
     
     list.innerHTML = '';
-    let totalProfit = 0;
     
     // Sort descending by creation date
     const sortedStock = [...db.vinted_stock].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
     sortedStock.forEach(p => {
-        // Calculate profit for this product
-        let productProfit = 0;
-        let salesHtml = '';
-        
-        if(p.sales && p.sales.length > 0) {
-            salesHtml += `<div class="mt-3"><strong class="text-sm">Détail des ventes :</strong><ul style="list-style:none; padding:0; margin:0; margin-top:5px; font-size: 0.85rem;">`;
-            p.sales.forEach((sale, index) => {
-                const shipping = sale.shippingCost || 0;
-                const profit = sale.sellPrice - p.purchasePrice - shipping;
-                productProfit += profit;
-                
-                let actionBtn = '';
-                let statusBadge = '';
-                
-                if(sale.status === 'à expédier') {
-                    statusBadge = `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger); font-size:0.7rem;">À Expédier</span>`;
-                    actionBtn = `<button class="btn-primary" style="padding: 2px 8px; font-size:0.7rem;" onclick="markProductShipped('${p.id}', '${sale.saleId}')">Expédié ?</button>`;
-                } else {
-                    statusBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success); font-size:0.7rem;">Envoyé</span>`;
-                }
-                
-                const bordereauLink = sale.bordereau ? `<a href="${sale.bordereau}" target="_blank" style="color:var(--primary); text-decoration:underline;">Bordereau</a>` : 'Aucun bordereau';
-                const buyerName = sale.buyer || 'Inconnu';
-                
-                salesHtml += `
-                    <li style="background: var(--bg-card); padding: 8px; border-radius: 6px; margin-bottom: 5px; border: 1px solid var(--border-color);">
-                        <div class="flex justify-between items-center mb-1">
-                            <span><strong>${buyerName}</strong> - Vente: <strong>${sale.sellPrice}€</strong> (Frais: ${shipping}€)</span>
-                            ${statusBadge}
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span>${bordereauLink}</span>
-                            ${actionBtn}
-                        </div>
-                    </li>
-                `;
-            });
-            salesHtml += `</ul></div>`;
-        }
-        
-        totalProfit += productProfit;
-        
         let stockStatus = '';
         if(p.availableQty > 0) {
             stockStatus = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">En Stock (${p.availableQty})</span>`;
@@ -1564,21 +1524,16 @@ function renderVintedStock() {
                     <img src="${photoUrl}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
                     <div class="flex gap-2">
                         ${stockStatus}
-                        <button onclick="editVintedProduct('${p.id}')" class="btn-icon text-sm" title="Modifier"><span class="material-icons-round">edit</span></button>
                         <button onclick="deleteVintedProduct('${p.id}')" class="btn-icon danger text-sm" title="Supprimer"><span class="material-icons-round">delete</span></button>
                     </div>
                 </div>
                 <h4 style="font-size: 1.1rem; margin-bottom: 5px;">${p.title}</h4>
                 <div class="text-sm text-muted mb-2">Couleur: ${p.color || 'N/A'}</div>
                 
-                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                <div class="grid-layout" style="grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; font-size: 0.9rem;">
                     <div style="background: var(--bg-body); padding: 8px; border-radius: 6px;">
                         <div class="text-muted text-xs">Prix Achat</div>
                         <div class="font-bold">${p.purchasePrice} €</div>
-                    </div>
-                    <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px;">
-                        <div class="text-muted text-xs">Bénéfice Net</div>
-                        <div class="font-bold" style="color: var(--success);">${productProfit > 0 ? '+' : ''}${productProfit.toFixed(2)} €</div>
                     </div>
                 </div>
                 
@@ -1586,21 +1541,129 @@ function renderVintedStock() {
                     Quantité totale : <strong>${p.initialQty}</strong><br>
                     Vendus : <strong>${p.soldQty}</strong>
                 </div>
-                
-                ${salesHtml}
             </div>
             
-            <div class="mt-4 pt-3" style="border-top: 1px solid var(--border-color);">
-                <button class="btn-primary w-full" onclick="markProductSold('${p.id}')" ${p.availableQty <= 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
-                    <span class="material-icons-round">sell</span> Marquer Vendu (1)
+            <div class="mt-2 pt-3" style="border-top: 1px solid var(--border-color); display: flex; gap: 8px;">
+                <button class="btn-secondary w-full flex items-center justify-center gap-1" onclick="editVintedProduct('${p.id}')">
+                    <span class="material-icons-round text-sm">edit</span> Modifier l'article
+                </button>
+                <button class="btn-primary w-full flex items-center justify-center gap-1" onclick="markProductSold('${p.id}')" ${p.availableQty <= 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                    <span class="material-icons-round text-sm">sell</span> Vendre (1)
                 </button>
             </div>
         `;
         list.appendChild(card);
     });
+}
+
+function renderVintedSales() {
+    const db = getDB();
+    const list = document.getElementById('admin-sales-list');
+    const profitCounter = document.getElementById('admin-sales-total-profit');
+    if(!list) return;
+    
+    list.innerHTML = '';
+    let totalProfit = 0;
+    
+    // Extract all sales from all products
+    let allSales = [];
+    db.vinted_stock.forEach(p => {
+        if(p.sales && p.sales.length > 0) {
+            p.sales.forEach(sale => {
+                const shipping = sale.shippingCost || 0;
+                const profit = sale.sellPrice - p.purchasePrice - shipping;
+                totalProfit += profit;
+                
+                allSales.push({
+                    ...sale,
+                    productId: p.id,
+                    productTitle: p.title,
+                    productPhoto: p.photo || 'https://via.placeholder.com/150?text=No+Photo',
+                    purchasePrice: p.purchasePrice,
+                    profit: profit,
+                    shipping: shipping
+                });
+            });
+        }
+    });
+    
+    // Sort sales by date descending
+    allSales.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     if(profitCounter) {
         profitCounter.innerText = totalProfit > 0 ? `+${totalProfit.toFixed(2)} €` : `${totalProfit.toFixed(2)} €`;
     }
+    
+    if(allSales.length === 0) {
+        list.innerHTML = '<p class="text-muted text-center py-4">Aucune vente enregistrée pour le moment.</p>';
+        return;
+    }
+    
+    const table = document.createElement('table');
+    table.className = 'w-full text-left';
+    table.style.borderCollapse = 'collapse';
+    table.innerHTML = `
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border-color);">
+                <th class="p-2">Produit</th>
+                <th class="p-2">Acheteur</th>
+                <th class="p-2">Prix de Vente</th>
+                <th class="p-2">Bénéfice Net</th>
+                <th class="p-2">Statut / Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    const tbody = table.querySelector('tbody');
+    
+    allSales.forEach(sale => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border-color)';
+        
+        let actionBtn = '';
+        let statusBadge = '';
+        
+        if(sale.status === 'à expédier') {
+            statusBadge = `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger); font-size:0.7rem;">À Expédier</span>`;
+            actionBtn = `<button class="btn-primary mt-1" style="padding: 2px 8px; font-size:0.7rem;" onclick="markProductShipped('${sale.productId}', '${sale.saleId}')">Expédié ?</button>`;
+        } else {
+            statusBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success); font-size:0.7rem;">Envoyé</span>`;
+        }
+        
+        const bordereauLink = sale.bordereau ? `<a href="${sale.bordereau}" target="_blank" style="color:var(--primary); text-decoration:underline; font-size: 0.8rem; display:block; margin-top:3px;">Bordereau</a>` : '';
+        const buyerName = sale.buyer || 'Inconnu';
+        
+        const dateObj = new Date(sale.date);
+        const dateStr = dateObj.toLocaleDateString('fr-FR');
+        
+        tr.innerHTML = `
+            <td class="p-2">
+                <div class="flex items-center gap-2">
+                    <img src="${sale.productPhoto}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                    <div>
+                        <div class="font-bold text-sm">${sale.productTitle}</div>
+                        <div class="text-xs text-muted">${dateStr}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="p-2 text-sm"><strong>${buyerName}</strong></td>
+            <td class="p-2">
+                <div class="text-sm">Vente: <strong>${sale.sellPrice}€</strong></div>
+                <div class="text-xs text-muted">Achat: ${sale.purchasePrice}€ | Frais: ${sale.shipping}€</div>
+            </td>
+            <td class="p-2">
+                <div class="font-bold" style="color: ${sale.profit > 0 ? 'var(--success)' : 'inherit'};">${sale.profit > 0 ? '+' : ''}${sale.profit.toFixed(2)} €</div>
+            </td>
+            <td class="p-2">
+                <div>${statusBadge}</div>
+                ${bordereauLink}
+                ${actionBtn}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    list.appendChild(table);
 }
+
 

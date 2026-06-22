@@ -1484,6 +1484,9 @@
                 <div class="nav-item" id="admin-nav-stock" onclick="switchAdminTab('stock')">
                     <span class="material-icons-round">inventory_2</span> Gestion Stocks (Vinted)
                 </div>
+                <div class="nav-item" id="admin-nav-sales" onclick="switchAdminTab('sales')">
+                    <span class="material-icons-round">receipt_long</span> Suivi des Ventes
+                </div>
             </div>
 
             <main class="main-content">
@@ -1864,11 +1867,7 @@
                     <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">inventory_2</span> Gestion Stocks (Vinted & Leboncoin)</h3>
-                            <p class="text-muted text-sm">Gérez votre inventaire personnel et suivez vos bénéfices.</p>
-                        </div>
-                        <div class="glass-panel" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px 20px;">
-                            <div class="text-sm text-muted">Bénéfice Net Total</div>
-                            <div style="font-size: 2rem; font-weight: 800; color: #10b981;" id="admin-stock-total-profit">0,00 €</div>
+                            <p class="text-muted text-sm">Gérez votre inventaire personnel (ajouter du stock, modifier vos articles).</p>
                         </div>
                     </div>
 
@@ -1914,6 +1913,23 @@
 
                     <h4 class="mb-4">Votre Inventaire Actuel</h4>
                     <div id="admin-stock-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+                </div>
+
+                <!-- Sales Vinted View -->
+                <div id="admin-view-sales" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">receipt_long</span> Suivi des Ventes (Vinted & Leboncoin)</h3>
+                            <p class="text-muted text-sm">Gérez vos expéditions et suivez vos bénéfices.</p>
+                        </div>
+                        <div class="glass-panel" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px 20px;">
+                            <div class="text-sm text-muted">Bénéfice Net Total</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: #10b981;" id="admin-sales-total-profit">0,00 €</div>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-4">Historique des Ventes</h4>
+                    <div id="admin-sales-list"></div>
                 </div>
 
             </main>
