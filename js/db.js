@@ -50,13 +50,15 @@ let localDB = {
     suppliers: [],
     trainings: [],
     agent_products: [],
-    orders: []
+    orders: [],
+    vinted_stock: [],
+    sales_platforms: []
 };
 
 // Initialize Database structure and real-time listeners
 function initDB() {
     let collectionsLoaded = 0;
-    const collections = ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders', 'vinted_stock'];
+    const collections = ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders', 'vinted_stock', 'sales_platforms'];
     collections.forEach(collectionName => {
         firestore.collection(collectionName).onSnapshot(snapshot => {
             localDB[collectionName] = [];

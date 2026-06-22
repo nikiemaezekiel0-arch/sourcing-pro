@@ -23,6 +23,7 @@ function initAdminPortal() {
         if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
         if(typeof renderVintedStock === 'function') renderVintedStock();
         if(typeof renderVintedSales === 'function') renderVintedSales();
+        if(typeof renderSaleRegistration === 'function') renderSaleRegistration();
         
     // Update Charts if they exist
         if (typeof renderAdminCharts === 'function') {
@@ -87,7 +88,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock', 'sales'].forEach(t => {
+    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock', 'salereg', 'sales'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -114,6 +115,9 @@ function switchAdminTab(tab) {
     }
     if(tab === 'stock') {
         if(typeof renderVintedStock === 'function') renderVintedStock();
+    }
+    if(tab === 'salereg') {
+        if(typeof renderSaleRegistration === 'function') renderSaleRegistration();
     }
     if(tab === 'sales') {
         if(typeof renderVintedSales === 'function') renderVintedSales();
@@ -1347,6 +1351,8 @@ async function addVintedProduct(e) {
     const color = document.getElementById('vinted-color').value;
     const purchasePrice = parseFloat(document.getElementById('vinted-purchase-price').value);
     const qty = parseInt(document.getElementById('vinted-qty').value);
+    const lotNumber = document.getElementById('vinted-lot').value || '';
+    const importCost = parseFloat(document.getElementById('vinted-import-cost').value) || 0;
     const photo = document.getElementById('vinted-preview-photo').src;
     
     if(!title || isNaN(purchasePrice) || isNaN(qty) || qty < 1) {
@@ -1369,6 +1375,8 @@ async function addVintedProduct(e) {
             product.title = title;
             product.color = color;
             product.purchasePrice = purchasePrice;
+            product.lotNumber = lotNumber;
+            product.importCost = importCost;
             if(validPhoto) product.photo = validPhoto;
             
             await saveDoc('vinted_stock', product);
@@ -1380,6 +1388,8 @@ async function addVintedProduct(e) {
             title,
             color,
             purchasePrice,
+            lotNumber,
+            importCost,
             initialQty: qty,
             availableQty: qty,
             soldQty: 0,
@@ -1404,6 +1414,8 @@ window.editVintedProduct = function(id) {
     document.getElementById('vinted-color').value = product.color || '';
     document.getElementById('vinted-purchase-price').value = product.purchasePrice;
     document.getElementById('vinted-qty').value = product.initialQty;
+    document.getElementById('vinted-lot').value = product.lotNumber || '';
+    document.getElementById('vinted-import-cost').value = product.importCost || 0;
     
     if(product.photo) {
         document.getElementById('vinted-preview-photo').src = product.photo;
@@ -1439,39 +1451,115 @@ async function markProductSold(id) {
         alert("Rupture de stock !");
         return;
     }
-
-    const buyer = prompt(`À qui l'avez-vous vendu ? (ex: Pseudo Vinted) :`);
-    if(buyer === null) return; // Cancelled
     
-    const sellPriceStr = prompt(`Entrez le prix de VENTE final pour "${product.title}" (€) :`);
-    if(!sellPriceStr) return;
-    const sellPrice = parseFloat(sellPriceStr.replace(',', '.'));
-    if(isNaN(sellPrice)) {
-        alert("Prix invalide.");
+    // Switch to new sale registration tab and pre-select the product
+    switchAdminTab('salereg');
+    setTimeout(() => {
+        const select = document.getElementById('sale-product-id');
+        if(select) select.value = id;
+    }, 100);
+}
+
+async function renderSaleRegistration() {
+    const db = getDB();
+    
+    // Initialize default platforms if empty
+    if(!db.sales_platforms || db.sales_platforms.length === 0) {
+        db.sales_platforms = [
+            { id: generateId('plat_'), name: 'Vinted' },
+            { id: generateId('plat_'), name: 'Leboncoin' }
+        ];
+        // Note: we could save them to DB, but if it's the first time, it's better to save them.
+        for(let p of db.sales_platforms) {
+            await saveDoc('sales_platforms', p);
+        }
+    }
+    
+    // Populate platforms
+    const platformList = document.getElementById('sales-platforms-list');
+    const platformSelect = document.getElementById('sale-platform');
+    if(platformList) {
+        platformList.innerHTML = db.sales_platforms.map(p => `
+            <div class="flex justify-between items-center bg-gray-800 p-2 rounded">
+                <span>${p.name}</span>
+                <button onclick="deleteSalesPlatform('${p.id}')" class="btn-icon danger text-sm"><span class="material-icons-round" style="font-size:1rem;">delete</span></button>
+            </div>
+        `).join('');
+    }
+    if(platformSelect) {
+        platformSelect.innerHTML = '<option value="">Sélectionnez une plateforme...</option>' + 
+            db.sales_platforms.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    }
+    
+    // Populate products
+    const productSelect = document.getElementById('sale-product-id');
+    if(productSelect) {
+        const availableProducts = db.vinted_stock.filter(p => p.availableQty > 0);
+        productSelect.innerHTML = '<option value="">Sélectionnez un article en stock...</option>' + 
+            availableProducts.map(p => `<option value="${p.id}">${p.title} - Reste ${p.availableQty}</option>`).join('');
+    }
+}
+
+async function addSalesPlatform() {
+    const input = document.getElementById('new-platform-name');
+    const name = input.value.trim();
+    if(!name) return;
+    
+    const newPlatform = { id: generateId('plat_'), name };
+    await saveDoc('sales_platforms', newPlatform);
+    input.value = '';
+}
+
+async function deleteSalesPlatform(id) {
+    if(confirm("Supprimer cette plateforme ?")) {
+        await deleteDoc('sales_platforms', id);
+    }
+}
+
+async function submitNewSale(e) {
+    e.preventDefault();
+    const db = getDB();
+    
+    const productId = document.getElementById('sale-product-id').value;
+    const platform = document.getElementById('sale-platform').value;
+    const buyer = document.getElementById('sale-buyer-name').value;
+    const sellPrice = parseFloat(document.getElementById('sale-sell-price').value);
+    const shippingCost = parseFloat(document.getElementById('sale-shipping-cost').value) || 0;
+    const bordereau = document.getElementById('sale-bordereau').value;
+    
+    if(!productId || !platform || isNaN(sellPrice)) {
+        alert("Veuillez remplir les champs obligatoires.");
         return;
     }
     
-    const shippingCostStr = prompt(`Entrez les FRAIS d'envoi / autres frais (€) :`, "0");
-    const shippingCost = shippingCostStr ? parseFloat(shippingCostStr.replace(',', '.')) : 0;
+    const product = db.vinted_stock.find(p => p.id === productId);
+    if(!product) return;
     
-    const bordereau = prompt(`Entrez le LIEN du bordereau d'expédition (Optionnel) :`);
+    if(product.availableQty <= 0) {
+        alert("Ce produit est en rupture de stock.");
+        return;
+    }
     
     product.availableQty -= 1;
-    product.soldQty += 1;
+    product.soldQty = (product.soldQty || 0) + 1;
     
     if(!product.sales) product.sales = [];
     
     product.sales.push({
         saleId: generateId('vsl_'),
+        platform: platform,
         buyer: buyer || 'Inconnu',
         sellPrice: sellPrice,
-        shippingCost: isNaN(shippingCost) ? 0 : shippingCost,
+        shippingCost: shippingCost,
         bordereau: bordereau || '',
         status: 'à expédier',
         date: new Date().toISOString()
     });
     
     await saveDoc('vinted_stock', product);
+    alert("✅ Vente enregistrée avec succès !");
+    e.target.reset();
+    switchAdminTab('sales'); // Rediriger vers le suivi des ventes
 }
 
 async function markProductShipped(productId, saleId) {
@@ -1534,16 +1622,17 @@ function renderVintedStock() {
     
     sortedStock.forEach(p => {
         let productProfit = 0;
+        const importCost = p.importCost || 0;
         
         if(p.sales && p.sales.length > 0) {
             p.sales.forEach(sale => {
                 const shipping = sale.shippingCost || 0;
-                const profit = sale.sellPrice - p.purchasePrice - shipping;
+                const profit = sale.sellPrice - p.purchasePrice - shipping - importCost;
                 
                 productProfit += profit;
                 totalProfit += profit;
                 totalRevenue += sale.sellPrice;
-                totalCosts += (p.purchasePrice + shipping);
+                totalCosts += (p.purchasePrice + shipping + importCost);
             });
         }
     
@@ -1560,6 +1649,8 @@ function renderVintedStock() {
         
         const photoUrl = p.photo || 'https://via.placeholder.com/150?text=No+Photo';
         
+        const lotBadge = p.lotNumber ? `<div class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 0.7rem; margin-top: 5px;">📦 Lot: ${p.lotNumber} (Import: ${importCost}€)</div>` : '';
+        
         card.innerHTML = `
             <div>
                 <div class="flex justify-between items-start mb-3">
@@ -1571,11 +1662,12 @@ function renderVintedStock() {
                 </div>
                 <h4 style="font-size: 1.1rem; margin-bottom: 5px;">${p.title}</h4>
                 <div class="text-sm text-muted mb-2">Couleur: ${p.color || 'N/A'}</div>
+                ${lotBadge}
                 
-                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                <div class="grid-layout mt-3" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 0.9rem;">
                     <div style="background: var(--bg-body); padding: 8px; border-radius: 6px;">
-                        <div class="text-muted text-xs">Prix Achat</div>
-                        <div class="font-bold">${p.purchasePrice} €</div>
+                        <div class="text-muted text-xs">Prix Achat (+Import)</div>
+                        <div class="font-bold">${(p.purchasePrice + importCost).toFixed(2)} €</div>
                     </div>
                     <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px;">
                         <div class="text-muted text-xs">Bénéfice (Sur Ventes)</div>
@@ -1631,11 +1723,12 @@ function renderVintedSales() {
         if(p.sales && p.sales.length > 0) {
             p.sales.forEach(sale => {
                 const shipping = sale.shippingCost || 0;
-                const profit = sale.sellPrice - p.purchasePrice - shipping;
+                const importCost = p.importCost || 0;
+                const profit = sale.sellPrice - p.purchasePrice - shipping - importCost;
                 
                 totalProfit += profit;
                 totalRevenue += sale.sellPrice;
-                totalCosts += (p.purchasePrice + shipping);
+                totalCosts += (p.purchasePrice + shipping + importCost);
                 
                 allSales.push({
                     ...sale,
@@ -1643,6 +1736,7 @@ function renderVintedSales() {
                     productTitle: p.title,
                     productPhoto: p.photo || 'https://via.placeholder.com/150?text=No+Photo',
                     purchasePrice: p.purchasePrice,
+                    importCost: importCost,
                     profit: profit,
                     shipping: shipping
                 });
@@ -1675,6 +1769,7 @@ function renderVintedSales() {
         <thead>
             <tr style="border-bottom: 2px solid var(--border-color);">
                 <th class="p-2">Produit</th>
+                <th class="p-2">Plateforme</th>
                 <th class="p-2">Acheteur</th>
                 <th class="p-2">Prix de Vente</th>
                 <th class="p-2">Bénéfice Net</th>
@@ -1701,6 +1796,7 @@ function renderVintedSales() {
         
         const bordereauLink = sale.bordereau ? `<a href="${sale.bordereau}" target="_blank" style="color:var(--primary); text-decoration:underline; font-size: 0.8rem; display:block; margin-top:3px;">Bordereau</a>` : '';
         const buyerName = sale.buyer || 'Inconnu';
+        const platformName = sale.platform || 'N/A';
         
         const dateObj = new Date(sale.date);
         const dateStr = dateObj.toLocaleDateString('fr-FR');
@@ -1715,10 +1811,11 @@ function renderVintedSales() {
                     </div>
                 </div>
             </td>
+            <td class="p-2 text-sm"><span class="badge" style="background: rgba(255,255,255,0.1);">${platformName}</span></td>
             <td class="p-2 text-sm"><strong>${buyerName}</strong></td>
             <td class="p-2">
                 <div class="text-sm">Vente: <strong>${sale.sellPrice}€</strong></div>
-                <div class="text-xs text-muted">Achat: ${sale.purchasePrice}€ | Frais: ${sale.shipping}€</div>
+                <div class="text-xs text-muted">Achat: ${sale.purchasePrice}€ | Import: ${sale.importCost}€ | Frais: ${sale.shipping}€</div>
             </td>
             <td class="p-2">
                 <div class="font-bold" style="color: ${sale.profit > 0 ? 'var(--success)' : 'inherit'};">${sale.profit > 0 ? '+' : ''}${sale.profit.toFixed(2)} €</div>

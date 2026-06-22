@@ -1484,6 +1484,9 @@
                 <div class="nav-item" id="admin-nav-stock" onclick="switchAdminTab('stock')">
                     <span class="material-icons-round">inventory_2</span> Gestion Stocks (Vinted)
                 </div>
+                <div class="nav-item" id="admin-nav-salereg" onclick="switchAdminTab('salereg')">
+                    <span class="material-icons-round">add_shopping_cart</span> Nouvelle Vente
+                </div>
                 <div class="nav-item" id="admin-nav-sales" onclick="switchAdminTab('sales')">
                     <span class="material-icons-round">receipt_long</span> Suivi des Ventes
                 </div>
@@ -1908,6 +1911,14 @@
                                     <label>Quantité Initiale *</label>
                                     <input type="number" id="vinted-qty" class="input-control" min="1" value="1" required>
                                 </div>
+                                <div class="form-group">
+                                    <label>Numéro de Lot / Colis</label>
+                                    <input type="text" id="vinted-lot" class="input-control" placeholder="ex: CHINE-001">
+                                </div>
+                                <div class="form-group">
+                                    <label>Frais de port partagés (€)</label>
+                                    <input type="number" step="0.01" id="vinted-import-cost" class="input-control" value="0" title="Part des frais d'expédition (Chine, Douane...) attribuée à CET article">
+                                </div>
                             </div>
                             
                             <div class="form-group mb-4">
@@ -1928,7 +1939,71 @@
                     <h4 class="mb-4">Votre Inventaire Actuel</h4>
                     <div id="admin-stock-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
                 </div>
+                <!-- Sale Registration View -->
+                <div id="admin-view-salereg" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">add_shopping_cart</span> Enregistrement des Ventes</h3>
+                            <p class="text-muted text-sm">Déclarez vos nouvelles ventes et gérez vos plateformes (Vinted, Leboncoin, etc.).</p>
+                        </div>
+                    </div>
 
+                    <div class="grid-layout" style="grid-template-columns: 1fr 2fr; gap: 20px;">
+                        <!-- Platforms Management -->
+                        <div class="glass-panel" style="background: var(--bg-body);">
+                            <h4 class="mb-4 flex items-center gap-2"><span class="material-icons-round">storefront</span> Vos Plateformes</h4>
+                            <div class="flex gap-2 mb-4">
+                                <input type="text" id="new-platform-name" class="input-control" placeholder="Nouvelle Plateforme..." style="flex: 1;">
+                                <button class="btn-primary" onclick="addSalesPlatform()"><span class="material-icons-round">add</span></button>
+                            </div>
+                            <div id="sales-platforms-list" class="flex flex-col gap-2">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Sale Form -->
+                        <div class="glass-panel">
+                            <h4 class="mb-4">Nouvelle Vente</h4>
+                            <form onsubmit="submitNewSale(event)">
+                                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="form-group" style="grid-column: span 2;">
+                                        <label>Produit Vendu *</label>
+                                        <select id="sale-product-id" class="input-control" required>
+                                            <option value="">Sélectionnez un article en stock...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Plateforme *</label>
+                                        <select id="sale-platform" class="input-control" required>
+                                            <option value="">Sélectionnez une plateforme...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nom de l'acheteur</label>
+                                        <input type="text" id="sale-buyer-name" class="input-control" placeholder="Pseudo ou Nom">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Prix de vente final (€) *</label>
+                                        <input type="number" step="0.01" id="sale-sell-price" class="input-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Frais annexes (Port, Comm...) (€)</label>
+                                        <input type="number" step="0.01" id="sale-shipping-cost" class="input-control" value="0">
+                                    </div>
+                                    <div class="form-group" style="grid-column: span 2;">
+                                        <label>Lien du bordereau d'expédition</label>
+                                        <input type="url" id="sale-bordereau" class="input-control" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end">
+                                    <button type="submit" class="btn-primary flex items-center gap-2">
+                                        <span class="material-icons-round">check_circle</span> Valider la Vente
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 <!-- Sales Vinted View -->
                 <div id="admin-view-sales" class="hidden glass-panel">
                     <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
@@ -2196,15 +2271,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=13"></script>
-    <script src="js/currency.js?v=13"></script>
-    <script src="js/db.js?v=13"></script>
-    <script src="js/auth.js?v=13"></script>
-    <script src="js/admin.js?v=13"></script>
-    <script src="js/admin-agent.js?v=13"></script>
-    <script src="js/client.js?v=13"></script>
-    <script src="js/client-agent.js?v=13"></script>
-    <script src="js/supplier.js?v=13"></script>
+    <script src="js/i18n.js?v=14"></script>
+    <script src="js/currency.js?v=14"></script>
+    <script src="js/db.js?v=14"></script>
+    <script src="js/auth.js?v=14"></script>
+    <script src="js/admin.js?v=14"></script>
+    <script src="js/admin-agent.js?v=14"></script>
+    <script src="js/client.js?v=14"></script>
+    <script src="js/client-agent.js?v=14"></script>
+    <script src="js/supplier.js?v=14"></script>
     
     <!-- Main Routing Logic -->
     <script>
