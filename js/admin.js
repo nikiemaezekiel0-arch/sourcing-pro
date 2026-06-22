@@ -1339,6 +1339,101 @@ window.renderAdminDemos = function() {
 }
 
 
+// --- BATCH MANAGEMENT (CHINE) ---
+
+function openManageBatchesModal() {
+    renderBatchesList();
+    document.getElementById('modal-manage-batches').classList.remove('hidden');
+}
+
+function closeManageBatchesModal() {
+    document.getElementById('modal-manage-batches').classList.add('hidden');
+    // Refresh the select in stock form
+    renderVintedStock(); 
+}
+
+async function submitNewBatch(e) {
+    e.preventDefault();
+    const db = getDB();
+    
+    const ref = document.getElementById('batch-ref').value;
+    const totalCost = parseFloat(document.getElementById('batch-total-cost').value);
+    const itemsCount = parseInt(document.getElementById('batch-items-count').value);
+    
+    if(!ref || isNaN(totalCost) || isNaN(itemsCount) || itemsCount < 1) return;
+    
+    const unitCost = totalCost / itemsCount;
+    
+    const newBatch = {
+        id: generateId('batch_'),
+        ref,
+        totalCost,
+        itemsCount,
+        unitCost,
+        createdAt: new Date().toISOString()
+    };
+    
+    if(!db.shipping_batches) db.shipping_batches = [];
+    db.shipping_batches.push(newBatch);
+    await saveDoc('shipping_batches', newBatch);
+    
+    e.target.reset();
+    renderBatchesList();
+}
+
+function renderBatchesList() {
+    const db = getDB();
+    const list = document.getElementById('batches-list');
+    if(!list) return;
+    
+    if(!db.shipping_batches || db.shipping_batches.length === 0) {
+        list.innerHTML = '<p class="text-muted text-sm">Aucun colis enregistré.</p>';
+        return;
+    }
+    
+    // Sort descending by date
+    const sorted = [...db.shipping_batches].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    list.innerHTML = sorted.map(b => `
+        <div class="glass-panel" style="padding: 10px; font-size: 0.9rem;">
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-accent-gold">${b.ref}</span>
+                <button onclick="deleteBatch('${b.id}')" class="btn-icon danger text-sm"><span class="material-icons-round" style="font-size:1rem;">delete</span></button>
+            </div>
+            <div class="text-sm text-muted">
+                Coût total: ${b.totalCost}€ | Articles: ${b.itemsCount}<br>
+                <strong style="color:var(--text-color);">Soit ${b.unitCost.toFixed(2)}€ / article</strong>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function deleteBatch(id) {
+    if(confirm("Voulez-vous vraiment supprimer ce colis de l'historique ?")) {
+        await deleteDoc('shipping_batches', id);
+        renderBatchesList();
+    }
+}
+
+function updateImportCostFromBatch() {
+    const db = getDB();
+    const select = document.getElementById('vinted-lot');
+    const importCostInput = document.getElementById('vinted-import-cost');
+    
+    if(!select || !importCostInput) return;
+    
+    const batchId = select.value;
+    if(!batchId) {
+        importCostInput.value = 0;
+        return;
+    }
+    
+    const batch = (db.shipping_batches || []).find(b => b.id === batchId);
+    if(batch) {
+        importCostInput.value = batch.unitCost.toFixed(2);
+    }
+}
+
 // --- VINTED / LEBONCOIN STOCK MANAGEMENT ---
 
 async function addVintedProduct(e) {
@@ -1606,6 +1701,16 @@ function renderVintedStock() {
     const db = getDB();
     const list = document.getElementById('admin-stock-list');
     
+    // Populate batch select
+    const batchSelect = document.getElementById('vinted-lot');
+    if(batchSelect && db.shipping_batches) {
+        const currentVal = batchSelect.value;
+        const sortedBatches = [...db.shipping_batches].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        batchSelect.innerHTML = '<option value="">Aucun lot sélectionné...</option>' + 
+            sortedBatches.map(b => `<option value="${b.id}">${b.ref} (${b.unitCost.toFixed(2)}€/unité)</option>`).join('');
+        if(currentVal) batchSelect.value = currentVal;
+    }
+    
     const profitCounter = document.getElementById('admin-stock-total-profit');
     const revenueCounter = document.getElementById('admin-stock-total-revenue');
     const costsCounter = document.getElementById('admin-stock-total-costs');
@@ -1649,7 +1754,13 @@ function renderVintedStock() {
         
         const photoUrl = p.photo || 'https://via.placeholder.com/150?text=No+Photo';
         
-        const lotBadge = p.lotNumber ? `<div class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 0.7rem; margin-top: 5px;">📦 Lot: ${p.lotNumber} (Import: ${importCost}€)</div>` : '';
+        let batchRefDisplay = p.lotNumber;
+        if(p.lotNumber && p.lotNumber.startsWith('batch_')) {
+            const batchObj = (db.shipping_batches || []).find(b => b.id === p.lotNumber);
+            if(batchObj) batchRefDisplay = batchObj.ref;
+        }
+        
+        const lotBadge = p.lotNumber ? `<div class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 0.7rem; margin-top: 5px;">📦 Lot: ${batchRefDisplay} (Import: ${importCost}€)</div>` : '';
         
         card.innerHTML = `
             <div>

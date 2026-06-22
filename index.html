@@ -1890,7 +1890,12 @@
 
                     <!-- Add Stock Form -->
                     <div class="glass-panel mb-6">
-                        <h4 class="mb-4">Ajouter un produit au stock</h4>
+                        <div class="flex justify-between items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
+                            <h4 class="mb-0">Ajouter un produit au stock</h4>
+                            <button class="btn-secondary text-sm flex items-center gap-2" onclick="openManageBatchesModal()">
+                                <span class="material-icons-round" style="font-size:1.2rem;">local_shipping</span> Gérer les Colis (Chine)
+                            </button>
+                        </div>
                         <form onsubmit="addVintedProduct(event)">
                             <input type="hidden" id="vinted-id" value="">
                             
@@ -1912,12 +1917,14 @@
                                     <input type="number" id="vinted-qty" class="input-control" min="1" value="1" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Numéro de Lot / Colis</label>
-                                    <input type="text" id="vinted-lot" class="input-control" placeholder="ex: CHINE-001">
+                                    <label>Affecter à un Colis/Lot</label>
+                                    <select id="vinted-lot" class="input-control" onchange="updateImportCostFromBatch()">
+                                        <option value="">Aucun lot sélectionné...</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Frais de port partagés (€)</label>
-                                    <input type="number" step="0.01" id="vinted-import-cost" class="input-control" value="0" title="Part des frais d'expédition (Chine, Douane...) attribuée à CET article">
+                                    <label>Frais d'import par article (€)</label>
+                                    <input type="number" step="0.01" id="vinted-import-cost" class="input-control" value="0" disabled style="background: rgba(255,255,255,0.05); color: #888;" title="Calculé automatiquement selon le colis sélectionné">
                                 </div>
                             </div>
                             
@@ -2227,9 +2234,47 @@
     <!-- DEMO FLOATING TIMER -->
     <div id="demo-floating-timer" class="hidden" style="position: fixed; top: 80px; right: 20px; background: rgba(15, 23, 42, 0.9); border: 2px solid var(--danger); border-radius: var(--radius-md); padding: 10px 20px; z-index: 9999; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3); backdrop-filter: blur(10px);">
         <span class="material-icons-round" style="color: var(--danger); animation: pulse 2s infinite;">hourglass_top</span>
-        <div style="display: flex; flex-direction: column;">
             <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Temps restant</span>
             <span id="demo-timer-clock" style="font-size: 1.2rem; font-weight: bold; color: white; font-family: monospace;">--:--</span>
+        </div>
+    </div>
+    
+    <!-- MANAGE BATCHES MODAL (CHINE) -->
+    <div id="modal-manage-batches" class="modal modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'modal-manage-batches')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()" style="max-width: 600px;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="flex items-center gap-2 text-warning"><span class="material-icons-round">local_shipping</span> Gestion des Colis (Chine)</h3>
+                <span class="close-btn material-icons-round" onclick="closeModal('modal-manage-batches')">close</span>
+            </div>
+            
+            <form onsubmit="submitNewBatch(event)" class="mb-6">
+                <h4 class="mb-3 text-sm text-accent-gold">Créer un nouveau lot / colis</h4>
+                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Référence de suivi *</label>
+                        <input type="text" id="batch-ref" class="input-control" placeholder="ex: YT123456789" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Coût de transport total (€) *</label>
+                        <input type="number" step="0.01" id="batch-total-cost" class="input-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre d'articles total *</label>
+                        <input type="number" id="batch-items-count" class="input-control" min="1" required>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="submit" class="btn-primary flex items-center gap-2">
+                        <span class="material-icons-round">add</span> Enregistrer le colis
+                    </button>
+                </div>
+            </form>
+            
+            <h4 class="mb-3 text-sm text-accent-gold border-t border-white/10 pt-4">Vos colis existants</h4>
+            <div id="batches-list" class="flex flex-col gap-2" style="max-height: 250px; overflow-y: auto;">
+                <!-- Dynamically populated -->
+                <p class="text-muted text-sm">Aucun colis enregistré.</p>
+            </div>
         </div>
     </div>
 
@@ -2271,15 +2316,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=14"></script>
-    <script src="js/currency.js?v=14"></script>
-    <script src="js/db.js?v=14"></script>
-    <script src="js/auth.js?v=14"></script>
-    <script src="js/admin.js?v=14"></script>
-    <script src="js/admin-agent.js?v=14"></script>
-    <script src="js/client.js?v=14"></script>
-    <script src="js/client-agent.js?v=14"></script>
-    <script src="js/supplier.js?v=14"></script>
+    <script src="js/i18n.js?v=15"></script>
+    <script src="js/currency.js?v=15"></script>
+    <script src="js/db.js?v=15"></script>
+    <script src="js/auth.js?v=15"></script>
+    <script src="js/admin.js?v=15"></script>
+    <script src="js/admin-agent.js?v=15"></script>
+    <script src="js/client.js?v=15"></script>
+    <script src="js/client-agent.js?v=15"></script>
+    <script src="js/supplier.js?v=15"></script>
     
     <!-- Main Routing Logic -->
     <script>
