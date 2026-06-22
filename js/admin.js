@@ -1560,10 +1560,14 @@ function renderVintedSales() {
     const db = getDB();
     const list = document.getElementById('admin-sales-list');
     const profitCounter = document.getElementById('admin-sales-total-profit');
+    const revenueCounter = document.getElementById('admin-sales-total-revenue');
+    const costsCounter = document.getElementById('admin-sales-total-costs');
     if(!list) return;
     
     list.innerHTML = '';
     let totalProfit = 0;
+    let totalRevenue = 0;
+    let totalCosts = 0;
     
     // Extract all sales from all products
     let allSales = [];
@@ -1572,7 +1576,10 @@ function renderVintedSales() {
             p.sales.forEach(sale => {
                 const shipping = sale.shippingCost || 0;
                 const profit = sale.sellPrice - p.purchasePrice - shipping;
+                
                 totalProfit += profit;
+                totalRevenue += sale.sellPrice;
+                totalCosts += (p.purchasePrice + shipping);
                 
                 allSales.push({
                     ...sale,
@@ -1592,6 +1599,12 @@ function renderVintedSales() {
     
     if(profitCounter) {
         profitCounter.innerText = totalProfit > 0 ? `+${totalProfit.toFixed(2)} €` : `${totalProfit.toFixed(2)} €`;
+    }
+    if(revenueCounter) {
+        revenueCounter.innerText = `${totalRevenue.toFixed(2)} €`;
+    }
+    if(costsCounter) {
+        costsCounter.innerText = `${totalCosts.toFixed(2)} €`;
     }
     
     if(allSales.length === 0) {

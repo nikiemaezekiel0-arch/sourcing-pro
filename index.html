@@ -1922,9 +1922,19 @@
                             <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">receipt_long</span> Suivi des Ventes (Vinted & Leboncoin)</h3>
                             <p class="text-muted text-sm">Gérez vos expéditions et suivez vos bénéfices.</p>
                         </div>
-                        <div class="glass-panel" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px 20px;">
-                            <div class="text-sm text-muted">Bénéfice Net Total</div>
-                            <div style="font-size: 2rem; font-weight: 800; color: #10b981;" id="admin-sales-total-profit">0,00 €</div>
+                        <div class="flex gap-4" style="flex-wrap: wrap;">
+                            <div class="glass-panel text-center" style="padding: 15px 20px;">
+                                <div class="text-sm text-muted">Chiffre d'Affaires</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-color);" id="admin-sales-total-revenue">0,00 €</div>
+                            </div>
+                            <div class="glass-panel text-center" style="background: rgba(239, 68, 68, 0.05); padding: 15px 20px;">
+                                <div class="text-sm text-muted">Coûts (Achats + Frais)</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger);" id="admin-sales-total-costs">0,00 €</div>
+                            </div>
+                            <div class="glass-panel text-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px 20px;">
+                                <div class="text-sm text-muted">Bénéfice Net</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #10b981;" id="admin-sales-total-profit">0,00 €</div>
+                            </div>
                         </div>
                     </div>
 
