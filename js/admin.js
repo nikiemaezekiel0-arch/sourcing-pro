@@ -2025,7 +2025,7 @@ function renderVintedSales() {
         const dateStr = dateObj.toLocaleDateString('fr-FR');
         
         tr.innerHTML = `
-            <td class="p-2">
+            <td class="p-2" style="min-width: 200px;">
                 <div class="flex items-center gap-2">
                     <img src="${sale.productPhoto}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
                     <div>
@@ -2034,16 +2034,16 @@ function renderVintedSales() {
                     </div>
                 </div>
             </td>
-            <td class="p-2 text-sm"><span class="badge" style="background: rgba(255,255,255,0.1);">${platformName}</span></td>
-            <td class="p-2 text-sm"><strong>${buyerName}</strong></td>
-            <td class="p-2">
+            <td class="p-2 text-sm" style="min-width: 100px;"><span class="badge" style="background: rgba(255,255,255,0.1);">${platformName}</span></td>
+            <td class="p-2 text-sm" style="min-width: 100px;"><strong>${buyerName}</strong></td>
+            <td class="p-2" style="min-width: 150px;">
                 <div class="text-sm">Vente: <strong>${sale.sellPrice}€</strong></div>
                 <div class="text-xs text-muted">Achat: ${sale.purchasePrice}€ | Import: ${sale.importCost}€ | Frais: ${sale.shipping}€</div>
             </td>
-            <td class="p-2">
+            <td class="p-2" style="min-width: 100px;">
                 <div class="font-bold" style="color: ${sale.profit > 0 ? 'var(--success)' : 'inherit'};">${sale.profit > 0 ? '+' : ''}${sale.profit.toFixed(2)} €</div>
             </td>
-            <td class="p-2">
+            <td class="p-2" style="min-width: 120px;">
                 <div>${statusBadge}</div>
                 ${bordereauLink}
                 <div class="flex gap-2 items-center mt-2">
@@ -2056,7 +2056,13 @@ function renderVintedSales() {
         tbody.appendChild(tr);
     });
     
-    list.appendChild(table);
+    const wrapper = document.createElement('div');
+    wrapper.style.overflowX = 'auto';
+    wrapper.style.width = '100%';
+    wrapper.style.WebkitOverflowScrolling = 'touch';
+    wrapper.appendChild(table);
+    
+    list.appendChild(wrapper);
 }
 
 
