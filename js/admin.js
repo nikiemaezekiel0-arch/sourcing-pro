@@ -1705,16 +1705,52 @@ function openEditSaleModal(productId, saleId) {
     const sale = product.sales.find(s => s.saleId === saleId);
     if(!sale) return;
     
+    // Populate platforms
+    const platformSelect = document.getElementById('edit-sale-platform');
+    if(platformSelect) {
+        platformSelect.innerHTML = '<option value="">Sélectionnez une plateforme...</option>' + 
+            (db.sales_platforms || []).map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    }
+    
+    // Populate batches/lots
+    const batchSelect = document.getElementById('edit-sale-lot');
+    if(batchSelect && db.shipping_batches) {
+        const sortedBatches = [...db.shipping_batches].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        batchSelect.innerHTML = '<option value="">Aucun lot sélectionné...</option>' + 
+            sortedBatches.map(b => `<option value="${b.id}">${b.ref} (${b.unitCost.toFixed(2)}€/unité)</option>`).join('');
+    }
+    
     document.getElementById('edit-sale-product-id').value = productId;
     document.getElementById('edit-sale-id').value = saleId;
     
     document.getElementById('edit-sale-buyer').value = sale.buyer || '';
-    document.getElementById('edit-sale-platform').value = sale.platform || '';
+    if(platformSelect) platformSelect.value = sale.platform || '';
+    if(batchSelect) batchSelect.value = product.lotNumber || '';
     document.getElementById('edit-sale-sell-price').value = sale.sellPrice;
     document.getElementById('edit-sale-shipping').value = sale.shippingCost || 0;
+    document.getElementById('edit-sale-import-cost').value = product.importCost || 0;
     document.getElementById('edit-sale-bordereau').value = sale.bordereau || '';
     
     document.getElementById('modal-edit-sale').classList.remove('hidden');
+}
+
+function updateImportCostInEditSale() {
+    const db = getDB();
+    const select = document.getElementById('edit-sale-lot');
+    const importCostInput = document.getElementById('edit-sale-import-cost');
+    
+    if(!select || !importCostInput) return;
+    
+    const batchId = select.value;
+    if(!batchId) {
+        importCostInput.value = 0;
+        return;
+    }
+    
+    const batch = (db.shipping_batches || []).find(b => b.id === batchId);
+    if(batch) {
+        importCostInput.value = batch.unitCost.toFixed(2);
+    }
 }
 
 async function submitEditSale(e) {
@@ -1726,6 +1762,8 @@ async function submitEditSale(e) {
     
     const buyer = document.getElementById('edit-sale-buyer').value;
     const platform = document.getElementById('edit-sale-platform').value;
+    const lotNumber = document.getElementById('edit-sale-lot').value;
+    const importCost = parseFloat(document.getElementById('edit-sale-import-cost').value) || 0;
     const sellPrice = parseFloat(document.getElementById('edit-sale-sell-price').value);
     const shippingCost = parseFloat(document.getElementById('edit-sale-shipping').value) || 0;
     const bordereau = document.getElementById('edit-sale-bordereau').value;
@@ -1746,6 +1784,9 @@ async function submitEditSale(e) {
     sale.sellPrice = sellPrice;
     sale.shippingCost = shippingCost;
     sale.bordereau = bordereau || '';
+    
+    product.lotNumber = lotNumber;
+    product.importCost = importCost;
     
     await saveDoc('vinted_stock', product);
     
