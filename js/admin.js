@@ -1335,6 +1335,10 @@ window.renderAdminDemos = function() {
 
 async function addVintedProduct(e) {
     e.preventDefault();
+    const idField = document.getElementById('vinted-id');
+    const isUpdate = idField && idField.value !== '';
+    const currentEditId = isUpdate ? idField.value : null;
+
     const title = document.getElementById('vinted-title').value;
     const color = document.getElementById('vinted-color').value;
     const purchasePrice = parseFloat(document.getElementById('vinted-purchase-price').value);
@@ -1347,23 +1351,70 @@ async function addVintedProduct(e) {
     }
     
     const validPhoto = (photo && photo.startsWith('data:')) ? photo : '';
+    const db = getDB();
     
-    const newStock = {
-        id: generateId('vst_'),
-        title,
-        color,
-        purchasePrice,
-        initialQty: qty,
-        availableQty: qty,
-        soldQty: 0,
-        photo: validPhoto,
-        sales: [], // Will track individual sales: { price, bordereau, status }
-        createdAt: new Date().toISOString()
-    };
+    if (isUpdate) {
+        const product = db.vinted_stock.find(p => p.id === currentEditId);
+        if (product) {
+            // Update available qty based on difference
+            const diff = qty - product.initialQty;
+            product.initialQty = qty;
+            product.availableQty += diff;
+            if(product.availableQty < 0) product.availableQty = 0; // Prevent negative
+            
+            product.title = title;
+            product.color = color;
+            product.purchasePrice = purchasePrice;
+            if(validPhoto) product.photo = validPhoto;
+            
+            await saveDoc('vinted_stock', product);
+            alert("✅ Produit mis à jour avec succès !");
+        }
+    } else {
+        const newStock = {
+            id: generateId('vst_'),
+            title,
+            color,
+            purchasePrice,
+            initialQty: qty,
+            availableQty: qty,
+            soldQty: 0,
+            photo: validPhoto,
+            sales: [], // Will track individual sales: { price, bordereau, status }
+            createdAt: new Date().toISOString()
+        };
+        await saveDoc('vinted_stock', newStock);
+        alert("✅ Produit ajouté au stock avec succès !");
+    }
     
-    await saveDoc('vinted_stock', newStock);
+    cancelEditVinted();
+}
+
+window.editVintedProduct = function(id) {
+    const db = getDB();
+    const product = db.vinted_stock.find(p => p.id === id);
+    if(!product) return;
     
-    // Reset form
+    document.getElementById('vinted-id').value = product.id;
+    document.getElementById('vinted-title').value = product.title;
+    document.getElementById('vinted-color').value = product.color || '';
+    document.getElementById('vinted-purchase-price').value = product.purchasePrice;
+    document.getElementById('vinted-qty').value = product.initialQty;
+    
+    if(product.photo) {
+        document.getElementById('vinted-preview-photo').src = product.photo;
+        document.getElementById('vinted-preview-photo').classList.remove('hidden');
+    }
+    
+    document.getElementById('btn-submit-vinted').innerHTML = '<span class="material-icons-round">save</span> Enregistrer les modifications';
+    document.getElementById('btn-cancel-vinted').classList.remove('hidden');
+    
+    // Scroll to top
+    document.getElementById('admin-view-stock').scrollIntoView({behavior: "smooth"});
+};
+
+function cancelEditVinted() {
+    document.getElementById('vinted-id').value = '';
     document.getElementById('vinted-title').value = '';
     document.getElementById('vinted-color').value = '';
     document.getElementById('vinted-purchase-price').value = '';
@@ -1372,11 +1423,8 @@ async function addVintedProduct(e) {
     document.getElementById('vinted-preview-photo').classList.add('hidden');
     document.getElementById('vinted-upload-photo').value = '';
     
-    alert("✅ Produit ajouté au stock avec succès !");
-}
-
-function cancelEditVinted() {
-    // Basic cancel logic if edit mode is ever implemented
+    document.getElementById('btn-submit-vinted').innerHTML = '<span class="material-icons-round">add</span> Ajouter au Stock';
+    document.getElementById('btn-cancel-vinted').classList.add('hidden');
 }
 
 async function markProductSold(id) {
@@ -1388,6 +1436,9 @@ async function markProductSold(id) {
         return;
     }
 
+    const buyer = prompt(`À qui l'avez-vous vendu ? (ex: Pseudo Vinted) :`);
+    if(buyer === null) return; // Cancelled
+    
     const sellPriceStr = prompt(`Entrez le prix de VENTE final pour "${product.title}" (€) :`);
     if(!sellPriceStr) return;
     const sellPrice = parseFloat(sellPriceStr.replace(',', '.'));
@@ -1395,6 +1446,9 @@ async function markProductSold(id) {
         alert("Prix invalide.");
         return;
     }
+    
+    const shippingCostStr = prompt(`Entrez les FRAIS d'envoi / autres frais (€) :`, "0");
+    const shippingCost = shippingCostStr ? parseFloat(shippingCostStr.replace(',', '.')) : 0;
     
     const bordereau = prompt(`Entrez le LIEN du bordereau d'expédition (Optionnel) :`);
     
@@ -1405,7 +1459,9 @@ async function markProductSold(id) {
     
     product.sales.push({
         saleId: generateId('vsl_'),
+        buyer: buyer || 'Inconnu',
         sellPrice: sellPrice,
+        shippingCost: isNaN(shippingCost) ? 0 : shippingCost,
         bordereau: bordereau || '',
         status: 'à expédier',
         date: new Date().toISOString()
@@ -1454,7 +1510,8 @@ function renderVintedStock() {
         if(p.sales && p.sales.length > 0) {
             salesHtml += `<div class="mt-3"><strong class="text-sm">Détail des ventes :</strong><ul style="list-style:none; padding:0; margin:0; margin-top:5px; font-size: 0.85rem;">`;
             p.sales.forEach((sale, index) => {
-                const profit = sale.sellPrice - p.purchasePrice;
+                const shipping = sale.shippingCost || 0;
+                const profit = sale.sellPrice - p.purchasePrice - shipping;
                 productProfit += profit;
                 
                 let actionBtn = '';
@@ -1468,11 +1525,12 @@ function renderVintedStock() {
                 }
                 
                 const bordereauLink = sale.bordereau ? `<a href="${sale.bordereau}" target="_blank" style="color:var(--primary); text-decoration:underline;">Bordereau</a>` : 'Aucun bordereau';
+                const buyerName = sale.buyer || 'Inconnu';
                 
                 salesHtml += `
                     <li style="background: var(--bg-card); padding: 8px; border-radius: 6px; margin-bottom: 5px; border: 1px solid var(--border-color);">
                         <div class="flex justify-between items-center mb-1">
-                            <span>Vente #${index+1} - <strong>${sale.sellPrice}€</strong></span>
+                            <span><strong>${buyerName}</strong> - Vente: <strong>${sale.sellPrice}€</strong> (Frais: ${shipping}€)</span>
                             ${statusBadge}
                         </div>
                         <div class="flex justify-between items-center">
@@ -1506,6 +1564,7 @@ function renderVintedStock() {
                     <img src="${photoUrl}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
                     <div class="flex gap-2">
                         ${stockStatus}
+                        <button onclick="editVintedProduct('${p.id}')" class="btn-icon text-sm" title="Modifier"><span class="material-icons-round">edit</span></button>
                         <button onclick="deleteVintedProduct('${p.id}')" class="btn-icon danger text-sm" title="Supprimer"><span class="material-icons-round">delete</span></button>
                     </div>
                 </div>
@@ -1518,8 +1577,8 @@ function renderVintedStock() {
                         <div class="font-bold">${p.purchasePrice} €</div>
                     </div>
                     <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px;">
-                        <div class="text-muted text-xs">Bénéfice (Sur les ventes)</div>
-                        <div class="font-bold" style="color: var(--success);">${productProfit > 0 ? '+' : ''}${productProfit} €</div>
+                        <div class="text-muted text-xs">Bénéfice Net</div>
+                        <div class="font-bold" style="color: var(--success);">${productProfit > 0 ? '+' : ''}${productProfit.toFixed(2)} €</div>
                     </div>
                 </div>
                 
