@@ -1494,6 +1494,26 @@ async function deleteVintedProduct(id) {
     }
 }
 
+async function deleteVintedSale(productId, saleId) {
+    if(!confirm("Voulez-vous vraiment annuler et supprimer cette vente ? Le produit retournera en stock.")) return;
+    
+    const db = getDB();
+    const product = db.vinted_stock.find(p => p.id === productId);
+    if(!product || !product.sales) return;
+    
+    const saleIndex = product.sales.findIndex(s => s.saleId === saleId);
+    if(saleIndex === -1) return;
+    
+    // Remove the sale
+    product.sales.splice(saleIndex, 1);
+    
+    // Update quantities
+    product.availableQty = (product.availableQty || 0) + 1;
+    product.soldQty = Math.max(0, (product.soldQty || 1) - 1);
+    
+    await saveDoc('vinted_stock', product);
+}
+
 function renderVintedStock() {
     const db = getDB();
     const list = document.getElementById('admin-stock-list');
@@ -1706,7 +1726,10 @@ function renderVintedSales() {
             <td class="p-2">
                 <div>${statusBadge}</div>
                 ${bordereauLink}
-                ${actionBtn}
+                <div class="flex gap-2 items-center mt-2">
+                    ${actionBtn}
+                    <button class="btn-icon danger mt-1" style="font-size:1rem; padding: 2px;" onclick="deleteVintedSale('${sale.productId}', '${sale.saleId}')" title="Annuler et supprimer cette vente"><span class="material-icons-round" style="font-size:1.1rem;">delete</span></button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
