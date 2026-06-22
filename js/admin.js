@@ -1705,11 +1705,24 @@ function openEditSaleModal(productId, saleId) {
     const sale = product.sales.find(s => s.saleId === saleId);
     if(!sale) return;
     
-    // Populate platforms
+    // Synchroniser toutes les plateformes (existantes + historiques des ventes)
     const platformSelect = document.getElementById('edit-sale-platform');
     if(platformSelect) {
+        let allPlatforms = new Set((db.sales_platforms || []).map(p => p.name));
+        
+        // Parcourir toutes les ventes pour récupérer les plateformes déjà saisies
+        db.vinted_stock.forEach(prod => {
+            if(prod.sales) {
+                prod.sales.forEach(s => {
+                    if(s.platform) allPlatforms.add(s.platform);
+                });
+            }
+        });
+        
+        const sortedPlatforms = Array.from(allPlatforms).sort();
+        
         platformSelect.innerHTML = '<option value="">Sélectionnez une plateforme...</option>' + 
-            (db.sales_platforms || []).map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+            sortedPlatforms.map(name => `<option value="${name}">${name}</option>`).join('');
     }
     
     // Populate batches/lots
