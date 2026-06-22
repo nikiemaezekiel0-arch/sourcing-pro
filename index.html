@@ -2238,6 +2238,48 @@
             <span id="demo-timer-clock" style="font-size: 1.2rem; font-weight: bold; color: white; font-family: monospace;">--:--</span>
         </div>
     </div>
+    <!-- EDIT SALE MODAL -->
+    <div id="modal-edit-sale" class="modal modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'modal-edit-sale')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()" style="max-width: 600px;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="flex items-center gap-2"><span class="material-icons-round">edit</span> Modifier la Vente</h3>
+                <span class="close-btn material-icons-round" onclick="closeModal('modal-edit-sale')">close</span>
+            </div>
+            
+            <form id="form-edit-sale" onsubmit="submitEditSale(event)">
+                <input type="hidden" id="edit-sale-product-id">
+                <input type="hidden" id="edit-sale-id">
+                
+                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Acheteur</label>
+                        <input type="text" id="edit-sale-buyer" class="input-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Plateforme *</label>
+                        <input type="text" id="edit-sale-platform" class="input-control" required>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Prix de Vente (€) *</label>
+                        <input type="number" step="0.01" id="edit-sale-sell-price" class="input-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Frais d'envoi annexes (€)</label>
+                        <input type="number" step="0.01" id="edit-sale-shipping" class="input-control">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Lien du Bordereau</label>
+                        <input type="url" id="edit-sale-bordereau" class="input-control" placeholder="https://...">
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-sale')">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
     
     <!-- MANAGE BATCHES MODAL (CHINE) -->
     <div id="modal-manage-batches" class="modal modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'modal-manage-batches')">
@@ -2316,15 +2358,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=15"></script>
-    <script src="js/currency.js?v=15"></script>
-    <script src="js/db.js?v=15"></script>
-    <script src="js/auth.js?v=15"></script>
-    <script src="js/admin.js?v=15"></script>
-    <script src="js/admin-agent.js?v=15"></script>
-    <script src="js/client.js?v=15"></script>
-    <script src="js/client-agent.js?v=15"></script>
-    <script src="js/supplier.js?v=15"></script>
+    <script src="js/i18n.js?v=16"></script>
+    <script src="js/currency.js?v=16"></script>
+    <script src="js/db.js?v=16"></script>
+    <script src="js/auth.js?v=16"></script>
+    <script src="js/admin.js?v=16"></script>
+    <script src="js/admin-agent.js?v=16"></script>
+    <script src="js/client.js?v=16"></script>
+    <script src="js/client-agent.js?v=16"></script>
+    <script src="js/supplier.js?v=16"></script>
     
     <!-- Main Routing Logic -->
     <script>

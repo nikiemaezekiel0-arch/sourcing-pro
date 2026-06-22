@@ -1697,6 +1697,64 @@ async function deleteVintedSale(productId, saleId) {
     await saveDoc('vinted_stock', product);
 }
 
+function openEditSaleModal(productId, saleId) {
+    const db = getDB();
+    const product = db.vinted_stock.find(p => p.id === productId);
+    if(!product || !product.sales) return;
+    
+    const sale = product.sales.find(s => s.saleId === saleId);
+    if(!sale) return;
+    
+    document.getElementById('edit-sale-product-id').value = productId;
+    document.getElementById('edit-sale-id').value = saleId;
+    
+    document.getElementById('edit-sale-buyer').value = sale.buyer || '';
+    document.getElementById('edit-sale-platform').value = sale.platform || '';
+    document.getElementById('edit-sale-sell-price').value = sale.sellPrice;
+    document.getElementById('edit-sale-shipping').value = sale.shippingCost || 0;
+    document.getElementById('edit-sale-bordereau').value = sale.bordereau || '';
+    
+    document.getElementById('modal-edit-sale').classList.remove('hidden');
+}
+
+async function submitEditSale(e) {
+    e.preventDefault();
+    const db = getDB();
+    
+    const productId = document.getElementById('edit-sale-product-id').value;
+    const saleId = document.getElementById('edit-sale-id').value;
+    
+    const buyer = document.getElementById('edit-sale-buyer').value;
+    const platform = document.getElementById('edit-sale-platform').value;
+    const sellPrice = parseFloat(document.getElementById('edit-sale-sell-price').value);
+    const shippingCost = parseFloat(document.getElementById('edit-sale-shipping').value) || 0;
+    const bordereau = document.getElementById('edit-sale-bordereau').value;
+    
+    if(!platform || isNaN(sellPrice)) {
+        alert("Veuillez remplir les champs obligatoires (Plateforme et Prix de vente).");
+        return;
+    }
+    
+    const product = db.vinted_stock.find(p => p.id === productId);
+    if(!product || !product.sales) return;
+    
+    const sale = product.sales.find(s => s.saleId === saleId);
+    if(!sale) return;
+    
+    sale.buyer = buyer || 'Inconnu';
+    sale.platform = platform;
+    sale.sellPrice = sellPrice;
+    sale.shippingCost = shippingCost;
+    sale.bordereau = bordereau || '';
+    
+    await saveDoc('vinted_stock', product);
+    
+    closeModal('modal-edit-sale');
+    // We don't need to alert to save user clicks, just re-render
+    renderVintedSales();
+    renderVintedStock();
+}
+
 function renderVintedStock() {
     const db = getDB();
     const list = document.getElementById('admin-stock-list');
@@ -1936,6 +1994,7 @@ function renderVintedSales() {
                 ${bordereauLink}
                 <div class="flex gap-2 items-center mt-2">
                     ${actionBtn}
+                    <button class="btn-icon secondary mt-1" style="font-size:1rem; padding: 2px;" onclick="openEditSaleModal('${sale.productId}', '${sale.saleId}')" title="Modifier cette vente"><span class="material-icons-round" style="font-size:1.1rem;">edit</span></button>
                     <button class="btn-icon danger mt-1" style="font-size:1rem; padding: 2px;" onclick="deleteVintedSale('${sale.productId}', '${sale.saleId}')" title="Annuler et supprimer cette vente"><span class="material-icons-round" style="font-size:1.1rem;">delete</span></button>
                 </div>
             </td>
