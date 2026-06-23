@@ -2011,25 +2011,86 @@
                         </div>
                     </div>
                 </div>
-                <!-- Sales Vinted View -->
                 <div id="admin-view-sales" class="hidden glass-panel">
                     <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
                         <div>
-                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">receipt_long</span> Suivi des Ventes (Vinted & Leboncoin)</h3>
-                            <p class="text-muted text-sm">Gérez vos expéditions et suivez vos bénéfices.</p>
+                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">receipt_long</span> Analytique & Suivi des Ventes</h3>
+                            <p class="text-muted text-sm">Analysez votre rentabilité, vos marges et vos performances globales.</p>
                         </div>
-                        <div class="flex gap-4" style="flex-wrap: wrap;">
-                            <div class="glass-panel text-center" style="padding: 15px 20px;">
-                                <div class="text-sm text-muted">Chiffre d'Affaires</div>
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-color);" id="admin-sales-total-revenue">0,00 €</div>
-                            </div>
-                            <div class="glass-panel text-center" style="background: rgba(239, 68, 68, 0.05); padding: 15px 20px;">
-                                <div class="text-sm text-muted">Coûts (Achats + Frais)</div>
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger);" id="admin-sales-total-costs">0,00 €</div>
-                            </div>
-                            <div class="glass-panel text-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px 20px;">
-                                <div class="text-sm text-muted">Bénéfice Net</div>
-                                <div style="font-size: 1.5rem; font-weight: 800; color: #10b981;" id="admin-sales-total-profit">0,00 €</div>
+                    </div>
+                    
+                    <!-- Filters Section -->
+                    <div class="glass-panel mb-6 flex items-end gap-4" style="padding: 15px; flex-wrap: wrap; background: rgba(0,0,0,0.2);">
+                        <div style="flex:1; min-width:150px;">
+                            <label class="text-xs text-muted mb-1 block">Période</label>
+                            <select id="filter-sales-period" class="input-control" onchange="renderVintedSales()">
+                                <option value="all">Toutes les dates</option>
+                                <option value="this_month">Ce mois-ci</option>
+                                <option value="last_month">Mois dernier</option>
+                                <option value="6_months">6 derniers mois</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:150px;">
+                            <label class="text-xs text-muted mb-1 block">Plateforme</label>
+                            <select id="filter-sales-platform" class="input-control" onchange="renderVintedSales()">
+                                <option value="all">Toutes</option>
+                                <option value="Vinted">Vinted</option>
+                                <option value="Leboncoin">Leboncoin</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:150px;">
+                            <label class="text-xs text-muted mb-1 block">Statut</label>
+                            <select id="filter-sales-status" class="input-control" onchange="renderVintedSales()">
+                                <option value="all">Tous</option>
+                                <option value="à expédier">À Expédier</option>
+                                <option value="envoyé">Expédié / Envoyé</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="exportSalesCSV()" class="btn-secondary flex items-center gap-2" style="height: 42px;">
+                                <span class="material-icons-round">download</span> Exporter CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="grid-layout mb-6" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div class="glass-panel text-center" style="padding: 15px;">
+                            <div class="text-xs text-muted">Ventes réalisées</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-color);" id="admin-sales-count">0</div>
+                        </div>
+                        <div class="glass-panel text-center" style="padding: 15px;">
+                            <div class="text-xs text-muted">Chiffre d'Affaires</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-color);" id="admin-sales-total-revenue">0,00 €</div>
+                        </div>
+                        <div class="glass-panel text-center" style="background: rgba(239, 68, 68, 0.05); padding: 15px;">
+                            <div class="text-xs text-muted">Coûts (Achats+Frais)</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--danger);" id="admin-sales-total-costs">0,00 €</div>
+                        </div>
+                        <div class="glass-panel text-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px;">
+                            <div class="text-xs text-muted">Bénéfice Net</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: #10b981;" id="admin-sales-total-profit">0,00 €</div>
+                        </div>
+                        <div class="glass-panel text-center" style="padding: 15px;">
+                            <div class="text-xs text-muted">Marge (ROI)</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-gold);" id="admin-sales-roi">0%</div>
+                        </div>
+                        <div class="glass-panel text-center" style="padding: 15px;">
+                            <div class="text-xs text-muted">Bénéfice Moyen/Vente</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-color);" id="admin-sales-avg-profit">0,00 €</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="grid-layout mb-6" style="grid-template-columns: 2fr 1fr; gap: 20px;">
+                        <div class="glass-panel">
+                            <h4 class="mb-4 text-sm text-muted">Évolution mensuelle (CA & Bénéfices)</h4>
+                            <canvas id="sales-trend-chart" style="max-height: 250px; width: 100%;"></canvas>
+                        </div>
+                        <div class="glass-panel flex flex-col justify-center items-center">
+                            <h4 class="mb-4 text-sm text-muted">Répartition par Plateforme</h4>
+                            <div style="position:relative; height:200px; width:100%; max-width: 200px; margin: 0 auto;">
+                                <canvas id="sales-platform-chart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -2378,15 +2439,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=24"></script>
-    <script src="js/currency.js?v=24"></script>
-    <script src="js/db.js?v=24"></script>
-    <script src="js/auth.js?v=24"></script>
-    <script src="js/admin.js?v=24"></script>
-    <script src="js/admin-agent.js?v=24"></script>
-    <script src="js/client.js?v=24"></script>
-    <script src="js/client-agent.js?v=24"></script>
-    <script src="js/supplier.js?v=24"></script>
+    <script src="js/i18n.js?v=25"></script>
+    <script src="js/currency.js?v=25"></script>
+    <script src="js/db.js?v=25"></script>
+    <script src="js/auth.js?v=25"></script>
+    <script src="js/admin.js?v=25"></script>
+    <script src="js/admin-agent.js?v=25"></script>
+    <script src="js/client.js?v=25"></script>
+    <script src="js/client-agent.js?v=25"></script>
+    <script src="js/supplier.js?v=25"></script>
     
     <!-- Main Routing Logic -->
     <script>

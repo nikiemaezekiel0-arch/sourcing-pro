@@ -1728,16 +1728,41 @@ async function markProductSold(id) {
 async function renderSaleRegistration() {
     const db = getDB();
     
-    // Initialize default platforms if empty
-    if(!db.sales_platforms || db.sales_platforms.length === 0) {
-        db.sales_platforms = [
-            { id: generateId('plat_'), name: 'Vinted' },
-            { id: generateId('plat_'), name: 'Leboncoin' }
-        ];
-        // Note: we could save them to DB, but if it's the first time, it's better to save them.
-        for(let p of db.sales_platforms) {
-            await saveDoc('sales_platforms', p);
+    // Enforce only Vinted and Leboncoin, remove duplicates
+    if (!db.sales_platforms) db.sales_platforms = [];
+    let hasVinted = false;
+    let hasLeboncoin = false;
+    const toDelete = [];
+    
+    db.sales_platforms.forEach(p => {
+        const name = p.name ? p.name.trim().toLowerCase() : '';
+        if (name === 'vinted' && !hasVinted) {
+            p.name = 'Vinted'; // Ensure capitalization
+            hasVinted = true;
+        } else if (name === 'leboncoin' && !hasLeboncoin) {
+            p.name = 'Leboncoin';
+            hasLeboncoin = true;
+        } else {
+            toDelete.push(p.id);
         }
+    });
+    
+    if (toDelete.length > 0) {
+        for (let id of toDelete) {
+            await deleteDoc('sales_platforms', id);
+        }
+        db.sales_platforms = db.sales_platforms.filter(p => !toDelete.includes(p.id));
+    }
+    
+    if (!hasVinted) {
+        const v = { id: generateId('plat_'), name: 'Vinted' };
+        await saveDoc('sales_platforms', v);
+        db.sales_platforms.push(v);
+    }
+    if (!hasLeboncoin) {
+        const l = { id: generateId('plat_'), name: 'Leboncoin' };
+        await saveDoc('sales_platforms', l);
+        db.sales_platforms.push(l);
     }
     
     // Populate platforms
@@ -2079,18 +2104,28 @@ function renderVintedStock() {
     }
 }
 
+let salesTrendChartInstance = null;
+let salesPlatformChartInstance = null;
+
 function renderVintedSales() {
     const db = getDB();
     const list = document.getElementById('admin-sales-list');
+    
+    // UI Elements
+    const countCounter = document.getElementById('admin-sales-count');
     const profitCounter = document.getElementById('admin-sales-total-profit');
     const revenueCounter = document.getElementById('admin-sales-total-revenue');
     const costsCounter = document.getElementById('admin-sales-total-costs');
-    if(!list) return;
+    const roiCounter = document.getElementById('admin-sales-roi');
+    const avgProfitCounter = document.getElementById('admin-sales-avg-profit');
     
+    // Filters
+    const periodFilter = document.getElementById('filter-sales-period') ? document.getElementById('filter-sales-period').value : 'all';
+    const platformFilter = document.getElementById('filter-sales-platform') ? document.getElementById('filter-sales-platform').value : 'all';
+    const statusFilter = document.getElementById('filter-sales-status') ? document.getElementById('filter-sales-status').value : 'all';
+
+    if(!list) return;
     list.innerHTML = '';
-    let totalProfit = 0;
-    let totalRevenue = 0;
-    let totalCosts = 0;
     
     // Extract all sales from all products
     let allSales = [];
@@ -2100,10 +2135,6 @@ function renderVintedSales() {
                 const shipping = sale.shippingCost || 0;
                 const importCost = p.importCost || 0;
                 const profit = sale.sellPrice - p.purchasePrice - shipping - importCost;
-                
-                totalProfit += profit;
-                totalRevenue += sale.sellPrice;
-                totalCosts += (p.purchasePrice + shipping + importCost);
                 
                 allSales.push({
                     ...sale,
@@ -2120,21 +2151,63 @@ function renderVintedSales() {
         }
     });
     
+    // Apply Filters
+    const now = new Date();
+    const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const firstDay6MonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    allSales = allSales.filter(sale => {
+        const saleDate = new Date(sale.date);
+        
+        // Period Filter
+        if (periodFilter === 'this_month' && saleDate < firstDayThisMonth) return false;
+        if (periodFilter === 'last_month' && (saleDate < firstDayLastMonth || saleDate >= firstDayThisMonth)) return false;
+        if (periodFilter === '6_months' && saleDate < firstDay6MonthsAgo) return false;
+        
+        // Platform Filter
+        const pName = (sale.platform || '').trim().toLowerCase();
+        if (platformFilter !== 'all' && pName !== platformFilter.toLowerCase()) return false;
+        
+        // Status Filter
+        if (statusFilter !== 'all' && sale.status !== statusFilter) return false;
+        
+        return true;
+    });
+    
     // Sort sales by date descending
     allSales.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    if(profitCounter) {
-        profitCounter.innerText = totalProfit > 0 ? `+${totalProfit.toFixed(2)} €` : `${totalProfit.toFixed(2)} €`;
+    // Calculate KPIs
+    let totalProfit = 0;
+    let totalRevenue = 0;
+    let totalCosts = 0;
+    allSales.forEach(sale => {
+        totalProfit += sale.profit;
+        totalRevenue += sale.sellPrice;
+        totalCosts += (sale.purchasePrice + sale.shipping + sale.importCost);
+    });
+    
+    const count = allSales.length;
+    const roi = totalCosts > 0 ? (totalProfit / totalCosts) * 100 : 0;
+    const avgProfit = count > 0 ? totalProfit / count : 0;
+    
+    // Update KPI DOM
+    if(countCounter) countCounter.innerText = count;
+    if(profitCounter) profitCounter.innerText = totalProfit > 0 ? `+${totalProfit.toFixed(2)} €` : `${totalProfit.toFixed(2)} €`;
+    if(revenueCounter) revenueCounter.innerText = `${totalRevenue.toFixed(2)} €`;
+    if(costsCounter) costsCounter.innerText = `${totalCosts.toFixed(2)} €`;
+    if(roiCounter) {
+        roiCounter.innerText = `${roi.toFixed(1)}%`;
+        roiCounter.style.color = roi >= 0 ? '#10b981' : '#ef4444';
     }
-    if(revenueCounter) {
-        revenueCounter.innerText = `${totalRevenue.toFixed(2)} €`;
-    }
-    if(costsCounter) {
-        costsCounter.innerText = `${totalCosts.toFixed(2)} €`;
-    }
+    if(avgProfitCounter) avgProfitCounter.innerText = `${avgProfit.toFixed(2)} €`;
+    
+    // Generate Charts
+    generateSalesCharts(allSales);
     
     if(allSales.length === 0) {
-        list.innerHTML = '<p class="text-muted text-center py-4">Aucune vente enregistrée pour le moment.</p>';
+        list.innerHTML = '<p class="text-muted text-center py-4">Aucune vente ne correspond à vos critères.</p>';
         return;
     }
     
@@ -2213,11 +2286,203 @@ function renderVintedSales() {
     
     const wrapper = document.createElement('div');
     wrapper.style.overflowX = 'auto';
-    wrapper.style.width = '100%';
-    wrapper.style.WebkitOverflowScrolling = 'touch';
     wrapper.appendChild(table);
-    
     list.appendChild(wrapper);
 }
 
 
+
+function generateSalesCharts(allSales) {
+    if (typeof Chart === 'undefined') return; // Exit if Chart.js is not loaded
+    
+    const ctxTrend = document.getElementById('sales-trend-chart');
+    const ctxPlatform = document.getElementById('sales-platform-chart');
+    
+    if (!ctxTrend || !ctxPlatform) return;
+    
+    // Group by Month (Last 6 Months)
+    const months = [];
+    const revData = [];
+    const profitData = [];
+    
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push(d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
+        revData.push(0);
+        profitData.push(0);
+    }
+    
+    // Platform data
+    const platCounts = { 'Vinted': 0, 'Leboncoin': 0, 'Autre': 0 };
+    
+    allSales.forEach(sale => {
+        const sd = new Date(sale.date);
+        
+        // Populate Trend
+        const mDiff = (now.getFullYear() - sd.getFullYear()) * 12 + now.getMonth() - sd.getMonth();
+        if (mDiff >= 0 && mDiff <= 5) {
+            const idx = 5 - mDiff;
+            revData[idx] += sale.sellPrice;
+            profitData[idx] += sale.profit;
+        }
+        
+        // Populate Platform
+        const plat = (sale.platform || '').trim().toLowerCase();
+        if (plat === 'vinted') platCounts['Vinted']++;
+        else if (plat === 'leboncoin') platCounts['Leboncoin']++;
+        else platCounts['Autre']++;
+    });
+
+    // Destroy existing instances if present
+    if (salesTrendChartInstance) salesTrendChartInstance.destroy();
+    if (salesPlatformChartInstance) salesPlatformChartInstance.destroy();
+    
+    // Chart 1: Trend
+    salesTrendChartInstance = new Chart(ctxTrend, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Chiffre d\'Affaires (€)',
+                    data: revData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Bénéfice Net (€)',
+                    data: profitData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    borderColor: '#10b981',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: {
+                legend: { labels: { color: '#f8fafc' } }
+            }
+        }
+    });
+    
+    // Chart 2: Platform Pie
+    const platLabels = [];
+    const platData = [];
+    const platColors = [];
+    
+    if(platCounts['Vinted'] > 0) { platLabels.push('Vinted'); platData.push(platCounts['Vinted']); platColors.push('#09b1ba'); }
+    if(platCounts['Leboncoin'] > 0) { platLabels.push('Leboncoin'); platData.push(platCounts['Leboncoin']); platColors.push('#ff6e14'); }
+    if(platCounts['Autre'] > 0) { platLabels.push('Autre'); platData.push(platCounts['Autre']); platColors.push('#94a3b8'); }
+    
+    if (platData.length === 0) {
+        platLabels.push('Aucune vente');
+        platData.push(1);
+        platColors.push('#333');
+    }
+
+    salesPlatformChartInstance = new Chart(ctxPlatform, {
+        type: 'doughnut',
+        data: {
+            labels: platLabels,
+            datasets: [{
+                data: platData,
+                backgroundColor: platColors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#f8fafc', padding: 10 } }
+            },
+            cutout: '70%'
+        }
+    });
+}
+
+function exportSalesCSV() {
+    const db = getDB();
+    
+    // Get currently applied filters
+    const periodFilter = document.getElementById('filter-sales-period') ? document.getElementById('filter-sales-period').value : 'all';
+    const platformFilter = document.getElementById('filter-sales-platform') ? document.getElementById('filter-sales-platform').value : 'all';
+    const statusFilter = document.getElementById('filter-sales-status') ? document.getElementById('filter-sales-status').value : 'all';
+
+    let allSales = [];
+    db.vinted_stock.forEach(p => {
+        if(p.sales && p.sales.length > 0) {
+            p.sales.forEach(sale => {
+                allSales.push({
+                    ...sale,
+                    productTitle: p.title,
+                    purchasePrice: p.purchasePrice,
+                    importCost: p.importCost || 0,
+                    shipping: sale.shippingCost || 0,
+                    profit: sale.sellPrice - p.purchasePrice - (sale.shippingCost || 0) - (p.importCost || 0)
+                });
+            });
+        }
+    });
+    
+    // Apply Filters (same as UI)
+    const now = new Date();
+    const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const firstDay6MonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    allSales = allSales.filter(sale => {
+        const saleDate = new Date(sale.date);
+        if (periodFilter === 'this_month' && saleDate < firstDayThisMonth) return false;
+        if (periodFilter === 'last_month' && (saleDate < firstDayLastMonth || saleDate >= firstDayThisMonth)) return false;
+        if (periodFilter === '6_months' && saleDate < firstDay6MonthsAgo) return false;
+        
+        const pName = (sale.platform || '').trim().toLowerCase();
+        if (platformFilter !== 'all' && pName !== platformFilter.toLowerCase()) return false;
+        if (statusFilter !== 'all' && sale.status !== statusFilter) return false;
+        return true;
+    });
+    
+    if (allSales.length === 0) {
+        showNotification("Aucune donnée à exporter avec ces filtres.", "danger");
+        return;
+    }
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date;Produit;Acheteur;Plateforme;Statut;Prix de Vente;Prix d'Achat;Frais Import;Frais Port;Benefice Net\n";
+    
+    allSales.forEach(s => {
+        const dateStr = new Date(s.date).toLocaleDateString('fr-FR');
+        const row = [
+            dateStr,
+            `"${s.productTitle.replace(/"/g, '""')}"`,
+            `"${(s.buyer || '').replace(/"/g, '""')}"`,
+            s.platform || 'N/A',
+            s.status,
+            s.sellPrice.toFixed(2),
+            s.purchasePrice.toFixed(2),
+            s.importCost.toFixed(2),
+            s.shipping.toFixed(2),
+            s.profit.toFixed(2)
+        ].join(";");
+        csvContent += row + "\n";
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Export_Ventes_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
