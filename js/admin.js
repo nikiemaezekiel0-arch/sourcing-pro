@@ -1356,6 +1356,7 @@ async function submitNewBatch(e) {
     e.preventDefault();
     const db = getDB();
     
+    const batchId = document.getElementById('batch-id').value;
     const ref = document.getElementById('batch-ref').value;
     const totalCost = parseFloat(document.getElementById('batch-total-cost').value);
     const itemsCount = parseInt(document.getElementById('batch-items-count').value);
@@ -1364,21 +1365,61 @@ async function submitNewBatch(e) {
     
     const unitCost = totalCost / itemsCount;
     
-    const newBatch = {
-        id: generateId('batch_'),
-        ref,
-        totalCost,
-        itemsCount,
-        unitCost,
-        createdAt: new Date().toISOString()
-    };
-    
     if(!db.shipping_batches) db.shipping_batches = [];
-    db.shipping_batches.push(newBatch);
-    await saveDoc('shipping_batches', newBatch);
     
-    e.target.reset();
+    if (batchId) {
+        // Mode modification
+        const batchIndex = db.shipping_batches.findIndex(b => b.id === batchId);
+        if(batchIndex !== -1) {
+            db.shipping_batches[batchIndex].ref = ref;
+            db.shipping_batches[batchIndex].totalCost = totalCost;
+            db.shipping_batches[batchIndex].itemsCount = itemsCount;
+            db.shipping_batches[batchIndex].unitCost = unitCost;
+            await saveDoc('shipping_batches', db.shipping_batches[batchIndex]);
+            showNotification('Colis mis à jour avec succès.', 'success');
+        }
+    } else {
+        // Mode création
+        const newBatch = {
+            id: generateId('batch_'),
+            ref,
+            totalCost,
+            itemsCount,
+            unitCost,
+            createdAt: new Date().toISOString()
+        };
+        db.shipping_batches.push(newBatch);
+        await saveDoc('shipping_batches', newBatch);
+        showNotification('Nouveau colis créé.', 'success');
+    }
+    
+    cancelEditBatch();
     renderBatchesList();
+}
+
+function openEditBatch(id) {
+    const db = getDB();
+    const batch = (db.shipping_batches || []).find(b => b.id === id);
+    if(!batch) return;
+    
+    document.getElementById('batch-id').value = batch.id;
+    document.getElementById('batch-ref').value = batch.ref;
+    document.getElementById('batch-total-cost').value = batch.totalCost;
+    document.getElementById('batch-items-count').value = batch.itemsCount;
+    
+    document.getElementById('batch-form-title').innerText = 'Modifier le colis';
+    document.getElementById('batch-submit-btn').innerHTML = '<span class="material-icons-round">save</span> Mettre à jour';
+    document.getElementById('batch-cancel-btn').classList.remove('hidden');
+}
+
+function cancelEditBatch() {
+    const form = document.getElementById('form-manage-batch');
+    if(form) form.reset();
+    
+    document.getElementById('batch-id').value = '';
+    document.getElementById('batch-form-title').innerText = 'Créer un nouveau lot / colis';
+    document.getElementById('batch-submit-btn').innerHTML = '<span class="material-icons-round">add</span> Enregistrer le colis';
+    document.getElementById('batch-cancel-btn').classList.add('hidden');
 }
 
 function renderBatchesList() {
@@ -1398,7 +1439,10 @@ function renderBatchesList() {
         <div class="glass-panel" style="padding: 10px; font-size: 0.9rem;">
             <div class="flex justify-between items-center mb-1">
                 <span class="font-bold text-accent-gold">${b.ref}</span>
-                <button onclick="deleteBatch('${b.id}')" class="btn-icon danger text-sm"><span class="material-icons-round" style="font-size:1rem;">delete</span></button>
+                <div class="flex gap-2">
+                    <button onclick="openEditBatch('${b.id}')" class="btn-icon secondary text-sm" title="Modifier"><span class="material-icons-round" style="font-size:1rem;">edit</span></button>
+                    <button onclick="deleteBatch('${b.id}')" class="btn-icon danger text-sm" title="Supprimer"><span class="material-icons-round" style="font-size:1rem;">delete</span></button>
+                </div>
             </div>
             <div class="text-sm text-muted">
                 Coût total: ${b.totalCost}€ | Articles: ${b.itemsCount}<br>

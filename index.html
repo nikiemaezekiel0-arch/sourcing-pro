@@ -2301,8 +2301,9 @@
                 <span class="close-btn material-icons-round" onclick="closeModal('modal-manage-batches')">close</span>
             </div>
             
-            <form onsubmit="submitNewBatch(event)" class="mb-6">
-                <h4 class="mb-3 text-sm text-accent-gold">Créer un nouveau lot / colis</h4>
+            <form id="form-manage-batch" onsubmit="submitNewBatch(event)" class="mb-6">
+                <h4 id="batch-form-title" class="mb-3 text-sm text-accent-gold">Créer un nouveau lot / colis</h4>
+                <input type="hidden" id="batch-id" value="">
                 <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group" style="grid-column: span 2;">
                         <label>Référence de suivi *</label>
@@ -2317,9 +2318,10 @@
                         <input type="number" id="batch-items-count" class="input-control" min="1" required>
                     </div>
                 </div>
-                <div class="mt-4 flex justify-end">
-                    <button type="submit" class="btn-primary flex items-center gap-2">
-                        <span class="material-icons-round">add</span> Enregistrer le colis
+                <div class="mt-4 flex justify-end gap-3">
+                    <button type="button" id="batch-cancel-btn" class="btn-secondary hidden" onclick="cancelEditBatch()">Annuler</button>
+                    <button type="submit" id="batch-submit-btn" class="btn-primary flex items-center gap-2">
+                        <span class="material-icons-round">save</span> Enregistrer le colis
                     </button>
                 </div>
             </form>
@@ -2370,15 +2372,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=18"></script>
-    <script src="js/currency.js?v=18"></script>
-    <script src="js/db.js?v=18"></script>
-    <script src="js/auth.js?v=18"></script>
-    <script src="js/admin.js?v=18"></script>
-    <script src="js/admin-agent.js?v=18"></script>
-    <script src="js/client.js?v=18"></script>
-    <script src="js/client-agent.js?v=18"></script>
-    <script src="js/supplier.js?v=18"></script>
+    <script src="js/i18n.js?v=19"></script>
+    <script src="js/currency.js?v=19"></script>
+    <script src="js/db.js?v=19"></script>
+    <script src="js/auth.js?v=19"></script>
+    <script src="js/admin.js?v=19"></script>
+    <script src="js/admin-agent.js?v=19"></script>
+    <script src="js/client.js?v=19"></script>
+    <script src="js/client-agent.js?v=19"></script>
+    <script src="js/supplier.js?v=19"></script>
     
     <!-- Main Routing Logic -->
     <script>
