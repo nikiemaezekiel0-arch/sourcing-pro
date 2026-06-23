@@ -2113,7 +2113,8 @@ function renderVintedSales() {
                     purchasePrice: p.purchasePrice,
                     importCost: importCost,
                     profit: profit,
-                    shipping: shipping
+                    shipping: shipping,
+                    lotNumber: p.lotNumber
                 });
             });
         }
@@ -2144,6 +2145,7 @@ function renderVintedSales() {
         <thead>
             <tr style="border-bottom: 2px solid var(--border-color);">
                 <th class="p-2">Produit</th>
+                <th class="p-2">Colis / Type</th>
                 <th class="p-2">Plateforme</th>
                 <th class="p-2">Acheteur</th>
                 <th class="p-2">Prix de Vente</th>
@@ -2186,6 +2188,7 @@ function renderVintedSales() {
                     </div>
                 </div>
             </td>
+            <td class="p-2 text-sm text-muted" style="min-width: 120px;">${getBatchDisplayRef(sale.lotNumber) || '-'}</td>
             <td class="p-2 text-sm" style="min-width: 100px;"><span class="badge" style="background: rgba(255,255,255,0.1);">${platformName}</span></td>
             <td class="p-2 text-sm" style="min-width: 100px;"><strong>${buyerName}</strong></td>
             <td class="p-2" style="min-width: 150px;">
