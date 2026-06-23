@@ -1356,32 +1356,32 @@ function closeManageBatchesModal() {
 }
 
 function addBatchCategoryRow(catName = '', weight = '', qty = '') {
-    const db = getDB();
     const container = document.getElementById('batch-categories-container');
     const row = document.createElement('div');
-    row.className = 'batch-cat-row flex gap-2 items-center';
-    
-    let optionsHtml = '<option value="">Catégorie...</option>';
-    let found = false;
-    if(db.categories) {
-        db.categories.forEach(c => {
-            const selected = (c.name === catName || c.id === catName) ? 'selected' : '';
-            if (selected) found = true;
-            optionsHtml += `<option value="${c.name}" ${selected}>${c.name}</option>`;
-        });
-    }
-    // Si la catégorie existait déjà mais n'est pas dans db.categories (ex: ancienne saisie libre)
-    if(catName && !found) {
-        optionsHtml += `<option value="${catName}" selected>${catName}</option>`;
-    }
+    row.className = 'batch-cat-row glass-panel mb-2 relative';
+    row.style.padding = '10px';
+    row.style.background = 'rgba(255,255,255,0.02)';
     
     row.innerHTML = `
-        <select class="input-control batch-cat-name" required style="flex:2;">
-            ${optionsHtml}
-        </select>
-        <input type="number" step="0.01" min="0.01" class="input-control batch-cat-weight" placeholder="Poids U. (kg)" value="${weight}" required style="flex:1;">
-        <input type="number" min="1" class="input-control batch-cat-qty" placeholder="Qté" value="${qty}" required style="flex:1;">
-        <button type="button" class="btn-icon danger text-sm" onclick="this.parentElement.remove()" title="Supprimer"><span class="material-icons-round">delete</span></button>
+        <button type="button" class="btn-icon danger text-sm absolute top-2 right-2" onclick="this.parentElement.remove()" title="Supprimer" style="width:24px; height:24px; padding:0;">
+            <span class="material-icons-round" style="font-size:14px;">close</span>
+        </button>
+        <div class="flex flex-col gap-2 mt-2">
+            <div>
+                <label class="text-xs text-muted mb-1 block">Nom de l'article</label>
+                <input type="text" class="input-control batch-cat-name" placeholder="ex: Baskets" value="${catName}" required>
+            </div>
+            <div class="flex gap-2">
+                <div style="flex:1;">
+                    <label class="text-xs text-muted mb-1 block">Poids Unitaire (kg)</label>
+                    <input type="number" step="0.01" min="0.01" class="input-control batch-cat-weight" placeholder="0.5" value="${weight}" required>
+                </div>
+                <div style="flex:1;">
+                    <label class="text-xs text-muted mb-1 block">Quantité</label>
+                    <input type="number" min="1" class="input-control batch-cat-qty" placeholder="10" value="${qty}" required>
+                </div>
+            </div>
+        </div>
     `;
     container.appendChild(row);
 }
