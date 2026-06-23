@@ -1728,41 +1728,15 @@ async function markProductSold(id) {
 async function renderSaleRegistration() {
     const db = getDB();
     
-    // Enforce only Vinted and Leboncoin, remove duplicates
-    if (!db.sales_platforms) db.sales_platforms = [];
-    let hasVinted = false;
-    let hasLeboncoin = false;
-    const toDelete = [];
-    
-    db.sales_platforms.forEach(p => {
-        const name = p.name ? p.name.trim().toLowerCase() : '';
-        if (name === 'vinted' && !hasVinted) {
-            p.name = 'Vinted'; // Ensure capitalization
-            hasVinted = true;
-        } else if (name === 'leboncoin' && !hasLeboncoin) {
-            p.name = 'Leboncoin';
-            hasLeboncoin = true;
-        } else {
-            toDelete.push(p.id);
+    // Initialize default platforms if empty
+    if(!db.sales_platforms || db.sales_platforms.length === 0) {
+        db.sales_platforms = [
+            { id: generateId('plat_'), name: 'Vinted' },
+            { id: generateId('plat_'), name: 'Leboncoin' }
+        ];
+        for(let p of db.sales_platforms) {
+            saveDoc('sales_platforms', p); // Silent save
         }
-    });
-    
-    if (toDelete.length > 0) {
-        for (let id of toDelete) {
-            await deleteDoc('sales_platforms', id);
-        }
-        db.sales_platforms = db.sales_platforms.filter(p => !toDelete.includes(p.id));
-    }
-    
-    if (!hasVinted) {
-        const v = { id: generateId('plat_'), name: 'Vinted' };
-        await saveDoc('sales_platforms', v);
-        db.sales_platforms.push(v);
-    }
-    if (!hasLeboncoin) {
-        const l = { id: generateId('plat_'), name: 'Leboncoin' };
-        await saveDoc('sales_platforms', l);
-        db.sales_platforms.push(l);
     }
     
     // Populate platforms

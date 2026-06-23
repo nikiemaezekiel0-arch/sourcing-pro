@@ -2054,35 +2054,35 @@
                     </div>
 
                     <!-- KPIs -->
-                    <div class="grid-layout mb-6" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
-                        <div class="glass-panel text-center" style="padding: 15px;">
-                            <div class="text-xs text-muted">Ventes réalisées</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-color);" id="admin-sales-count">0</div>
+                    <div class="grid-layout mb-6" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <div class="glass-panel text-center" style="padding: 10px 5px;">
+                            <div class="text-muted" style="font-size: 0.65rem;">Ventes</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-color);" id="admin-sales-count">0</div>
                         </div>
-                        <div class="glass-panel text-center" style="padding: 15px;">
-                            <div class="text-xs text-muted">Chiffre d'Affaires</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-color);" id="admin-sales-total-revenue">0,00 €</div>
+                        <div class="glass-panel text-center" style="padding: 10px 5px;">
+                            <div class="text-muted" style="font-size: 0.65rem;">C.A.</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-color);" id="admin-sales-total-revenue">0,00 €</div>
                         </div>
-                        <div class="glass-panel text-center" style="background: rgba(239, 68, 68, 0.05); padding: 15px;">
-                            <div class="text-xs text-muted">Coûts (Achats+Frais)</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--danger);" id="admin-sales-total-costs">0,00 €</div>
+                        <div class="glass-panel text-center" style="background: rgba(239, 68, 68, 0.05); padding: 10px 5px;">
+                            <div class="text-muted" style="font-size: 0.65rem;">Coûts</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--danger);" id="admin-sales-total-costs">0,00 €</div>
                         </div>
-                        <div class="glass-panel text-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px;">
-                            <div class="text-xs text-muted">Bénéfice Net</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: #10b981;" id="admin-sales-total-profit">0,00 €</div>
+                        <div class="glass-panel text-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 10px 5px;">
+                            <div class="text-muted" style="font-size: 0.65rem;">Bénéfice Net</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: #10b981;" id="admin-sales-total-profit">0,00 €</div>
                         </div>
-                        <div class="glass-panel text-center" style="padding: 15px;">
-                            <div class="text-xs text-muted">Marge (ROI)</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-gold);" id="admin-sales-roi">0%</div>
+                        <div class="glass-panel text-center" style="padding: 10px 5px;">
+                            <div class="text-muted" style="font-size: 0.65rem;">Marge (ROI)</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent-gold);" id="admin-sales-roi">0%</div>
                         </div>
-                        <div class="glass-panel text-center" style="padding: 15px;">
-                            <div class="text-xs text-muted">Bénéfice Moyen/Vente</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-color);" id="admin-sales-avg-profit">0,00 €</div>
+                        <div class="glass-panel text-center" style="padding: 10px 5px;">
+                            <div class="text-muted" style="font-size: 0.65rem;">Bénéfice/Vente</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-color);" id="admin-sales-avg-profit">0,00 €</div>
                         </div>
                     </div>
                     
                     <!-- Charts -->
-                    <div class="grid-layout mb-6" style="grid-template-columns: 2fr 1fr; gap: 20px;">
+                    <div class="grid-layout mb-6" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
                         <div class="glass-panel">
                             <h4 class="mb-4 text-sm text-muted">Évolution mensuelle (CA & Bénéfices)</h4>
                             <canvas id="sales-trend-chart" style="max-height: 250px; width: 100%;"></canvas>
@@ -2439,15 +2439,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=25"></script>
-    <script src="js/currency.js?v=25"></script>
-    <script src="js/db.js?v=25"></script>
-    <script src="js/auth.js?v=25"></script>
-    <script src="js/admin.js?v=25"></script>
-    <script src="js/admin-agent.js?v=25"></script>
-    <script src="js/client.js?v=25"></script>
-    <script src="js/client-agent.js?v=25"></script>
-    <script src="js/supplier.js?v=25"></script>
+    <script src="js/i18n.js?v=26"></script>
+    <script src="js/currency.js?v=26"></script>
+    <script src="js/db.js?v=26"></script>
+    <script src="js/auth.js?v=26"></script>
+    <script src="js/admin.js?v=26"></script>
+    <script src="js/admin-agent.js?v=26"></script>
+    <script src="js/client.js?v=26"></script>
+    <script src="js/client-agent.js?v=26"></script>
+    <script src="js/supplier.js?v=26"></script>
     
     <!-- Main Routing Logic -->
     <script>
