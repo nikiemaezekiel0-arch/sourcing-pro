@@ -2304,18 +2304,24 @@
             <form id="form-manage-batch" onsubmit="submitNewBatch(event)" class="mb-6">
                 <h4 id="batch-form-title" class="mb-3 text-sm text-accent-gold">Créer un nouveau lot / colis</h4>
                 <input type="hidden" id="batch-id" value="">
-                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="grid-layout mb-4" style="grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group" style="grid-column: span 2;">
                         <label>Référence de suivi *</label>
                         <input type="text" id="batch-ref" class="input-control" placeholder="ex: YT123456789" required>
                     </div>
-                    <div class="form-group">
-                        <label>Coût de transport total (€) *</label>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Coût de transport total du colis (€) *</label>
                         <input type="number" step="0.01" id="batch-total-cost" class="input-control" required>
                     </div>
-                    <div class="form-group">
-                        <label>Nombre d'articles total *</label>
-                        <input type="number" id="batch-items-count" class="input-control" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="flex justify-between items-center mb-2">
+                        <span>Contenu du Colis (Catégories) *</span>
+                        <button type="button" class="btn-icon secondary text-sm" onclick="addBatchCategoryRow()" title="Ajouter une ligne"><span class="material-icons-round">add</span></button>
+                    </label>
+                    <div id="batch-categories-container" class="flex flex-col gap-2">
+                        <!-- Dynamic rows injected here -->
                     </div>
                 </div>
                 <div class="mt-4 flex justify-end gap-3">
@@ -2372,15 +2378,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=19"></script>
-    <script src="js/currency.js?v=19"></script>
-    <script src="js/db.js?v=19"></script>
-    <script src="js/auth.js?v=19"></script>
-    <script src="js/admin.js?v=19"></script>
-    <script src="js/admin-agent.js?v=19"></script>
-    <script src="js/client.js?v=19"></script>
-    <script src="js/client-agent.js?v=19"></script>
-    <script src="js/supplier.js?v=19"></script>
+    <script src="js/i18n.js?v=20"></script>
+    <script src="js/currency.js?v=20"></script>
+    <script src="js/db.js?v=20"></script>
+    <script src="js/auth.js?v=20"></script>
+    <script src="js/admin.js?v=20"></script>
+    <script src="js/admin-agent.js?v=20"></script>
+    <script src="js/client.js?v=20"></script>
+    <script src="js/client-agent.js?v=20"></script>
+    <script src="js/supplier.js?v=20"></script>
     
     <!-- Main Routing Logic -->
     <script>

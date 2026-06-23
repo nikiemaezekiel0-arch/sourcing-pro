@@ -1344,12 +1344,28 @@ window.renderAdminDemos = function() {
 function openManageBatchesModal() {
     renderBatchesList();
     document.getElementById('modal-manage-batches').classList.remove('hidden');
+    if(document.getElementById('batch-categories-container').children.length === 0) {
+        addBatchCategoryRow();
+    }
 }
 
 function closeManageBatchesModal() {
     document.getElementById('modal-manage-batches').classList.add('hidden');
     // Refresh the select in stock form
     renderVintedStock(); 
+}
+
+function addBatchCategoryRow(catName = '', weight = '', qty = '') {
+    const container = document.getElementById('batch-categories-container');
+    const row = document.createElement('div');
+    row.className = 'batch-cat-row flex gap-2 items-center';
+    row.innerHTML = `
+        <input type="text" class="input-control batch-cat-name" placeholder="Catégorie (ex: Baskets)" value="${catName}" required style="flex:2;">
+        <input type="number" step="0.01" min="0.01" class="input-control batch-cat-weight" placeholder="Poids U. (kg)" value="${weight}" required style="flex:1;">
+        <input type="number" min="1" class="input-control batch-cat-qty" placeholder="Qté" value="${qty}" required style="flex:1;">
+        <button type="button" class="btn-icon danger text-sm" onclick="this.parentElement.remove()" title="Supprimer"><span class="material-icons-round">delete</span></button>
+    `;
+    container.appendChild(row);
 }
 
 async function submitNewBatch(e) {
@@ -1359,11 +1375,33 @@ async function submitNewBatch(e) {
     const batchId = document.getElementById('batch-id').value;
     const ref = document.getElementById('batch-ref').value;
     const totalCost = parseFloat(document.getElementById('batch-total-cost').value);
-    const itemsCount = parseInt(document.getElementById('batch-items-count').value);
     
-    if(!ref || isNaN(totalCost) || isNaN(itemsCount) || itemsCount < 1) return;
+    const rowElements = document.querySelectorAll('.batch-cat-row');
+    if(rowElements.length === 0) {
+        alert("Veuillez ajouter au moins une catégorie au colis.");
+        return;
+    }
     
-    const unitCost = totalCost / itemsCount;
+    let items = [];
+    let totalWeight = 0;
+    
+    rowElements.forEach(row => {
+        const cat = row.querySelector('.batch-cat-name').value.trim();
+        const weight = parseFloat(row.querySelector('.batch-cat-weight').value);
+        const qty = parseInt(row.querySelector('.batch-cat-qty').value);
+        if(cat && weight > 0 && qty > 0) {
+            totalWeight += (weight * qty);
+            items.push({ category: cat, unitWeight: weight, qty: qty, computedCost: 0 });
+        }
+    });
+    
+    if(items.length === 0 || totalWeight <= 0) return;
+    
+    // Règle de 3
+    const costPerKg = totalCost / totalWeight;
+    items.forEach(item => {
+        item.computedCost = costPerKg * item.unitWeight;
+    });
     
     if(!db.shipping_batches) db.shipping_batches = [];
     
@@ -1373,8 +1411,11 @@ async function submitNewBatch(e) {
         if(batchIndex !== -1) {
             db.shipping_batches[batchIndex].ref = ref;
             db.shipping_batches[batchIndex].totalCost = totalCost;
-            db.shipping_batches[batchIndex].itemsCount = itemsCount;
-            db.shipping_batches[batchIndex].unitCost = unitCost;
+            db.shipping_batches[batchIndex].items = items;
+            // Supprimer les anciens champs obsolètes
+            delete db.shipping_batches[batchIndex].itemsCount;
+            delete db.shipping_batches[batchIndex].unitCost;
+            
             await saveDoc('shipping_batches', db.shipping_batches[batchIndex]);
             showNotification('Colis mis à jour avec succès.', 'success');
         }
@@ -1384,8 +1425,7 @@ async function submitNewBatch(e) {
             id: generateId('batch_'),
             ref,
             totalCost,
-            itemsCount,
-            unitCost,
+            items,
             createdAt: new Date().toISOString()
         };
         db.shipping_batches.push(newBatch);
@@ -1405,7 +1445,18 @@ function openEditBatch(id) {
     document.getElementById('batch-id').value = batch.id;
     document.getElementById('batch-ref').value = batch.ref;
     document.getElementById('batch-total-cost').value = batch.totalCost;
-    document.getElementById('batch-items-count').value = batch.itemsCount;
+    
+    const container = document.getElementById('batch-categories-container');
+    container.innerHTML = '';
+    
+    if (batch.items && batch.items.length > 0) {
+        batch.items.forEach(item => {
+            addBatchCategoryRow(item.category, item.unitWeight, item.qty);
+        });
+    } else {
+        // Legacy batch
+        addBatchCategoryRow('Articles divers', 1, batch.itemsCount || 1);
+    }
     
     document.getElementById('batch-form-title').innerText = 'Modifier le colis';
     document.getElementById('batch-submit-btn').innerHTML = '<span class="material-icons-round">save</span> Mettre à jour';
@@ -1415,6 +1466,9 @@ function openEditBatch(id) {
 function cancelEditBatch() {
     const form = document.getElementById('form-manage-batch');
     if(form) form.reset();
+    
+    document.getElementById('batch-categories-container').innerHTML = '';
+    addBatchCategoryRow(); // Add one empty row
     
     document.getElementById('batch-id').value = '';
     document.getElementById('batch-form-title').innerText = 'Créer un nouveau lot / colis';
@@ -1432,24 +1486,30 @@ function renderBatchesList() {
         return;
     }
     
-    // Sort descending by date
     const sorted = [...db.shipping_batches].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
     
-    list.innerHTML = sorted.map(b => `
+    list.innerHTML = sorted.map(b => {
+        let detailsHtml = '';
+        if (b.items && b.items.length > 0) {
+            let itemsHtml = b.items.map(i => `<div style="display:flex; justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 2px;"><span>${i.qty}x ${i.category} (${i.unitWeight}kg)</span> <strong style="color:var(--accent-gold);">${i.computedCost.toFixed(2)}€/u</strong></div>`).join('');
+            detailsHtml = `<div class="mt-2 text-xs" style="background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">${itemsHtml}</div>`;
+        } else {
+            // Legacy
+            detailsHtml = `<div class="mt-1 text-xs">Articles: ${b.itemsCount} <strong style="color:var(--accent-gold);">${b.unitCost.toFixed(2)}€/u</strong></div>`;
+        }
+        
+        return `
         <div class="glass-panel" style="padding: 10px; font-size: 0.9rem;">
             <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-accent-gold">${b.ref}</span>
+                <span class="font-bold text-accent-gold">${b.ref} (${b.totalCost}€)</span>
                 <div class="flex gap-2">
                     <button onclick="openEditBatch('${b.id}')" class="btn-icon secondary text-sm" title="Modifier"><span class="material-icons-round" style="font-size:1rem;">edit</span></button>
                     <button onclick="deleteBatch('${b.id}')" class="btn-icon danger text-sm" title="Supprimer"><span class="material-icons-round" style="font-size:1rem;">delete</span></button>
                 </div>
             </div>
-            <div class="text-sm text-muted">
-                Coût total: ${b.totalCost}€ | Articles: ${b.itemsCount}<br>
-                <strong style="color:var(--text-color);">Soit ${b.unitCost.toFixed(2)}€ / article</strong>
-            </div>
+            ${detailsHtml}
         </div>
-    `).join('');
+    `}).join('');
 }
 
 async function deleteBatch(id) {
@@ -1459,23 +1519,71 @@ async function deleteBatch(id) {
     }
 }
 
-function updateImportCostFromBatch() {
+function getBatchOptionsHtml() {
     const db = getDB();
+    if(!db.shipping_batches || db.shipping_batches.length === 0) return '<option value="">Aucun lot sélectionné...</option>';
+    
+    let html = '<option value="">Aucun lot sélectionné...</option>';
+    const sortedBatches = [...db.shipping_batches].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    sortedBatches.forEach(b => {
+        if(b.items && b.items.length > 0) {
+            html += `<optgroup label="${b.ref} (${b.totalCost}€)">`;
+            b.items.forEach(item => {
+                // Escape quotes in category just in case
+                const safeCat = item.category.replace(/"/g, '&quot;');
+                html += `<option value="${b.id}::${safeCat}">${item.category} (${item.computedCost.toFixed(2)}€/u)</option>`;
+            });
+            html += `</optgroup>`;
+        } else {
+            // Legacy batch
+            html += `<option value="${b.id}">${b.ref} (${(b.unitCost || 0).toFixed(2)}€/u)</option>`;
+        }
+    });
+    
+    return html;
+}
+
+function getBatchImportCost(lotValue) {
+    if(!lotValue) return 0;
+    const db = getDB();
+    const parts = lotValue.split('::');
+    const batchId = parts[0];
+    const category = parts[1];
+    
+    const batch = (db.shipping_batches || []).find(b => b.id === batchId);
+    if(batch) {
+        if (category && batch.items) {
+            const item = batch.items.find(i => i.category === category);
+            if(item) return item.computedCost;
+        }
+        return batch.unitCost || 0;
+    }
+    return 0;
+}
+
+function getBatchDisplayRef(lotValue) {
+    if(!lotValue) return '';
+    const db = getDB();
+    const parts = lotValue.split('::');
+    const batchId = parts[0];
+    const category = parts[1];
+    
+    const batch = (db.shipping_batches || []).find(b => b.id === batchId);
+    if(batch) {
+        if (category) return `${batch.ref} - ${category}`;
+        return batch.ref;
+    }
+    return lotValue;
+}
+
+function updateImportCostFromBatch() {
     const select = document.getElementById('vinted-lot');
     const importCostInput = document.getElementById('vinted-import-cost');
     
     if(!select || !importCostInput) return;
     
-    const batchId = select.value;
-    if(!batchId) {
-        importCostInput.value = 0;
-        return;
-    }
-    
-    const batch = (db.shipping_batches || []).find(b => b.id === batchId);
-    if(batch) {
-        importCostInput.value = batch.unitCost.toFixed(2);
-    }
+    importCostInput.value = getBatchImportCost(select.value).toFixed(2);
 }
 
 // --- VINTED / LEBONCOIN STOCK MANAGEMENT ---
@@ -1771,10 +1879,8 @@ function openEditSaleModal(productId, saleId) {
     
     // Populate batches/lots
     const batchSelect = document.getElementById('edit-sale-lot');
-    if(batchSelect && db.shipping_batches) {
-        const sortedBatches = [...db.shipping_batches].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-        batchSelect.innerHTML = '<option value="">Aucun lot sélectionné...</option>' + 
-            sortedBatches.map(b => `<option value="${b.id}">${b.ref} (${b.unitCost.toFixed(2)}€/unité)</option>`).join('');
+    if(batchSelect) {
+        batchSelect.innerHTML = getBatchOptionsHtml();
     }
     
     document.getElementById('edit-sale-product-id').value = productId;
@@ -1792,22 +1898,12 @@ function openEditSaleModal(productId, saleId) {
 }
 
 function updateImportCostInEditSale() {
-    const db = getDB();
     const select = document.getElementById('edit-sale-lot');
     const importCostInput = document.getElementById('edit-sale-import-cost');
     
     if(!select || !importCostInput) return;
     
-    const batchId = select.value;
-    if(!batchId) {
-        importCostInput.value = 0;
-        return;
-    }
-    
-    const batch = (db.shipping_batches || []).find(b => b.id === batchId);
-    if(batch) {
-        importCostInput.value = batch.unitCost.toFixed(2);
-    }
+    importCostInput.value = getBatchImportCost(select.value).toFixed(2);
 }
 
 async function submitEditSale(e) {
@@ -1859,11 +1955,9 @@ function renderVintedStock() {
     
     // Populate batch select
     const batchSelect = document.getElementById('vinted-lot');
-    if(batchSelect && db.shipping_batches) {
+    if(batchSelect) {
         const currentVal = batchSelect.value;
-        const sortedBatches = [...db.shipping_batches].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-        batchSelect.innerHTML = '<option value="">Aucun lot sélectionné...</option>' + 
-            sortedBatches.map(b => `<option value="${b.id}">${b.ref} (${b.unitCost.toFixed(2)}€/unité)</option>`).join('');
+        batchSelect.innerHTML = getBatchOptionsHtml();
         if(currentVal) batchSelect.value = currentVal;
     }
     
@@ -1910,13 +2004,9 @@ function renderVintedStock() {
         
         const photoUrl = p.photo || 'https://via.placeholder.com/150?text=No+Photo';
         
-        let batchRefDisplay = p.lotNumber;
-        if(p.lotNumber && p.lotNumber.startsWith('batch_')) {
-            const batchObj = (db.shipping_batches || []).find(b => b.id === p.lotNumber);
-            if(batchObj) batchRefDisplay = batchObj.ref;
-        }
+        let batchRefDisplay = getBatchDisplayRef(p.lotNumber);
         
-        const lotBadge = p.lotNumber ? `<div class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 0.7rem; margin-top: 5px;">📦 Lot: ${batchRefDisplay} (Import: ${importCost}€)</div>` : '';
+        const lotBadge = p.lotNumber ? `<div class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 0.7rem; margin-top: 5px;">📦 Lot: ${batchRefDisplay} (Import: ${importCost.toFixed(2)}€)</div>` : '';
         
         card.innerHTML = `
             <div>
