@@ -1356,11 +1356,29 @@ function closeManageBatchesModal() {
 }
 
 function addBatchCategoryRow(catName = '', weight = '', qty = '') {
+    const db = getDB();
     const container = document.getElementById('batch-categories-container');
     const row = document.createElement('div');
     row.className = 'batch-cat-row flex gap-2 items-center';
+    
+    let optionsHtml = '<option value="">Catégorie...</option>';
+    let found = false;
+    if(db.categories) {
+        db.categories.forEach(c => {
+            const selected = (c.name === catName || c.id === catName) ? 'selected' : '';
+            if (selected) found = true;
+            optionsHtml += `<option value="${c.name}" ${selected}>${c.name}</option>`;
+        });
+    }
+    // Si la catégorie existait déjà mais n'est pas dans db.categories (ex: ancienne saisie libre)
+    if(catName && !found) {
+        optionsHtml += `<option value="${catName}" selected>${catName}</option>`;
+    }
+    
     row.innerHTML = `
-        <input type="text" class="input-control batch-cat-name" placeholder="Catégorie (ex: Baskets)" value="${catName}" required style="flex:2;">
+        <select class="input-control batch-cat-name" required style="flex:2;">
+            ${optionsHtml}
+        </select>
         <input type="number" step="0.01" min="0.01" class="input-control batch-cat-weight" placeholder="Poids U. (kg)" value="${weight}" required style="flex:1;">
         <input type="number" min="1" class="input-control batch-cat-qty" placeholder="Qté" value="${qty}" required style="flex:1;">
         <button type="button" class="btn-icon danger text-sm" onclick="this.parentElement.remove()" title="Supprimer"><span class="material-icons-round">delete</span></button>
