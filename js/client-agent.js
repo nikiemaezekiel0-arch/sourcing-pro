@@ -376,6 +376,7 @@ async function checkout(event) {
             variantInfo: `Couleur: ${item.color}, Taille: ${item.size}`,
             totalPriceFormatted: formatPrice(item.priceCNY * item.qty), // Save the string as they saw it
             status: 'pending',
+            paymentStatus: 'unpaid',
             createdAt: new Date().toISOString()
         };
         await saveDoc('orders', order);
@@ -456,11 +457,15 @@ function renderClientOrders() {
         if (order.status === 'shipped') { statusColor = 'text-success'; statusText = 'Expédié'; statusIcon = 'local_shipping'; progress = 75; }
         if (order.status === 'delivered') { statusColor = 'text-muted'; statusText = 'Livré'; statusIcon = 'check_circle'; progress = 100; }
 
+        const paymentBadge = order.paymentStatus === 'paid' 
+            ? '<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success); font-size:0.7rem; margin-left:8px;">✅ Payé</span>'
+            : '<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger); font-size:0.7rem; margin-left:8px;">❌ Non Payé</span>';
+
         const card = document.createElement('div');
         card.className = 'glass-panel mb-4';
         card.innerHTML = `
             <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-                <div class="font-bold text-lg">Commande #${order.id.split('_')[1]}</div>
+                <div class="font-bold text-lg">Commande #${order.id.split('_')[1]} ${paymentBadge}</div>
                 <div class="text-xs text-muted">${new Date(order.createdAt).toLocaleDateString()}</div>
             </div>
             

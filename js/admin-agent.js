@@ -203,6 +203,10 @@ function renderAdminOrders() {
                     <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>🚚 Expédié</option>
                     <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>✅ Livré</option>
                 </select>
+                <select class="input-field ml-2" style="width: auto; padding: 0.2rem 0.5rem; border-color: ${order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--warning)'};" onchange="updateOrderPaymentStatus('${order.id}', this.value)">
+                    <option value="unpaid" ${order.paymentStatus !== 'paid' ? 'selected' : ''}>❌ Non Payé</option>
+                    <option value="paid" ${order.paymentStatus === 'paid' ? 'selected' : ''}>✅ Payé</option>
+                </select>
                 <button class="btn-icon danger ml-auto" onclick="deleteOrder('${order.id}')"><span class="material-icons-round">delete_outline</span></button>
             </div>
         `;
@@ -218,6 +222,17 @@ async function updateOrderStatus(orderId, newStatus) {
     order.status = newStatus;
     await saveDoc('orders', order);
     showNotification("Statut mis à jour", "success");
+    renderAdminOrders();
+}
+
+async function updateOrderPaymentStatus(orderId, newStatus) {
+    const db = getDB();
+    const order = db.orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    order.paymentStatus = newStatus;
+    await saveDoc('orders', order);
+    showNotification("Statut de paiement mis à jour", "success");
     renderAdminOrders();
 }
 
