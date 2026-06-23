@@ -36,6 +36,8 @@ body { background-color: var(--bg-color); color: var(--text-primary); overflow-x
 .text-warning { color: var(--accent-gold); }
 .text-sm { font-size: 0.875rem; }
 .flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
 .items-center { align-items: center; }
