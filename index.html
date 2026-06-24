@@ -2014,73 +2014,151 @@
                         </div>
                     </div>
                 </div>
+                <!-- Premium Sales Dashboard Style -->
+                <style>
+                    #admin-view-sales {
+                        background: radial-gradient(circle at top left, #0d1b2a, #030712);
+                        position: relative;
+                        overflow: hidden;
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        padding: 30px !important;
+                    }
+                    /* Glowing particles effect */
+                    #admin-view-sales::before {
+                        content: '';
+                        position: absolute;
+                        top: 20%; left: 30%;
+                        width: 300px; height: 300px;
+                        background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%);
+                        pointer-events: none;
+                    }
+                    #admin-view-sales::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 10%; right: 20%;
+                        width: 250px; height: 250px;
+                        background: radial-gradient(circle, rgba(16, 185, 129, 0.1), transparent 70%);
+                        pointer-events: none;
+                    }
+                    .glass-card-premium {
+                        background: rgba(255, 255, 255, 0.03);
+                        backdrop-filter: blur(12px);
+                        -webkit-backdrop-filter: blur(12px);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+                        border-radius: 12px;
+                        padding: 20px;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 10;
+                    }
+                    .glass-card-premium:hover {
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.15);
+                    }
+                    .kpi-label {
+                        font-size: 0.85rem;
+                        color: rgba(255, 255, 255, 0.6);
+                        margin-bottom: 8px;
+                        text-align: left;
+                    }
+                    .kpi-value {
+                        font-size: 2rem;
+                        font-weight: 700;
+                        text-align: left;
+                        line-height: 1.1;
+                    }
+                    .filter-row {
+                        display: grid;
+                        grid-template-columns: repeat(3, 1fr);
+                        gap: 15px;
+                        position: relative;
+                        z-index: 10;
+                    }
+                    .premium-select {
+                        background: rgba(0, 0, 0, 0.2);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        color: #fff;
+                        border-radius: 8px;
+                        padding: 8px 12px;
+                        width: 100%;
+                        font-size: 0.9rem;
+                        outline: none;
+                    }
+                    .premium-select option {
+                        background: #0f172a;
+                        color: #fff;
+                    }
+                    .header-top {
+                        position: relative;
+                        z-index: 10;
+                    }
+                </style>
                 <div id="admin-view-sales" class="hidden glass-panel">
-                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                    <div class="flex justify-between items-start mb-8 header-top" style="flex-wrap: wrap; gap: 1rem;">
                         <div>
-                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">receipt_long</span> Analytique & Suivi des Ventes</h3>
-                            <p class="text-muted text-sm">Analysez votre rentabilité, vos marges et vos performances globales.</p>
+                            <h3 class="flex items-center gap-2" style="font-size: 1.5rem; margin-bottom: 5px;"><span class="material-icons-round text-warning">show_chart</span> Analytique & Suivi des Ventes</h3>
+                            <p class="text-sm" style="color: rgba(255,255,255,0.5);">Analysez votre rentabilité, vos marges et vos performances globales.</p>
                         </div>
+                        <button onclick="exportSalesCSV()" class="glass-card-premium flex items-center gap-2 cursor-pointer hover:bg-white/10" style="padding: 10px 16px; font-size: 0.9rem; color: #fff;">
+                            <span class="material-icons-round" style="font-size: 1.1rem;">download</span> Exporter CSV
+                        </button>
                     </div>
                     
                     <!-- Filters Section -->
-                    <div class="glass-panel mb-6 flex items-end gap-4" style="padding: 15px; flex-wrap: wrap; background: rgba(0,0,0,0.2);">
-                        <div style="flex:1; min-width:150px;">
-                            <label class="text-xs text-muted mb-1 block">Période</label>
-                            <select id="filter-sales-period" class="input-control" onchange="renderVintedSales()">
+                    <div class="filter-row mb-6">
+                        <div class="glass-card-premium" style="padding: 12px 15px;">
+                            <label class="kpi-label block" style="font-size: 0.75rem;">Période</label>
+                            <select id="filter-sales-period" class="premium-select" onchange="renderVintedSales()">
                                 <option value="all">Toutes les dates</option>
                                 <option value="this_month">Ce mois-ci</option>
                                 <option value="last_month">Mois dernier</option>
                                 <option value="6_months">6 derniers mois</option>
                             </select>
                         </div>
-                        <div style="flex:1; min-width:150px;">
-                            <label class="text-xs text-muted mb-1 block">Plateforme</label>
-                            <select id="filter-sales-platform" class="input-control" onchange="renderVintedSales()">
+                        <div class="glass-card-premium" style="padding: 12px 15px;">
+                            <label class="kpi-label block" style="font-size: 0.75rem;">Plateforme</label>
+                            <select id="filter-sales-platform" class="premium-select" onchange="renderVintedSales()">
                                 <option value="all">Toutes</option>
                                 <option value="Vinted">Vinted</option>
                                 <option value="Leboncoin">Leboncoin</option>
                             </select>
                         </div>
-                        <div style="flex:1; min-width:150px;">
-                            <label class="text-xs text-muted mb-1 block">Statut</label>
-                            <select id="filter-sales-status" class="input-control" onchange="renderVintedSales()">
+                        <div class="glass-card-premium" style="padding: 12px 15px;">
+                            <label class="kpi-label block" style="font-size: 0.75rem;">Statut</label>
+                            <select id="filter-sales-status" class="premium-select" onchange="renderVintedSales()">
                                 <option value="all">Tous</option>
                                 <option value="à expédier">À Expédier</option>
                                 <option value="envoyé">Expédié / Envoyé</option>
                             </select>
                         </div>
-                        <div class="flex items-end">
-                            <button onclick="exportSalesCSV()" class="btn-secondary flex items-center gap-2" style="height: 42px;">
-                                <span class="material-icons-round">download</span> Exporter CSV
-                            </button>
-                        </div>
                     </div>
 
                     <!-- KPIs -->
-                    <div class="grid-layout mb-6" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                        <div class="glass-panel text-center" style="padding: 10px 5px;">
-                            <div class="text-muted" style="font-size: 0.65rem;">Ventes</div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #ffffff;" id="admin-sales-count">0</div>
+                    <div class="grid-layout mb-8 relative z-10" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Ventes</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-count">0</div>
                         </div>
-                        <div class="glass-panel text-center" style="padding: 10px 5px;">
-                            <div class="text-muted" style="font-size: 0.65rem;">C.A.</div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #ffffff;" id="admin-sales-total-revenue">0,00 €</div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">C.A.</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-total-revenue">0.00 €</div>
                         </div>
-                        <div class="glass-panel text-center" style="background: rgba(239, 68, 68, 0.05); padding: 10px 5px;">
-                            <div class="text-muted" style="font-size: 0.65rem;">Coûts</div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #ff7676;" id="admin-sales-total-costs">0,00 €</div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Coûts</div>
+                            <div class="kpi-value" style="color: #ff7676;" id="admin-sales-total-costs">0.00 €</div>
                         </div>
-                        <div class="glass-panel text-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 10px 5px;">
-                            <div class="text-muted" style="font-size: 0.65rem;">Bénéfice Net</div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #86efac;" id="admin-sales-total-profit">0,00 €</div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Bénéfice Net</div>
+                            <div class="kpi-value" style="color: #86efac;" id="admin-sales-total-profit">0.00 €</div>
                         </div>
-                        <div class="glass-panel text-center" style="padding: 10px 5px;">
-                            <div class="text-muted" style="font-size: 0.65rem;">Marge (ROI)</div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #ffffff;" id="admin-sales-roi">0%</div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Marge (ROI)</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-roi">0%</div>
                         </div>
-                        <div class="glass-panel text-center" style="padding: 10px 5px;">
-                            <div class="text-muted" style="font-size: 0.65rem;">Bénéfice/Vente</div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #ffffff;" id="admin-sales-avg-profit">0,00 €</div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Bénéfice / Vente</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-avg-profit">0.00 €</div>
                         </div>
                     </div>
                     
@@ -2442,15 +2520,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=26"></script>
-    <script src="js/currency.js?v=26"></script>
-    <script src="js/db.js?v=26"></script>
-    <script src="js/auth.js?v=26"></script>
-    <script src="js/admin.js?v=26"></script>
-    <script src="js/admin-agent.js?v=26"></script>
-    <script src="js/client.js?v=26"></script>
-    <script src="js/client-agent.js?v=26"></script>
-    <script src="js/supplier.js?v=26"></script>
+    <script src="js/i18n.js?v=27"></script>
+    <script src="js/currency.js?v=27"></script>
+    <script src="js/db.js?v=27"></script>
+    <script src="js/auth.js?v=27"></script>
+    <script src="js/admin.js?v=27"></script>
+    <script src="js/admin-agent.js?v=27"></script>
+    <script src="js/client.js?v=27"></script>
+    <script src="js/client-agent.js?v=27"></script>
+    <script src="js/supplier.js?v=27"></script>
     
     <!-- Main Routing Logic -->
     <script>
