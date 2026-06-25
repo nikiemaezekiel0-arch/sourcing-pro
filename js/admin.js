@@ -1744,6 +1744,8 @@ async function renderSaleRegistration() {
     // Populate platforms
     const platformList = document.getElementById('sales-platforms-list');
     const platformSelect = document.getElementById('sale-platform');
+    const filterPlatform = document.getElementById('filter-sales-platform');
+    
     if(platformList) {
         platformList.innerHTML = db.sales_platforms.map(p => `
             <div class="flex justify-between items-center bg-gray-800 p-2 rounded">
@@ -1755,6 +1757,15 @@ async function renderSaleRegistration() {
     if(platformSelect) {
         platformSelect.innerHTML = '<option value="">Sélectionnez une plateforme...</option>' + 
             db.sales_platforms.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    }
+    if (filterPlatform) {
+        const currentValue = filterPlatform.value;
+        filterPlatform.innerHTML = '<option value="all">Toutes</option>' + 
+            db.sales_platforms.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+        // Restore previous selection if it still exists
+        if ([...filterPlatform.options].some(o => o.value === currentValue)) {
+            filterPlatform.value = currentValue;
+        }
     }
     
     // Populate products
