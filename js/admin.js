@@ -16,6 +16,16 @@ function initAdminPortal() {
     window.addEventListener('db_updated', async () => {
         const db = getDB();
 
+        // One-time wipe of platforms as requested by user
+        if (!localStorage.getItem('platforms_wiped_v3') && db.sales_platforms && db.sales_platforms.length > 0) {
+            localStorage.setItem('platforms_wiped_v3', 'true');
+            try {
+                for(let p of db.sales_platforms) {
+                    firestore.collection('sales_platforms').doc(p.id).delete();
+                }
+            } catch(e){}
+        }
+
         renderAdminUsers();
         renderAdminCategories();
         renderAdminSuppliers();
@@ -1728,16 +1738,8 @@ async function markProductSold(id) {
 async function renderSaleRegistration() {
     const db = getDB();
     
-    // Initialize default platforms if empty
-    if(!db.sales_platforms || db.sales_platforms.length === 0) {
-        db.sales_platforms = [
-            { id: generateId('plat_'), name: 'Vinted' },
-            { id: generateId('plat_'), name: 'Leboncoin' }
-        ];
-        for(let p of db.sales_platforms) {
-            saveDoc('sales_platforms', p); // Silent save
-        }
-    }
+    // Ensure the array exists
+    if(!db.sales_platforms) db.sales_platforms = [];
     
     // Populate platforms
     const platformList = document.getElementById('sales-platforms-list');
