@@ -2044,8 +2044,10 @@ function renderVintedStock() {
         }
     
         let stockStatus = '';
-        if(p.availableQty > 0) {
+        if (p.availableQty > 1) {
             stockStatus = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">En Stock (${p.availableQty})</span>`;
+        } else if (p.availableQty === 1) {
+            stockStatus = `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger); animation: pulse 2s infinite;">Dernier article !</span>`;
         } else {
             stockStatus = `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">Rupture</span>`;
         }
@@ -2090,11 +2092,14 @@ function renderVintedStock() {
                 </div>
             </div>
             
-            <div class="mt-2 pt-3" style="border-top: 1px solid var(--border-color); display: flex; gap: 8px;">
-                <button class="btn-secondary w-full flex items-center justify-center gap-1" onclick="editVintedProduct('${p.id}')">
-                    <span class="material-icons-round text-sm">edit</span> Modifier l'article
+            <div class="mt-2 pt-3" style="border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 8px;">
+                <button class="btn-secondary flex-1 flex items-center justify-center gap-1" onclick="editVintedProduct('${p.id}')" style="padding: 6px;">
+                    <span class="material-icons-round text-sm">edit</span> Modifier
                 </button>
-                <button class="btn-primary w-full flex items-center justify-center gap-1" onclick="markProductSold('${p.id}')" ${p.availableQty <= 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                <button class="btn-secondary flex-1 flex items-center justify-center gap-1" onclick="printProductLabel('${p.id}')" title="Imprimer Étiquette" style="padding: 6px;">
+                    <span class="material-icons-round text-sm">qr_code_2</span> Étiquette
+                </button>
+                <button class="btn-primary w-full flex items-center justify-center gap-1 mt-1" onclick="markProductSold('${p.id}')" ${p.availableQty <= 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
                     <span class="material-icons-round text-sm">sell</span> Vendre (1)
                 </button>
             </div>
@@ -2305,6 +2310,7 @@ function renderVintedSales() {
                 ${bordereauLink}
                 <div class="flex gap-2 items-center mt-2">
                     ${actionBtn}
+                    <button class="btn-icon secondary mt-1" style="font-size:1rem; padding: 2px;" onclick="generateInvoice('${sale.productId}', '${sale.saleId}')" title="Générer Facture PDF"><span class="material-icons-round" style="font-size:1.1rem;">receipt</span></button>
                     <button class="btn-icon secondary mt-1" style="font-size:1rem; padding: 2px;" onclick="openEditSaleModal('${sale.productId}', '${sale.saleId}')" title="Modifier cette vente"><span class="material-icons-round" style="font-size:1.1rem;">edit</span></button>
                     <button class="btn-icon danger mt-1" style="font-size:1rem; padding: 2px;" onclick="deleteVintedSale('${sale.productId}', '${sale.saleId}')" title="Annuler et supprimer cette vente"><span class="material-icons-round" style="font-size:1.1rem;">delete</span></button>
                 </div>
@@ -2603,4 +2609,197 @@ function exportSalesCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+// --- PHASE 2 : QR CODES ET ETIQUETTES ---
+
+window.printProductLabel = function(productId) {
+    const db = getDB();
+    const product = db.vinted_stock.find(p => p.id === productId);
+    if (!product) return;
+    
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (!printWindow) {
+        showNotification("Veuillez autoriser les pop-ups pour imprimer l'étiquette.", "danger");
+        return;
+    }
+    
+    const batchDisplay = getBatchDisplayRef(product.lotNumber) || 'N/A';
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Étiquette - ${product.title}</title>
+            <style>
+                body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; text-align: center; color: #000; background: #fff; }
+                .label-container { border: 2px dashed #000; padding: 20px; border-radius: 8px; display: inline-block; max-width: 300px; }
+                h2 { margin: 0 0 10px 0; font-size: 1.2rem; text-transform: uppercase; }
+                p { margin: 5px 0; font-size: 0.9rem; }
+                #qrcode { margin-top: 15px; display: flex; justify-content: center; }
+                @media print {
+                    body { padding: 0; }
+                    .label-container { border: none; padding: 0; margin: 0 auto; }
+                }
+            </style>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        </head>
+        <body>
+            <div class="label-container">
+                <h2>${product.title}</h2>
+                <p><strong>Couleur:</strong> ${product.color || 'N/A'}</p>
+                <p><strong>Lot:</strong> ${batchDisplay}</p>
+                <p><strong>ID:</strong> ${product.id.substring(0,8)}</p>
+                <div id="qrcode"></div>
+            </div>
+            <script>
+                window.onload = function() {
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: "PRODUCT:${product.id}",
+                        width: 128,
+                        height: 128,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                    setTimeout(() => {
+                        window.print();
+                        window.close();
+                    }, 500);
+                }
+            </script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+window.calculateIdealPrice = function() {
+    const purchaseInput = document.getElementById('vinted-purchase-price');
+    const importInput = document.getElementById('vinted-import-cost');
+    const marginInput = document.getElementById('calc-margin-target');
+    const idealInput = document.getElementById('calc-ideal-price');
+
+    if (!purchaseInput || !marginInput || !idealInput) return;
+
+    const purchase = parseFloat(purchaseInput.value) || 0;
+    const importCost = parseFloat(importInput && importInput.value ? importInput.value : 0) || 0;
+    const margin = parseFloat(marginInput.value) || 0;
+
+    const totalCost = purchase + importCost;
+    
+    if (totalCost <= 0) {
+        idealInput.value = "0.00 €";
+        return;
+    }
+
+    // ROI margin calculation: SellPrice = TotalCost + (TotalCost * Margin / 100)
+    const idealPrice = totalCost * (1 + (margin / 100));
+    idealInput.value = idealPrice.toFixed(2) + " €";
+}
+
+// --- PHASE 4 : FACTURATION PDF ---
+
+window.generateInvoice = function(productId, saleId) {
+    if (typeof html2pdf === 'undefined') {
+        showNotification("La bibliothèque de génération PDF n'est pas chargée.", "danger");
+        return;
+    }
+    
+    const db = getDB();
+    const product = db.vinted_stock.find(p => p.id === productId);
+    if (!product || !product.sales) return;
+    
+    const sale = product.sales.find(s => s.saleId === saleId);
+    if (!sale) return;
+    
+    // Create hidden invoice container
+    const invoiceEl = document.createElement('div');
+    invoiceEl.style.padding = '40px';
+    invoiceEl.style.fontFamily = 'Inter, sans-serif';
+    invoiceEl.style.color = '#000';
+    invoiceEl.style.background = '#fff';
+    invoiceEl.style.width = '800px';
+    invoiceEl.style.position = 'absolute';
+    invoiceEl.style.left = '-9999px';
+    
+    const dateStr = new Date(sale.date).toLocaleDateString('fr-FR');
+    const invoiceNumber = `FACT-${new Date().getFullYear()}-${saleId.substring(0,6).toUpperCase()}`;
+    
+    invoiceEl.innerHTML = `
+        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
+            <div>
+                <h1 style="margin: 0; font-size: 28px; color: #000;">SOURCING PRO</h1>
+                <p style="margin: 5px 0 0 0; color: #555;">Facture de vente</p>
+            </div>
+            <div style="text-align: right;">
+                <h2 style="margin: 0; color: #000;">FACTURE</h2>
+                <p style="margin: 5px 0 0 0; color: #555;">N° ${invoiceNumber}</p>
+                <p style="margin: 5px 0 0 0; color: #555;">Date : ${dateStr}</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+            <div>
+                <h3 style="margin: 0 0 10px 0; color: #000;">Émetteur :</h3>
+                <p style="margin: 0; color: #333;">Sourcing Pro (Vendeur)</p>
+                <p style="margin: 0; color: #333;">Plateforme : ${sale.platform || 'N/A'}</p>
+            </div>
+            <div style="text-align: right;">
+                <h3 style="margin: 0 0 10px 0; color: #000;">Facturé à :</h3>
+                <p style="margin: 0; color: #333; font-weight: bold;">${sale.buyer || 'Client'}</p>
+            </div>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd; color: #000;">Désignation</th>
+                    <th style="padding: 12px; text-align: right; border-bottom: 1px solid #ddd; color: #000;">Prix Unitaire</th>
+                    <th style="padding: 12px; text-align: right; border-bottom: 1px solid #ddd; color: #000;">Frais de Port</th>
+                    <th style="padding: 12px; text-align: right; border-bottom: 1px solid #ddd; color: #000;">Total TTC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; color: #333;">${product.title} (Couleur: ${product.color || '-'})</td>
+                    <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee; color: #333;">${(sale.sellPrice - (sale.shippingCost || 0)).toFixed(2)} €</td>
+                    <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee; color: #333;">${(sale.shippingCost || 0).toFixed(2)} €</td>
+                    <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee; color: #333; font-weight: bold;">${sale.sellPrice.toFixed(2)} €</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="width: 300px;">
+                <div style="display: flex; justify-content: space-between; border-top: 2px solid #000; padding-top: 10px;">
+                    <strong style="color: #000;">NET À PAYER :</strong>
+                    <strong style="color: #000; font-size: 20px;">${sale.sellPrice.toFixed(2)} €</strong>
+                </div>
+                <p style="text-align: right; font-size: 12px; color: #777; margin-top: 5px;">TVA non applicable, art. 293 B du CGI</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <strong style="color: #000;">Statut Paiement :</strong>
+                    <strong style="color: ${sale.paymentStatus === 'en_attente' ? '#d97706' : '#16a34a'};">${sale.paymentStatus === 'en_attente' ? 'En attente' : 'Acquitté'}</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 60px; text-align: center; color: #777; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px;">
+            Merci pour votre achat sur ${sale.platform || 'notre boutique'}.
+        </div>
+    `;
+    
+    document.body.appendChild(invoiceEl);
+    
+    html2pdf().from(invoiceEl).set({
+        margin: 10,
+        filename: `${invoiceNumber}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).save().then(() => {
+        document.body.removeChild(invoiceEl);
+        showNotification("Facture générée avec succès !");
+    });
 }

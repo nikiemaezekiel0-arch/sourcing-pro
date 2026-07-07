@@ -1,0 +1,22 @@
+{
+  "name": "Sourcing Pro",
+  "short_name": "Sourcing Pro",
+  "description": "L'application ultime de gestion de sourcing et de ventes.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/0a0a0f/ffffff?text=SP",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512/0a0a0f/ffffff?text=SP",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -2,11 +2,20 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>SourcingDirectory Pro</title>
+
+    <!-- PWA Manifest & iOS Support -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sourcing Pro">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/0a0a0f/ffffff?text=SP">
+
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css?v=15">
     <!-- Google Fonts -->
@@ -1913,7 +1922,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Prix d'Achat Unitaire (€) *</label>
-                                    <input type="number" step="0.01" id="vinted-purchase-price" class="input-control" required>
+                                    <input type="number" step="0.01" id="vinted-purchase-price" class="input-control" required oninput="calculateIdealPrice()">
                                 </div>
                                 <div class="form-group">
                                     <label>Quantité Initiale *</label>
@@ -1921,7 +1930,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Affecter à un Colis/Lot</label>
-                                    <select id="vinted-lot" class="input-control" onchange="updateImportCostFromBatch()">
+                                    <select id="vinted-lot" class="input-control" onchange="updateImportCostFromBatch(); calculateIdealPrice();">
                                         <option value="">Aucun lot sélectionné...</option>
                                     </select>
                                 </div>
@@ -1931,6 +1940,23 @@
                                 </div>
                             </div>
                             
+                            <div class="grid-layout mb-4" style="grid-template-columns: 1fr;">
+                                <div class="glass-panel" style="padding: 15px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
+                                    <h5 class="text-sm text-primary mb-2 flex items-center gap-1"><span class="material-icons-round text-sm">calculate</span> Calculateur de Prix Idéal</h5>
+                                    <div class="flex gap-4 items-center flex-wrap">
+                                        <div class="form-group flex-1" style="min-width: 150px;">
+                                            <label style="font-size: 0.8rem;">Marge nette souhaitée (%)</label>
+                                            <input type="number" id="calc-margin-target" class="input-control" value="50" oninput="calculateIdealPrice()">
+                                        </div>
+                                        <div class="form-group flex-1" style="min-width: 150px;">
+                                            <label style="font-size: 0.8rem;">Prix de Vente Conseillé</label>
+                                            <input type="text" id="calc-ideal-price" class="input-control" disabled style="background: transparent; color: var(--success); font-weight: bold; font-size: 1.1rem; border: none; padding-left: 0;">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Ajustez le prix d'achat, le lot, et la marge souhaitée pour calculer le prix de vente optimal.</small>
+                                </div>
+                            </div>
+
                             <div class="form-group mb-4">
                                 <label>Photo du produit *</label>
                                 <input type="file" id="vinted-upload-photo" class="input-control" accept="image/*" onchange="handleImageUpload('vinted-upload-photo', 'vinted-preview-photo')">
@@ -2558,6 +2584,9 @@
 
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- QRCode.js for Inventory Barcodes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Driver.js for Guided Tour -->
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>

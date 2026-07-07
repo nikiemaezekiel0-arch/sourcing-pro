@@ -210,6 +210,10 @@ function renderClientEbooks() {
         const category = categories[index % categories.length];
         const pages = Math.floor(Math.random() * 200) + 100;
         
+        const user = getCurrentUser();
+        const progressObj = (user && user.ebookProgress && user.ebookProgress[ebook.fileUrl]) ? user.ebookProgress[ebook.fileUrl] : null;
+        const percent = progressObj ? progressObj.percent : 0;
+        
         const card = document.createElement('div');
         card.className = 'ebook-premium-card';
         card.onclick = () => openEbookModal(ebook.fileUrl, ebook.title);
@@ -225,13 +229,40 @@ function renderClientEbooks() {
                 <div>
                     <div class="ebook-premium-meta">[ ${category.toUpperCase()} • ${pages} PAGES ]</div>
                     <div class="ebook-premium-title" title="${ebook.title.replace(/"/g, '&quot;')}">${ebook.title}</div>
+                    
+                    <div style="margin-top: 10px; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; width: ${percent}%; background: var(--accent-gold);"></div>
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-align: right;">${percent}% lu</div>
                 </div>
-                <button class="ebook-premium-btn" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">LIRE L'EBOOK</button>
+                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">${percent > 0 ? 'REPRENDRE LA LECTURE' : 'LIRE L\\'EBOOK'}</button>
             </div>
         `;
         list.appendChild(card);
     });
 }
+
+window.updateEbookProgress = function(url, pageNum, numPages) {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    if (!user.ebookProgress) user.ebookProgress = {};
+    
+    const currentMax = user.ebookProgress[url] ? user.ebookProgress[url].page : 0;
+    
+    if (pageNum > currentMax) {
+        user.ebookProgress[url] = {
+            page: pageNum,
+            total: numPages,
+            percent: Math.min(100, Math.round((pageNum / numPages) * 100))
+        };
+        
+        if(user.id && user.id !== 'usr_admin1' && user.id !== 'usr_client1' && user.id !== 'usr_supplier1') {
+            saveDoc('users', user);
+            setCurrentUser(user);
+        }
+    }
+};
 
 let customPdfDoc = null;
 let customPdfPageNum = 1;
@@ -290,6 +321,7 @@ async function openEbookModal(url, title) {
                 const pageNum = parseInt(entry.target.dataset.page);
                 if (entry.isIntersecting) {
                     renderPdfPage(pageNum, entry.target, scale);
+                    updateEbookProgress(url, pageNum, numPages);
                 } else {
                     // Memory optimization: clear canvas if it goes too far off-screen
                     // We only do this if we want strict memory management
