@@ -235,7 +235,7 @@ function renderClientEbooks() {
                     </div>
                     <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-align: right;">${percent}% lu</div>
                 </div>
-                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">${percent > 0 ? 'REPRENDRE LA LECTURE' : 'LIRE L\\'EBOOK'}</button>
+                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">${percent > 0 ? 'REPRENDRE LA LECTURE' : "LIRE L'EBOOK"}</button>
             </div>
         `;
         list.appendChild(card);
@@ -1151,7 +1151,7 @@ function startClientTour() {
         }
     });
 
-    driverObj.drive();
+    // driverObj.drive();
 }
 
 function copyToClipboard(text, btnElement) {
