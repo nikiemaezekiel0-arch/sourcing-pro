@@ -2192,18 +2192,22 @@ function renderVintedSales() {
     let totalRevenue = 0;
     let totalCosts = 0;
     let pendingRevenue = 0;
+    let completedSalesCount = 0;
+    
     allSales.forEach(sale => {
-        totalProfit += sale.profit;
-        totalRevenue += sale.sellPrice;
-        totalCosts += (sale.purchasePrice + sale.shipping + sale.importCost);
         if (sale.paymentStatus === 'en_attente') {
             pendingRevenue += sale.sellPrice;
+        } else {
+            totalProfit += sale.profit;
+            totalRevenue += sale.sellPrice;
+            totalCosts += (sale.purchasePrice + sale.shipping + sale.importCost);
+            completedSalesCount++;
         }
     });
     
     const count = allSales.length;
     const roi = totalCosts > 0 ? (totalProfit / totalCosts) * 100 : 0;
-    const avgProfit = count > 0 ? totalProfit / count : 0;
+    const avgProfit = completedSalesCount > 0 ? totalProfit / completedSalesCount : 0;
     
     // Update KPI DOM
     const pendingCounter = document.getElementById('admin-sales-pending-revenue');
