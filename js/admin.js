@@ -2317,6 +2317,93 @@ function renderVintedSales() {
     wrapper.style.overflowX = 'auto';
     wrapper.appendChild(table);
     list.appendChild(wrapper);
+    
+    // --- ANALYTICS V2 : Objectifs et Tops ---
+    
+    // 1. Goal Progress
+    const monthlyGoal = parseFloat(localStorage.getItem('adminSalesGoal')) || 1000;
+    let goalPercentage = (totalProfit / monthlyGoal) * 100;
+    if (goalPercentage < 0) goalPercentage = 0;
+    if (goalPercentage > 100) goalPercentage = 100;
+    
+    const goalText = document.getElementById('admin-sales-goal-text');
+    const goalBar = document.getElementById('admin-sales-goal-bar');
+    if (goalText) goalText.innerText = `${totalProfit.toFixed(2)} € / ${monthlyGoal} €`;
+    if (goalBar) {
+        goalBar.style.width = `${goalPercentage}%`;
+        if (goalPercentage < 33) goalBar.style.background = 'var(--danger)';
+        else if (goalPercentage < 80) goalBar.style.background = 'var(--warning)';
+        else goalBar.style.background = 'var(--success)';
+    }
+
+    // 2. Top Products & Platforms
+    const productProfits = {};
+    const platformProfits = {};
+
+    allSales.forEach(sale => {
+        if(sale.paymentStatus !== 'en_attente') {
+            // Product
+            if (!productProfits[sale.productId]) {
+                productProfits[sale.productId] = { title: sale.productTitle, profit: 0, photo: sale.productPhoto };
+            }
+            productProfits[sale.productId].profit += sale.profit;
+            
+            // Platform
+            const pName = sale.platform || 'Inconnu';
+            if (!platformProfits[pName]) {
+                platformProfits[pName] = { name: pName, profit: 0 };
+            }
+            platformProfits[pName].profit += sale.profit;
+        }
+    });
+
+    const topProducts = Object.values(productProfits).sort((a,b) => b.profit - a.profit).slice(0, 5);
+    const topPlatforms = Object.values(platformProfits).sort((a,b) => b.profit - a.profit).slice(0, 5);
+
+    const topProductsEl = document.getElementById('admin-top-products');
+    if (topProductsEl) {
+        if (topProducts.length === 0) topProductsEl.innerHTML = '<p class="text-muted text-sm">Aucune donnée.</p>';
+        else {
+            topProductsEl.innerHTML = topProducts.map((p, idx) => `
+                <div class="flex items-center justify-between p-2 rounded" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="flex items-center gap-2">
+                        <div class="text-sm font-bold text-muted w-4">${idx+1}.</div>
+                        <img src="${p.photo}" style="width:30px; height:30px; border-radius:4px; object-fit:cover;">
+                        <span class="text-sm truncate" style="max-width: 150px;" title="${p.title}">${p.title}</span>
+                    </div>
+                    <strong style="color:var(--success); font-size:0.9rem;">+${p.profit.toFixed(2)}€</strong>
+                </div>
+            `).join('');
+        }
+    }
+
+    const topPlatformsEl = document.getElementById('admin-top-platforms');
+    if (topPlatformsEl) {
+        if (topPlatforms.length === 0) topPlatformsEl.innerHTML = '<p class="text-muted text-sm">Aucune donnée.</p>';
+        else {
+            topPlatformsEl.innerHTML = topPlatforms.map((p, idx) => `
+                <div class="flex items-center justify-between p-2 rounded" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="flex items-center gap-2">
+                        <div class="text-sm font-bold text-muted w-4">${idx+1}.</div>
+                        <span class="text-sm font-bold">${p.name}</span>
+                    </div>
+                    <strong style="color:var(--success); font-size:0.9rem;">+${p.profit.toFixed(2)}€</strong>
+                </div>
+            `).join('');
+        }
+    }
+}
+
+window.promptSalesGoal = function() {
+    const currentGoal = parseFloat(localStorage.getItem('adminSalesGoal')) || 1000;
+    const newGoal = prompt("Entrez votre nouvel objectif de bénéfice mensuel (€) :", currentGoal);
+    if (newGoal !== null) {
+        const val = parseFloat(newGoal);
+        if (!isNaN(val) && val > 0) {
+            localStorage.setItem('adminSalesGoal', val);
+            renderVintedSales(); // Refresh UI immediately
+        }
+    }
 }
 
 
@@ -2488,21 +2575,23 @@ function exportSalesCSV() {
     }
     
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Date;Produit;Acheteur;Plateforme;Statut;Prix de Vente;Prix d'Achat;Frais Import;Frais Port;Benefice Net\n";
+    csvContent += "Date;Produit;Acheteur;Plateforme;Statut Expédition;Paiement;Prix de Vente;Prix d'Achat;Frais Import;Frais Port;Benefice Net\n";
     
     allSales.forEach(s => {
         const dateStr = new Date(s.date).toLocaleDateString('fr-FR');
+        const paymentStatusLabel = s.paymentStatus === 'en_attente' ? 'En attente' : 'Payé';
         const row = [
             dateStr,
             `"${s.productTitle.replace(/"/g, '""')}"`,
             `"${(s.buyer || '').replace(/"/g, '""')}"`,
             s.platform || 'N/A',
             s.status,
-            s.sellPrice.toFixed(2),
-            s.purchasePrice.toFixed(2),
-            s.importCost.toFixed(2),
-            s.shipping.toFixed(2),
-            s.profit.toFixed(2)
+            paymentStatusLabel,
+            s.sellPrice.toFixed(2).replace('.', ','),
+            s.purchasePrice.toFixed(2).replace('.', ','),
+            s.importCost.toFixed(2).replace('.', ','),
+            s.shipping.toFixed(2).replace('.', ','),
+            s.profit.toFixed(2).replace('.', ',')
         ].join(";");
         csvContent += row + "\n";
     });

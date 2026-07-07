@@ -2173,8 +2173,36 @@
                         </div>
                     </div>
                     
+                    <!-- Objectif Mensuel -->
+                    <div class="glass-panel mb-8 relative z-10" style="padding: 20px;">
+                        <div class="flex justify-between items-end mb-2">
+                            <div>
+                                <h4 class="text-sm text-muted">Objectif Mensuel (Bénéfice)</h4>
+                                <div class="font-bold text-xl mt-1" id="admin-sales-goal-text">0.00 € / 1000 €</div>
+                            </div>
+                            <button onclick="promptSalesGoal()" class="btn-icon text-muted hover:text-white" title="Modifier l'objectif">
+                                <span class="material-icons-round" style="font-size: 1.2rem;">edit</span>
+                            </button>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; position: relative;">
+                            <div id="admin-sales-goal-bar" style="background: var(--success); width: 0%; height: 100%; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tops -->
+                    <div class="grid-layout mb-8 relative z-10" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                        <div class="glass-panel" style="padding: 20px;">
+                            <h4 class="mb-4 text-sm text-muted flex items-center gap-2"><span class="material-icons-round" style="color: gold; font-size: 1.2rem;">emoji_events</span> Top Produits (Bénéfice)</h4>
+                            <div id="admin-top-products" class="flex flex-col gap-3"></div>
+                        </div>
+                        <div class="glass-panel" style="padding: 20px;">
+                            <h4 class="mb-4 text-sm text-muted flex items-center gap-2"><span class="material-icons-round" style="color: #60a5fa; font-size: 1.2rem;">trending_up</span> Top Plateformes (Bénéfice)</h4>
+                            <div id="admin-top-platforms" class="flex flex-col gap-3"></div>
+                        </div>
+                    </div>
+                    
                     <!-- Charts -->
-                    <div class="grid-layout mb-6" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+                    <div class="grid-layout mb-8" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
                         <div class="glass-panel">
                             <h4 class="mb-4 text-sm text-muted">Évolution mensuelle (CA & Bénéfices)</h4>
                             <canvas id="sales-trend-chart" style="max-height: 250px; width: 100%;"></canvas>
