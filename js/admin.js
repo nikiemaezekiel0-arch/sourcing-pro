@@ -1741,13 +1741,26 @@ async function renderSaleRegistration() {
     // Ensure the array exists
     if(!db.sales_platforms) db.sales_platforms = [];
     
+    // Extract all platforms (custom + historical) to prevent missing legacy platforms
+    let allPlatforms = new Set((db.sales_platforms || []).map(p => p.name));
+    if (db.vinted_stock) {
+        db.vinted_stock.forEach(prod => {
+            if (prod.sales) {
+                prod.sales.forEach(s => {
+                    if (s.platform) allPlatforms.add(s.platform);
+                });
+            }
+        });
+    }
+    const sortedPlatforms = Array.from(allPlatforms).sort();
+
     // Populate platforms
     const platformList = document.getElementById('sales-platforms-list');
     const platformSelect = document.getElementById('sale-platform');
     const filterPlatform = document.getElementById('filter-sales-platform');
     
     if(platformList) {
-        platformList.innerHTML = db.sales_platforms.map(p => `
+        platformList.innerHTML = (db.sales_platforms || []).map(p => `
             <div class="flex justify-between items-center bg-gray-800 p-2 rounded">
                 <span>${p.name}</span>
                 <button onclick="deleteSalesPlatform('${p.id}')" class="btn-icon danger text-sm"><span class="material-icons-round" style="font-size:1rem;">delete</span></button>
@@ -1756,12 +1769,12 @@ async function renderSaleRegistration() {
     }
     if(platformSelect) {
         platformSelect.innerHTML = '<option value="">Sélectionnez une plateforme...</option>' + 
-            db.sales_platforms.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+            sortedPlatforms.map(name => `<option value="${name}">${name}</option>`).join('');
     }
     if (filterPlatform) {
         const currentValue = filterPlatform.value;
         filterPlatform.innerHTML = '<option value="all">Toutes</option>' + 
-            db.sales_platforms.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+            sortedPlatforms.map(name => `<option value="${name}">${name}</option>`).join('');
         // Restore previous selection if it still exists
         if ([...filterPlatform.options].some(o => o.value === currentValue)) {
             filterPlatform.value = currentValue;
@@ -1803,6 +1816,8 @@ async function submitNewSale(e) {
     const sellPrice = parseFloat(document.getElementById('sale-sell-price').value);
     const shippingCost = parseFloat(document.getElementById('sale-shipping-cost').value) || 0;
     const bordereau = document.getElementById('sale-bordereau').value;
+    const paymentStatusEl = document.getElementById('sale-payment-status');
+    const paymentStatus = paymentStatusEl ? paymentStatusEl.value : 'payé';
     
     if(!productId || !platform || isNaN(sellPrice)) {
         alert("Veuillez remplir les champs obligatoires.");
@@ -1829,6 +1844,7 @@ async function submitNewSale(e) {
         sellPrice: sellPrice,
         shippingCost: shippingCost,
         bordereau: bordereau || '',
+        paymentStatus: paymentStatus,
         status: 'à expédier',
         date: new Date().toISOString()
     });
@@ -1924,6 +1940,9 @@ function openEditSaleModal(productId, saleId) {
     document.getElementById('edit-sale-import-cost').value = product.importCost || 0;
     document.getElementById('edit-sale-bordereau').value = sale.bordereau || '';
     
+    const paymentStatusEl = document.getElementById('edit-sale-payment-status');
+    if (paymentStatusEl) paymentStatusEl.value = sale.paymentStatus || 'payé';
+    
     document.getElementById('modal-edit-sale').classList.remove('hidden');
 }
 
@@ -1950,6 +1969,8 @@ async function submitEditSale(e) {
     const sellPrice = parseFloat(document.getElementById('edit-sale-sell-price').value);
     const shippingCost = parseFloat(document.getElementById('edit-sale-shipping').value) || 0;
     const bordereau = document.getElementById('edit-sale-bordereau').value;
+    const paymentStatusEl = document.getElementById('edit-sale-payment-status');
+    const paymentStatus = paymentStatusEl ? paymentStatusEl.value : 'payé';
     
     if(!platform || isNaN(sellPrice)) {
         alert("Veuillez remplir les champs obligatoires (Plateforme et Prix de vente).");
@@ -1966,7 +1987,8 @@ async function submitEditSale(e) {
     sale.platform = platform;
     sale.sellPrice = sellPrice;
     sale.shippingCost = shippingCost;
-    sale.bordereau = bordereau || '';
+    sale.bordereau = bordereau;
+    sale.paymentStatus = paymentStatus;
     
     product.lotNumber = lotNumber;
     product.importCost = importCost;
@@ -2169,10 +2191,14 @@ function renderVintedSales() {
     let totalProfit = 0;
     let totalRevenue = 0;
     let totalCosts = 0;
+    let pendingRevenue = 0;
     allSales.forEach(sale => {
         totalProfit += sale.profit;
         totalRevenue += sale.sellPrice;
         totalCosts += (sale.purchasePrice + sale.shipping + sale.importCost);
+        if (sale.paymentStatus === 'en_attente') {
+            pendingRevenue += sale.sellPrice;
+        }
     });
     
     const count = allSales.length;
@@ -2180,9 +2206,11 @@ function renderVintedSales() {
     const avgProfit = count > 0 ? totalProfit / count : 0;
     
     // Update KPI DOM
+    const pendingCounter = document.getElementById('admin-sales-pending-revenue');
     if(countCounter) countCounter.innerText = count;
     if(profitCounter) profitCounter.innerText = totalProfit > 0 ? `+${totalProfit.toFixed(2)} €` : `${totalProfit.toFixed(2)} €`;
     if(revenueCounter) revenueCounter.innerText = `${totalRevenue.toFixed(2)} €`;
+    if(pendingCounter) pendingCounter.innerText = `${pendingRevenue.toFixed(2)} €`;
     if(costsCounter) costsCounter.innerText = `${totalCosts.toFixed(2)} €`;
     if(roiCounter) {
         roiCounter.innerText = `${roi.toFixed(1)}%`;
@@ -2238,6 +2266,13 @@ function renderVintedSales() {
         const dateObj = new Date(sale.date);
         const dateStr = dateObj.toLocaleDateString('fr-FR');
         
+        let paymentBadge = '';
+        if (sale.paymentStatus === 'en_attente') {
+            paymentBadge = `<div style="margin-top:4px;"><span class="badge" style="background: rgba(252, 211, 77, 0.2); color: #fcd34d; font-size:0.65rem; padding: 2px 6px;">Paiement en attente</span></div>`;
+        } else {
+            paymentBadge = `<div style="margin-top:4px;"><span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; font-size:0.65rem; padding: 2px 6px;">Payé</span></div>`;
+        }
+        
         tr.innerHTML = `
             <td class="p-2" style="min-width: 200px;">
                 <div class="flex items-center gap-2">
@@ -2250,7 +2285,10 @@ function renderVintedSales() {
             </td>
             <td class="p-2 text-sm text-muted" style="min-width: 120px;">${getBatchDisplayRef(sale.lotNumber) || '-'}</td>
             <td class="p-2 text-sm" style="min-width: 100px;"><span class="badge" style="background: rgba(255,255,255,0.1);">${platformName}</span></td>
-            <td class="p-2 text-sm" style="min-width: 100px;"><strong>${buyerName}</strong></td>
+            <td class="p-2 text-sm" style="min-width: 100px;">
+                <strong>${buyerName}</strong>
+                ${paymentBadge}
+            </td>
             <td class="p-2" style="min-width: 150px;">
                 <div class="text-sm">Vente: <strong>${sale.sellPrice}€</strong></div>
                 <div class="text-xs text-muted">Achat: ${sale.purchasePrice}€ | Import: ${sale.importCost}€ | Frais: ${sale.shipping}€</div>

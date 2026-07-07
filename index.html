@@ -2000,6 +2000,13 @@
                                         <label>Frais annexes (Port, Comm...) (€)</label>
                                         <input type="number" step="0.01" id="sale-shipping-cost" class="input-control" value="0">
                                     </div>
+                                    <div class="form-group">
+                                        <label>Paiement du Client</label>
+                                        <select id="sale-payment-status" class="input-control">
+                                            <option value="payé">Payé</option>
+                                            <option value="en_attente">En attente</option>
+                                        </select>
+                                    </div>
                                     <div class="form-group" style="grid-column: span 2;">
                                         <label>Lien du bordereau d'expédition</label>
                                         <input type="url" id="sale-bordereau" class="input-control" placeholder="https://...">
@@ -2135,7 +2142,7 @@
                     </div>
 
                     <!-- KPIs -->
-                    <div class="grid-layout mb-8 relative z-10" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                    <div class="grid-layout mb-8 relative z-10" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
                         <div class="glass-card-premium">
                             <div class="kpi-label">Ventes</div>
                             <div class="kpi-value" style="color: #ffffff;" id="admin-sales-count">0</div>
@@ -2143,6 +2150,10 @@
                         <div class="glass-card-premium">
                             <div class="kpi-label">C.A.</div>
                             <div class="kpi-value" style="color: #ffffff;" id="admin-sales-total-revenue">0.00 €</div>
+                        </div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">En attente</div>
+                            <div class="kpi-value" style="color: #fcd34d;" id="admin-sales-pending-revenue">0.00 €</div>
                         </div>
                         <div class="glass-card-premium">
                             <div class="kpi-label">Coûts</div>
@@ -2421,6 +2432,13 @@
                         <label>Frais d'import par article (€)</label>
                         <input type="number" step="0.01" id="edit-sale-import-cost" class="input-control" disabled style="background: rgba(255,255,255,0.05); color: #888;" title="Lié au lot/colis sélectionné">
                     </div>
+                    <div class="form-group">
+                        <label>Paiement du Client</label>
+                        <select id="edit-sale-payment-status" class="input-control">
+                            <option value="payé">Payé</option>
+                            <option value="en_attente">En attente</option>
+                        </select>
+                    </div>
                     <div class="form-group" style="grid-column: span 2;">
                         <label>Lien du Bordereau</label>
                         <input type="url" id="edit-sale-bordereau" class="input-control" placeholder="https://...">
@@ -2520,15 +2538,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=30"></script>
-    <script src="js/currency.js?v=30"></script>
-    <script src="js/db.js?v=30"></script>
-    <script src="js/auth.js?v=30"></script>
-    <script src="js/admin.js?v=30"></script>
-    <script src="js/admin-agent.js?v=30"></script>
-    <script src="js/client.js?v=30"></script>
-    <script src="js/client-agent.js?v=30"></script>
-    <script src="js/supplier.js?v=30"></script>
+    <script src="js/i18n.js?v=32"></script>
+    <script src="js/currency.js?v=32"></script>
+    <script src="js/db.js?v=32"></script>
+    <script src="js/auth.js?v=32"></script>
+    <script src="js/admin.js?v=32"></script>
+    <script src="js/admin-agent.js?v=32"></script>
+    <script src="js/client.js?v=32"></script>
+    <script src="js/client-agent.js?v=32"></script>
+    <script src="js/supplier.js?v=32"></script>
     
     <!-- Main Routing Logic -->
     <script>
