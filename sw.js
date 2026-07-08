@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sourcing-pro-cache-v8';
+const CACHE_NAME = 'sourcing-pro-cache-v9';
 const urlsToCache = [
   './',
   './index.html',
