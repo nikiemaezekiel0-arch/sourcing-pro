@@ -746,16 +746,20 @@ function renderClientSuppliers(categoryId = currentCategoryFilter, searchTerm = 
     const container = document.getElementById('suppliers-grid');
     if(!container) return;
     
-    let filtered = db.suppliers;
+    let filtered = (db.users || []).filter(u => u.role === 'supplier' && u.status === 'active');
     
     if (categoryId) {
-        filtered = filtered.filter(s => s.categoryId === categoryId);
+        filtered = filtered.filter(s => 
+            s.categoryId === categoryId || 
+            (s.categories && s.categories.includes(categoryId))
+        );
     }
     
     if (searchTerm) {
         filtered = filtered.filter(s => 
-            s.name.toLowerCase().includes(searchTerm) || 
-            s.description.toLowerCase().includes(searchTerm)
+            (s.name && s.name.toLowerCase().includes(searchTerm)) || 
+            (s.firstname && s.firstname.toLowerCase().includes(searchTerm)) ||
+            (s.description && s.description.toLowerCase().includes(searchTerm))
         );
     }
     
@@ -820,7 +824,8 @@ function loadMoreSuppliers() {
     const slice = currentSupplierList.slice(supplierDisplayCount, supplierDisplayCount + SUPPLIERS_PER_PAGE);
     
     slice.forEach((sup, index) => {
-        const cat = db.categories.find(c => c.id === sup.categoryId);
+        const catId = sup.categoryId || (sup.categories && sup.categories.length > 0 ? sup.categories[0] : null);
+        const cat = db.categories.find(c => c.id === catId);
         const isFav = user.favorites && user.favorites.includes(sup.id);
         const favClass = isFav ? 'active-fav' : '';
         const delay = (index % SUPPLIERS_PER_PAGE) * 0.05;
@@ -843,8 +848,8 @@ function loadMoreSuppliers() {
                 </div>
                 
                 <div class="card-body">
-                    <h3>${sup.name}</h3>
-                    <p class="desc-preview">${sup.description.substring(0, 80)}${sup.description.length > 80 ? '...' : ''}</p>
+                    <h3>${sup.name || sup.firstname || 'Fournisseur'}</h3>
+                    <p class="desc-preview">${(sup.description || 'Fournisseur vérifié').substring(0, 80)}${(sup.description || '').length > 80 ? '...' : ''}</p>
                 </div>
             </div>
         `;

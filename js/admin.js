@@ -631,10 +631,11 @@ async function addSupplier(e) {
     const isUpdate = !!currentEditSupplierId;
     
     if (isUpdate) {
-        const index = db.suppliers.findIndex(s => s.id === currentEditSupplierId);
+        const index = (db.users || []).findIndex(s => s.id === currentEditSupplierId && s.role === 'supplier');
         if(index !== -1) {
+            const existingSup = db.users[index];
             const updatedSup = {
-                id: currentEditSupplierId,
+                ...existingSup,
                 name, categoryId, description, link, isPremium,
                 cardFront: getValidImage(cardFront),
                 cardBack: getValidImage(cardBack),
@@ -642,10 +643,9 @@ async function addSupplier(e) {
                 qrWeChat: getValidImage(qrWeChat),
                 catalogLinks: catalogPdfs
             };
-            await saveDoc('suppliers', updatedSup);
+            await saveDoc('users', updatedSup);
         }
     } else {
-        // SYNCHRONIZATION: Create phantom user account for this manually added supplier
         const newUserId = generateId('usr_');
         const dummyEmail = `manuel_${newUserId.substring(4,10)}@fournisseur.com`;
         
@@ -657,21 +657,15 @@ async function addSupplier(e) {
             phone: 'N/A',
             role: 'supplier',
             status: 'active',
-            isManual: true
-        });
-
-        const newSup = {
-            id: generateId('sup_'),
-            userId: newUserId,
-            name, categoryId, description, link, isPremium,
+            isManual: true,
+            categoryId, description, link, isPremium,
             cardFront: getValidImage(cardFront),
             cardBack: getValidImage(cardBack),
             qrWhatsApp: getValidImage(qrWhatsApp),
             qrWeChat: getValidImage(qrWeChat),
             catalogLinks: catalogPdfs,
             vipCode: 'VIP-' + Math.random().toString(36).substr(2, 5).toUpperCase()
-        };
-        await saveDoc('suppliers', newSup);
+        });
     }
     
     cancelEditSupplier();
@@ -697,16 +691,17 @@ function renderAdminSuppliers() {
     const filterCat = filterCatElem ? filterCatElem.value : 'all';
     const filterPremium = filterPremiumElem ? filterPremiumElem.checked : false;
     
-    let filtered = db.suppliers;
+    let filtered = (db.users || []).filter(u => u.role === 'supplier' && u.status === 'active');
     
     if (filterText) {
         filtered = filtered.filter(s => 
-            s.name.toLowerCase().includes(filterText) || 
+            (s.name && s.name.toLowerCase().includes(filterText)) || 
+            (s.firstname && s.firstname.toLowerCase().includes(filterText)) ||
             (s.description && s.description.toLowerCase().includes(filterText))
         );
     }
     if (filterCat !== 'all') {
-        filtered = filtered.filter(s => s.categoryId === filterCat);
+        filtered = filtered.filter(s => s.categoryId === filterCat || (s.categories && s.categories.includes(filterCat)));
     }
     if (filterPremium) {
         filtered = filtered.filter(s => s.isPremium);
@@ -714,7 +709,7 @@ function renderAdminSuppliers() {
     
     list.innerHTML = '';
     if(filtered.length === 0) {
-        if(db.suppliers.length === 0) {
+        if((db.users || []).filter(u => u.role === 'supplier' && u.status === 'active').length === 0) {
             list.innerHTML = '<p class="text-muted text-sm text-center">Aucun fournisseur enregistré.</p>';
         } else {
             list.innerHTML = '<p class="text-muted text-sm text-center">Aucun fournisseur ne correspond à vos filtres.</p>';
@@ -726,16 +721,19 @@ function renderAdminSuppliers() {
     filtered.sort((a, b) => {
         if (a.isPremium && !b.isPremium) return -1;
         if (!a.isPremium && b.isPremium) return 1;
-        return a.name.localeCompare(b.name);
+        const nameA = a.name || a.firstname || '';
+        const nameB = b.name || b.firstname || '';
+        return nameA.localeCompare(nameB);
     });
     
     filtered.forEach(sup => {
-        const cat = db.categories.find(c => c.id === sup.categoryId);
+        const catId = sup.categoryId || (sup.categories && sup.categories.length > 0 ? sup.categories[0] : null);
+        const cat = db.categories.find(c => c.id === catId);
         list.innerHTML += `
             <div class="glass-panel flex justify-between items-center" style="padding:1rem; margin-bottom:0.5rem;">
                 <div>
                     <div class="font-bold flex items-center gap-2">
-                        ${sup.name}
+                        ${sup.name || sup.firstname || 'Fournisseur'}
                         ${sup.isPremium ? '<span class="material-icons-round text-warning text-sm">verified</span>' : ''}
                     </div>
                     <div class="text-sm text-muted">${cat ? cat.name : 'Autre'} • <span class="material-icons-round" style="font-size:14px; vertical-align:middle;">visibility</span> ${sup.views || 0} vues</div>
@@ -753,14 +751,14 @@ function renderAdminSuppliers() {
 
 function editSupplier(id) {
     const db = getDB();
-    const sup = db.suppliers.find(s => s.id === id);
+    const sup = (db.users || []).find(s => s.id === id && s.role === 'supplier');
     if(!sup) return;
     
     currentEditSupplierId = id;
     
-    document.getElementById('sup-name').value = sup.name;
-    document.getElementById('sup-category').value = sup.categoryId;
-    document.getElementById('sup-desc').value = sup.description;
+    document.getElementById('sup-name').value = sup.name || sup.firstname || '';
+    document.getElementById('sup-category').value = sup.categoryId || (sup.categories && sup.categories.length > 0 ? sup.categories[0] : '');
+    document.getElementById('sup-desc').value = sup.description || '';
     document.getElementById('sup-link').value = sup.link || '';
     document.getElementById('sup-premium').checked = sup.isPremium;
     
@@ -820,7 +818,7 @@ function cancelEditSupplier() {
 
 async function deleteSupplier(id) {
     if(!confirm("Êtes-vous sûr ?")) return;
-    await deleteDoc('suppliers', id);
+    await deleteDoc('users', id);
 }
 
 function openShareModal(id) {
