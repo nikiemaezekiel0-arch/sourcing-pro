@@ -15,7 +15,6 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const firestore = firebase.firestore();
-firestore.enablePersistence({ synchronizeTabs: true }).catch(err => console.warn("Persistence err:", err));
 const storage = firebase.storage();
 
 // Helper to upload files to Firebase Storage
