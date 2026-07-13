@@ -208,15 +208,10 @@ function renderClientEbooks() {
 
     sortedEbooks.forEach((ebook, index) => {
         const category = categories[index % categories.length];
-        const pages = Math.floor(Math.random() * 200) + 100;
-        
-        const user = getCurrentUser();
-        const progressObj = (user && user.ebookProgress && user.ebookProgress[ebook.fileUrl]) ? user.ebookProgress[ebook.fileUrl] : null;
-        const percent = progressObj ? progressObj.percent : 0;
         
         const card = document.createElement('div');
         card.className = 'ebook-premium-card';
-        card.onclick = () => openEbookModal(ebook.fileUrl, ebook.title);
+        card.onclick = () => window.open(ebook.fileUrl, '_blank');
         
         card.innerHTML = `
             <div class="ebook-premium-cover-container">
@@ -226,16 +221,11 @@ function renderClientEbooks() {
             </div>
             
             <div class="ebook-premium-content">
-                <div>
-                    <div class="ebook-premium-meta">[ ${category.toUpperCase()} • ${pages} PAGES ]</div>
+                <div style="flex: 1;">
+                    <div class="ebook-premium-meta">[ ${category.toUpperCase()} ]</div>
                     <div class="ebook-premium-title" title="${ebook.title.replace(/"/g, '&quot;')}">${ebook.title}</div>
-                    
-                    <div style="margin-top: 10px; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-                        <div style="height: 100%; width: ${percent}%; background: var(--accent-gold);"></div>
-                    </div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-align: right;">${percent}% lu</div>
                 </div>
-                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">${percent > 0 ? 'REPRENDRE LA LECTURE' : "LIRE L'EBOOK"}</button>
+                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); window.open('${ebook.fileUrl}', '_blank')">VOIR L'EBOOK</button>
             </div>
         `;
         list.appendChild(card);

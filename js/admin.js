@@ -1022,18 +1022,12 @@ async function addEbook(e) {
     e.preventDefault();
     const title = document.getElementById('ebook-title').value;
     const desc = document.getElementById('ebook-desc').value;
-    const fileInput = document.getElementById('ebook-file');
+    const fileUrl = document.getElementById('ebook-file').value.trim();
     const submitBtn = document.getElementById('btn-submit-ebook');
     
-    // If we are creating a new ebook, a file is required
-    if (!currentEditEbookId && (!title || !desc || !fileInput.files.length)) {
-        alert("Veuillez remplir tous les champs et sélectionner un PDF.");
-        return;
-    }
-    
-    // If editing, title and desc are required, but file is optional
-    if (currentEditEbookId && (!title || !desc)) {
-        alert("Veuillez remplir le titre et la description.");
+    // Validate
+    if (!title || !desc || !fileUrl) {
+        alert("Veuillez remplir tous les champs (Titre, Description et Lien).");
         return;
     }
 
@@ -1048,30 +1042,12 @@ async function addEbook(e) {
             const existingEbook = db.trainings.find(t => t.id === currentEditEbookId);
             if (!existingEbook) throw new Error("Ebook introuvable");
             
-            let finalUrl = existingEbook.fileUrl;
-            let finalName = existingEbook.fileName;
-            
-            // If a new file is provided, upload it
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                if (file.type !== 'application/pdf') {
-                    alert("Veuillez sélectionner un fichier PDF valide.");
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Mettre à jour l\'Ebook</span>';
-                    return;
-                }
-                const newUrl = await uploadFileToStorage(file, 'ebooks');
-                if (!newUrl) throw new Error("Échec de l'upload du nouveau fichier");
-                finalUrl = newUrl;
-                finalName = file.name;
-            }
-            
             const updatedEbook = {
                 ...existingEbook,
                 title: title,
                 description: desc,
-                fileUrl: finalUrl,
-                fileName: finalName
+                fileUrl: fileUrl,
+                fileName: "Lien Web"
             };
             
             await saveDoc('trainings', updatedEbook);
@@ -1080,24 +1056,13 @@ async function addEbook(e) {
             
         } else {
             // CREATE NEW EBOOK
-            const file = fileInput.files[0];
-            if (file.type !== 'application/pdf') {
-                alert("Veuillez sélectionner un fichier PDF valide.");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l\'Ebook</span>';
-                return;
-            }
-            
-            const fileUrl = await uploadFileToStorage(file, 'ebooks');
-            if (!fileUrl) throw new Error("Échec de la récupération de l'URL du fichier.");
-
             const newEbook = {
                 id: generateId('ebk_'),
                 type: 'ebook',
                 title: title,
                 description: desc,
                 fileUrl: fileUrl,
-                fileName: file.name,
+                fileName: "Lien Web",
                 createdAt: new Date().toISOString()
             };
 
@@ -1114,7 +1079,7 @@ async function addEbook(e) {
     } finally {
         // Restore button state (cancelEditEbook handles the text if we were editing)
         if (!currentEditEbookId) {
-            submitBtn.innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l\'Ebook</span>';
+            submitBtn.innerHTML = '<span class="material-icons-round">link</span> <span id="btn-submit-ebook-text">Ajouter l\'Ebook</span>';
         }
         submitBtn.disabled = false;
     }
@@ -1128,8 +1093,8 @@ function editEbook(id) {
     currentEditEbookId = id;
     document.getElementById('ebook-title').value = ebook.title;
     document.getElementById('ebook-desc').value = ebook.description;
+    document.getElementById('ebook-file').value = ebook.fileUrl || '';
     
-    document.getElementById('ebook-file-required').classList.add('hidden');
     document.getElementById('btn-submit-ebook-text').innerText = "Mettre à jour l'Ebook";
     
     const cancelBtn = document.getElementById('btn-cancel-ebook');
@@ -1144,8 +1109,7 @@ function cancelEditEbook() {
     document.getElementById('ebook-desc').value = '';
     document.getElementById('ebook-file').value = '';
     
-    document.getElementById('ebook-file-required').classList.remove('hidden');
-    document.getElementById('btn-submit-ebook').innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l\'Ebook</span>';
+    document.getElementById('btn-submit-ebook').innerHTML = '<span class="material-icons-round">link</span> <span id="btn-submit-ebook-text">Ajouter l\'Ebook</span>';
     
     const cancelBtn = document.getElementById('btn-cancel-ebook');
     if(cancelBtn) cancelBtn.classList.add('hidden');
