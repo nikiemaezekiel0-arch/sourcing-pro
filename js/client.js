@@ -867,7 +867,7 @@ let supplierViewTimer = null;
 
 function openSupplierModal(id) {
     const db = getDB();
-    const sup = db.suppliers.find(s => s.id === id);
+    const sup = (db.users || []).find(s => s.id === id && s.role === 'supplier');
     if(!sup) return;
     
     // Start 60-second view timer
@@ -876,11 +876,12 @@ function openSupplierModal(id) {
         await incrementSupplierViews(id);
     }, 60000); // 60 seconds
     
-    const cat = db.categories.find(c => c.id === sup.categoryId);
+    const catId = sup.categoryId || (sup.categories && sup.categories.length > 0 ? sup.categories[0] : null);
+    const cat = db.categories.find(c => c.id === catId);
     
-    document.getElementById('modal-sup-name').textContent = sup.name;
+    document.getElementById('modal-sup-name').textContent = sup.name || sup.firstname || 'Fournisseur';
     document.getElementById('modal-sup-cat').innerHTML = `<span class="material-icons-round text-sm">${cat ? cat.icon : 'store'}</span> ${cat ? cat.name : 'Autre'}`;
-    document.getElementById('modal-sup-desc').textContent = sup.description;
+    document.getElementById('modal-sup-desc').textContent = sup.description || 'Fournisseur vérifié';
     
     const linkContainer = document.getElementById('modal-sup-link-container');
     if (sup.link) {
