@@ -208,28 +208,72 @@ function renderClientEbooks() {
 
     sortedEbooks.forEach((ebook, index) => {
         const category = categories[index % categories.length];
+        const pages = Math.floor(Math.random() * 200) + 100;
+        
+        const user = getCurrentUser();
+        const progressObj = (user && user.ebookProgress && user.ebookProgress[ebook.fileUrl]) ? user.ebookProgress[ebook.fileUrl] : null;
+        const percent = progressObj ? progressObj.percent : 0;
         
         const card = document.createElement('div');
         card.className = 'ebook-premium-card';
-        card.onclick = () => window.open(ebook.fileUrl, '_blank');
+        card.onclick = () => openEbookModal(ebook.fileUrl, ebook.title);
         
         card.innerHTML = `
-            <div class="ebook-premium-cover-container">
+            <div class="ebook-premium-cover-container" id="ebook-cover-container-${ebook.id}">
                 <div class="ebook-premium-cover">
                     <div class="ebook-premium-cover-title">${ebook.title}</div>
                 </div>
             </div>
             
             <div class="ebook-premium-content">
-                <div style="flex: 1;">
-                    <div class="ebook-premium-meta">[ ${category.toUpperCase()} ]</div>
+                <div>
+                    <div class="ebook-premium-meta">[ ${category.toUpperCase()} • ${pages} PAGES ]</div>
                     <div class="ebook-premium-title" title="${ebook.title.replace(/"/g, '&quot;')}">${ebook.title}</div>
+                    
+                    <div style="margin-top: 10px; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; width: ${percent}%; background: var(--accent-gold);"></div>
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-align: right;">${percent}% lu</div>
                 </div>
-                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); window.open('${ebook.fileUrl}', '_blank')">VOIR L'EBOOK</button>
+                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">${percent > 0 ? 'REPRENDRE LA LECTURE' : "LIRE L'EBOOK"}</button>
             </div>
         `;
         list.appendChild(card);
     });
+
+    // Asynchronously load PDF covers
+    setTimeout(async () => {
+        if (!window.pdfjsLib) return;
+        for (const ebook of sortedEbooks) {
+            try {
+                const container = document.getElementById(`ebook-cover-container-${ebook.id}`);
+                if (!container) continue;
+                
+                const pdf = await pdfjsLib.getDocument(ebook.fileUrl).promise;
+                const page = await pdf.getPage(1);
+                
+                const viewport = page.getViewport({ scale: 0.5 });
+                const canvas = document.createElement('canvas');
+                canvas.className = 'ebook-premium-cover';
+                canvas.style.padding = '0';
+                canvas.style.border = 'none';
+                canvas.style.objectFit = 'cover';
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                const ctx = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                
+                // Replace the default cover with the canvas
+                container.innerHTML = '';
+                container.appendChild(canvas);
+            } catch (err) {
+                console.error("Impossible de charger la couverture PDF de " + ebook.title, err);
+            }
+        }
+    }, 500);
 }
 
 window.updateEbookProgress = function(url, pageNum, numPages) {

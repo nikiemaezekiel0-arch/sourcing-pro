@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head><script>if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){for(let reg of regs){reg.unregister();}});caches.keys().then(function(names){for(let name of names)caches.delete(name);});}</script>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1797,12 +1797,13 @@
                                     <textarea id="ebook-desc" class="input-control" rows="3" placeholder="Ce livre vous apprendra..." required></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label>Lien Google Drive / Web <span id="ebook-file-required">(Requis)</span></label>
-                                    <input type="url" id="ebook-file" class="input-control" placeholder="https://drive.google.com/..." required>
+                                    <label>Fichier PDF <span id="ebook-file-required">(Requis)</span></label>
+                                    <input type="file" id="ebook-file" accept="application/pdf" class="input-control">
+                                    <small class="text-muted mt-1 inline-block text-warning">Le fichier sera uploadé sur Firebase Storage. Laissez vide lors d'une modification pour conserver l'ancien PDF.</small>
                                 </div>
                                 <div class="flex gap-4">
                                     <button type="submit" class="btn-primary w-full" id="btn-submit-ebook">
-                                        <span class="material-icons-round">link</span> <span id="btn-submit-ebook-text">Ajouter l'Ebook</span>
+                                        <span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l'Ebook</span>
                                     </button>
                                     <button type="button" id="btn-cancel-ebook" class="btn-secondary hidden" onclick="cancelEditEbook()">Annuler</button>
                                 </div>
@@ -2592,15 +2593,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=36"></script>
-    <script src="js/currency.js?v=36"></script>
-    <script src="js/db.js?v=36"></script>
-    <script src="js/auth.js?v=36"></script>
-    <script src="js/admin.js?v=36"></script>
-    <script src="js/admin-agent.js?v=36"></script>
-    <script src="js/client.js?v=36"></script>
-    <script src="js/client-agent.js?v=36"></script>
-    <script src="js/supplier.js?v=36"></script>
+    <script src="js/i18n.js?v=34"></script>
+    <script src="js/currency.js?v=34"></script>
+    <script src="js/db.js?v=34"></script>
+    <script src="js/auth.js?v=34"></script>
+    <script src="js/admin.js?v=34"></script>
+    <script src="js/admin-agent.js?v=34"></script>
+    <script src="js/client.js?v=34"></script>
+    <script src="js/client-agent.js?v=34"></script>
+    <script src="js/supplier.js?v=34"></script>
     
     <!-- Main Routing Logic -->
     <script>
