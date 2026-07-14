@@ -1492,6 +1492,9 @@
                 <div class="nav-item" id="admin-nav-demos" onclick="switchAdminTab('demos')">
                     <span class="material-icons-round">timer</span> Accès Démo
                 </div>
+                <div class="nav-item" id="admin-nav-backups" onclick="switchAdminTab('backups')">
+                    <span class="material-icons-round">history</span> Historique
+                </div>
                 <div class="nav-item" id="admin-nav-stock" onclick="switchAdminTab('stock')">
                     <span class="material-icons-round">inventory_2</span> Gestion Stocks (Vinted)
                 </div>
@@ -2242,6 +2245,30 @@
 
                     <h4 class="mb-4">Historique des Ventes</h4>
                     <div id="admin-sales-list"></div>
+                </div>
+                
+                <!-- 11. HISTORIQUE / SAUVEGARDES -->
+                <div id="admin-view-backups" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold"><span class="material-icons-round align-middle text-accent">history</span> Historique des Sauvegardes</h2>
+                    </div>
+                    <p class="text-muted text-sm mb-4">À chaque modification ou suppression d'un fournisseur, une copie est enregistrée ici. Vous pouvez restaurer l'ancienne version en un clic.</p>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                    <th>Fournisseur</th>
+                                    <th>Catégorie</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-backups-table">
+                                <!-- Backup rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </main>

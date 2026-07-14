@@ -98,7 +98,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock', 'salereg', 'sales'].forEach(t => {
+    ['users', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock', 'salereg', 'sales', 'backups'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -326,23 +326,20 @@ async function updateUserStatus(userId, status, planType = 'standard') {
 }
 
 async function deleteUser(id) {
-    if(!confirm("⚠️ Êtes-vous sûr de vouloir supprimer DÉFINITIVEMENT cet utilisateur ? Cette action est irréversible.")) return;
+    if(!confirm("⚠️ Êtes-vous sûr de vouloir supprimer cet élément ?")) return;
     
     try {
         const db = getDB();
         const user = db.users.find(u => u.id === id);
         
-        // S'il s'agit d'un fournisseur, on supprime aussi son profil public
+        // BACKUP HISTORY FOR SUPPLIERS
         if (user && user.role === 'supplier') {
-            const supProfile = db.suppliers?.find(s => s.userId === id);
-            if (supProfile) {
-                await deleteDoc('suppliers', supProfile.id);
-            }
+            await saveBackupHistory('SUPPRESSION', user);
         }
         
         // Supprimer l'utilisateur de la collection users
         await deleteDoc('users', id);
-        alert("Utilisateur supprimé définitivement.");
+        alert("Supprimé avec succès.");
     } catch (e) {
         console.error("Delete user error", e);
         alert("Erreur lors de la suppression.");
@@ -643,13 +640,16 @@ async function addSupplier(e) {
                 qrWeChat: getValidImage(qrWeChat),
                 catalogLinks: catalogPdfs
             };
+            // BACKUP HISTORY: Save old version before update
+            await saveBackupHistory('MODIFICATION', existingSup);
+            
             await saveDoc('users', updatedSup);
         }
     } else {
         const newUserId = generateId('usr_');
         const dummyEmail = `manuel_${newUserId.substring(4,10)}@fournisseur.com`;
         
-        await saveDoc('users', {
+        const newSupplier = {
             id: newUserId,
             name: name,
             company: name,
@@ -665,7 +665,11 @@ async function addSupplier(e) {
             qrWeChat: getValidImage(qrWeChat),
             catalogLinks: catalogPdfs,
             vipCode: 'VIP-' + Math.random().toString(36).substr(2, 5).toUpperCase()
-        });
+        };
+        await saveDoc('users', newSupplier);
+        
+        // BACKUP HISTORY: Save newly created supplier
+        await saveBackupHistory('CREATION', newSupplier);
     }
     
     cancelEditSupplier();
@@ -818,6 +822,14 @@ function cancelEditSupplier() {
 
 async function deleteSupplier(id) {
     if(!confirm("Êtes-vous sûr ?")) return;
+    
+    // BACKUP HISTORY
+    const db = getDB();
+    const supplier = db.users.find(u => u.id === id);
+    if (supplier) {
+        await saveBackupHistory('SUPPRESSION', supplier);
+    }
+    
     await deleteDoc('users', id);
 }
 
@@ -2800,4 +2812,119 @@ window.generateInvoice = function(productId, saleId) {
         document.body.removeChild(invoiceEl);
         showNotification("Facture générée avec succès !");
     });
+}
+
+// ==========================================
+// SAUVEGARDES ET HISTORIQUE (AUDIT TRAIL)
+// ==========================================
+
+async function saveBackupHistory(action, supplierData) {
+    if (!supplierData || !supplierData.id) return;
+    
+    // Create a new document in backups_history collection
+    const backupObj = {
+        action: action, // 'CREATION', 'MODIFICATION', 'SUPPRESSION'
+        timestamp: new Date().toISOString(),
+        supplierId: supplierData.id,
+        supplierName: supplierData.name || 'Inconnu',
+        category: supplierData.category || 'Non classé',
+        data: supplierData
+    };
+    
+    try {
+        const id = 'backup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        backupObj.id = id;
+        
+        let db = getDB();
+        if (!db.backups_history) db.backups_history = [];
+        db.backups_history.push(backupObj);
+        
+        // Push to Firebase directly
+        await firestore.collection('backups_history').doc(id).set(backupObj);
+        console.log(`Historique sauvegardé : ${action} pour ${backupObj.supplierName}`);
+    } catch (e) {
+        console.error("Erreur sauvegarde historique :", e);
+    }
+}
+
+function renderAdminBackups() {
+    let db = getDB();
+    const tbody = document.getElementById('admin-backups-table');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    let history = db.backups_history || [];
+    // Sort by newest first
+    history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    if (history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-8">Aucun historique disponible.</td></tr>';
+        return;
+    }
+    
+    history.forEach(item => {
+        const tr = document.createElement('tr');
+        const dateStr = new Date(item.timestamp).toLocaleString('fr-FR', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        
+        let actionBadge = '';
+        if (item.action === 'CREATION') actionBadge = '<span class="status-badge" style="background:#22c55e20; color:#22c55e;">CRÉATION</span>';
+        if (item.action === 'MODIFICATION') actionBadge = '<span class="status-badge" style="background:#eab30820; color:#eab308;">MODIFICATION</span>';
+        if (item.action === 'SUPPRESSION') actionBadge = '<span class="status-badge" style="background:#ef444420; color:#ef4444;">SUPPRESSION</span>';
+        
+        tr.innerHTML = `
+            <td>${dateStr}</td>
+            <td>${actionBadge}</td>
+            <td class="font-bold">${item.supplierName}</td>
+            <td><span class="category-badge">${item.category}</span></td>
+            <td>
+                <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="restoreBackup('${item.id}')">
+                    <span class="material-icons-round" style="font-size:1rem;">restore</span> Restaurer
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function restoreBackup(backupId) {
+    if (!confirm("Voulez-vous vraiment restaurer cette ancienne version du fournisseur ? Cela écrasera sa version actuelle sur le site s'il existe toujours.")) return;
+    
+    const db = getDB();
+    const backup = (db.backups_history || []).find(b => b.id === backupId);
+    if (!backup) return alert("Sauvegarde introuvable.");
+    
+    const supplierData = backup.data;
+    
+    try {
+        showLoading();
+        // Update in DB object
+        const existingIndex = db.users.findIndex(u => u.id === supplierData.id);
+        if (existingIndex >= 0) {
+            db.users[existingIndex] = supplierData;
+        } else {
+            db.users.push(supplierData);
+        }
+        
+        // Update in Firestore
+        await firestore.collection('users').doc(supplierData.id).set(supplierData);
+        
+        // Log this restoration as a MODIFICATION (so we have a trail of the restoration)
+        await saveBackupHistory('MODIFICATION (RESTAURATION)', supplierData);
+        
+        hideLoading();
+        showNotification("Fournisseur restauré avec succès !");
+        
+        // Refresh view
+        if (!document.getElementById('admin-view-suppliers').classList.contains('hidden')) {
+            renderAdminSuppliers();
+        }
+        
+    } catch (e) {
+        hideLoading();
+        console.error("Erreur restauration :", e);
+        alert("Erreur lors de la restauration.");
+    }
 }
