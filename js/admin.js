@@ -13,32 +13,36 @@ let autoSyncTimer = null;
 function initAdminPortal() {
     switchAdminTab('users');
     let hasRunRepair = false;
+    let renderTimeout = null;
     window.addEventListener('db_updated', async () => {
-        const db = getDB();
+        if (renderTimeout) clearTimeout(renderTimeout);
+        renderTimeout = setTimeout(() => {
+            const db = getDB();
 
-        // One-time wipe of platforms as requested by user
-        if (!localStorage.getItem('platforms_wiped_v3') && db.sales_platforms && db.sales_platforms.length > 0) {
-            localStorage.setItem('platforms_wiped_v3', 'true');
-            try {
-                for(let p of db.sales_platforms) {
-                    firestore.collection('sales_platforms').doc(p.id).delete();
-                }
-            } catch(e){}
-        }
+            // One-time wipe of platforms as requested by user
+            if (!localStorage.getItem('platforms_wiped_v3') && db.sales_platforms && db.sales_platforms.length > 0) {
+                localStorage.setItem('platforms_wiped_v3', 'true');
+                try {
+                    for(let p of db.sales_platforms) {
+                        firestore.collection('sales_platforms').doc(p.id).delete();
+                    }
+                } catch(e){}
+            }
 
-        renderAdminUsers();
-        renderAdminCategories();
-        renderAdminSuppliers();
-        populateCategorySelect();
-        if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
-        if(typeof renderVintedStock === 'function') renderVintedStock();
-        if(typeof renderVintedSales === 'function') renderVintedSales();
-        if(typeof renderSaleRegistration === 'function') renderSaleRegistration();
-        
-    // Update Charts if they exist
-        if (typeof renderAdminCharts === 'function') {
-            renderAdminCharts(db.users);
-        }
+            renderAdminUsers();
+            renderAdminCategories();
+            renderAdminSuppliers();
+            populateCategorySelect();
+            if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
+            if(typeof renderVintedStock === 'function') renderVintedStock();
+            if(typeof renderVintedSales === 'function') renderVintedSales();
+            if(typeof renderSaleRegistration === 'function') renderSaleRegistration();
+            
+        // Update Charts if they exist
+            if (typeof renderAdminCharts === 'function') {
+                renderAdminCharts(db.users);
+            }
+        }, 150); // Debounce by 150ms
     });
 
 }
@@ -237,6 +241,7 @@ function renderAdminUsers() {
         return;
     }
     
+    let htmlStr = '';
     usersList.forEach(u => {
         let statusBadge = '';
         let actionBtn = '';
@@ -281,8 +286,7 @@ function renderAdminUsers() {
                 <button class="btn-icon danger" onclick="deleteUser('${u.id}')" title="Supprimer définitivement"><span class="material-icons-round">delete_forever</span></button>
             `;
         }
-        
-        tbody.innerHTML += `
+        htmlStr += `
             <tr>
                 <td>${u.company ? (u.company + '<br><small class="text-muted">' + u.name + '</small>') : u.name}</td>
                 <td>${roleBadge}</td>
@@ -292,6 +296,7 @@ function renderAdminUsers() {
             </tr>
         `;
     });
+    tbody.innerHTML = htmlStr;
 }
 
 async function updateUserStatus(userId, status, planType = 'standard') {
@@ -380,9 +385,9 @@ function renderAdminCategories() {
     const list = document.getElementById('admin-categories-list');
     if(!list) return;
     
-    list.innerHTML = '';
+    let htmlStr = '';
     db.categories.forEach(cat => {
-        list.innerHTML += `
+        htmlStr += `
             <div class="glass-panel flex justify-between items-center" style="padding:1rem; margin-bottom:0.5rem;">
                 <div class="flex items-center gap-4">
                     <span class="material-icons-round text-primary" style="font-size:2rem;">${cat.icon}</span>
@@ -395,6 +400,7 @@ function renderAdminCategories() {
             </div>
         `;
     });
+    list.innerHTML = htmlStr;
     
     if (document.getElementById('icon-picker-grid') && document.getElementById('icon-picker-grid').innerHTML.trim() === '') {
         renderIconPicker();
@@ -730,10 +736,11 @@ function renderAdminSuppliers() {
         return nameA.localeCompare(nameB);
     });
     
+    let htmlStr = '';
     filtered.forEach(sup => {
         const catId = sup.categoryId || (sup.categories && sup.categories.length > 0 ? sup.categories[0] : null);
         const cat = db.categories.find(c => c.id === catId);
-        list.innerHTML += `
+        htmlStr += `
             <div class="glass-panel flex justify-between items-center" style="padding:1rem; margin-bottom:0.5rem;">
                 <div>
                     <div class="font-bold flex items-center gap-2">
@@ -751,6 +758,7 @@ function renderAdminSuppliers() {
             </div>
         `;
     });
+    list.innerHTML = htmlStr;
 }
 
 function editSupplier(id) {
@@ -2862,8 +2870,8 @@ function renderAdminBackups() {
         return;
     }
     
+    let htmlStr = '';
     history.forEach(item => {
-        const tr = document.createElement('tr');
         const dateStr = new Date(item.timestamp).toLocaleString('fr-FR', {
             day: '2-digit', month: 'short', year: 'numeric',
             hour: '2-digit', minute: '2-digit'
@@ -2874,19 +2882,21 @@ function renderAdminBackups() {
         if (item.action === 'MODIFICATION') actionBadge = '<span class="status-badge" style="background:#eab30820; color:#eab308;">MODIFICATION</span>';
         if (item.action === 'SUPPRESSION') actionBadge = '<span class="status-badge" style="background:#ef444420; color:#ef4444;">SUPPRESSION</span>';
         
-        tr.innerHTML = `
+        htmlStr += `
+        <tr>
             <td>${dateStr}</td>
             <td>${actionBadge}</td>
             <td class="font-bold">${item.supplierName}</td>
-            <td><span class="category-badge">${item.category}</span></td>
+            <td><span class="category-badge">${item.category || 'Général'}</span></td>
             <td>
                 <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="restoreBackup('${item.id}')">
                     <span class="material-icons-round" style="font-size:1rem;">restore</span> Restaurer
                 </button>
             </td>
+        </tr>
         `;
-        tbody.appendChild(tr);
     });
+    tbody.innerHTML = htmlStr;
 }
 
 async function restoreBackup(backupId) {
@@ -2928,3 +2938,97 @@ async function restoreBackup(backupId) {
         alert("Erreur lors de la restauration.");
     }
 }
+
+// -----------------------------------------------------
+// IMPORT EXCEL SECURISE
+// -----------------------------------------------------
+async function startExcelImport() {
+    if(!confirm("Êtes-vous sûr de vouloir lancer l'importation massive des fournisseurs depuis l'Excel ? (Cette action va traiter plus de 650 fournisseurs. Cela peut prendre quelques secondes. Il n'y aura aucun écrasement.)")) {
+        return;
+    }
+    
+    showLoading();
+    try {
+        // 1. Fetch JSON file
+        const response = await fetch('/js/import_data.json');
+        if (!response.ok) {
+            throw new Error("Impossible de charger import_data.json");
+        }
+        const suppliersList = await response.json();
+        
+        let addedCount = 0;
+        let skippedCount = 0;
+        
+        const db = getDB();
+        const existingUsers = db.users || [];
+        const existingCats = db.categories || [];
+        
+        // Disable real-time listeners momentarily if they cause too much lag? 
+        // Not necessary, we just await saveDoc.
+        
+        for (const sup of suppliersList) {
+            // Check if already exists (by link or exact name)
+            const exists = existingUsers.some(u => 
+                u.role === 'supplier' && 
+                (u.name.toLowerCase() === sup.name.toLowerCase() || 
+                (sup.link && u.link && u.link.toLowerCase() === sup.link.toLowerCase()))
+            );
+            
+            if (exists) {
+                skippedCount++;
+                continue;
+            }
+            
+            // Map category
+            let catId = null;
+            let catMatch = existingCats.find(c => c.name.toLowerCase() === sup.categoryName.toLowerCase());
+            
+            if (catMatch) {
+                catId = catMatch.id;
+            } else {
+                // Create new category
+                catId = generateId('cat_');
+                const newCat = { id: catId, name: sup.categoryName, icon: 'category' };
+                await saveDoc('categories', newCat);
+                // Update local array for next iterations
+                existingCats.push(newCat); 
+            }
+            
+            // Create supplier
+            const newUserId = generateId('usr_');
+            const newSupplier = {
+                id: newUserId,
+                name: sup.name,
+                company: sup.name,
+                email: `import_${newUserId.substring(4,10)}@fournisseur.com`,
+                phone: sup.phone || 'N/A',
+                role: 'supplier',
+                status: 'active',
+                isManual: true,
+                categoryId: catId,
+                description: sup.description,
+                link: sup.link,
+                isPremium: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            // BACKUP HISTORY: Save new creation
+            await saveBackupHistory('CREATION', newSupplier);
+            await saveDoc('users', newSupplier);
+            
+            addedCount++;
+        }
+        
+        hideLoading();
+        alert(`Importation terminée !\n- ${addedCount} fournisseurs ajoutés.\n- ${skippedCount} fournisseurs ignorés (déjà existants).`);
+        
+        // Refresh UI
+        renderAdminBackups();
+        
+    } catch (error) {
+        hideLoading();
+        console.error("Erreur lors de l'importation Excel :", error);
+        alert("Erreur lors de l'importation : " + error.message);
+    }
+}
+
