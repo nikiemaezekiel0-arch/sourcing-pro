@@ -1393,9 +1393,27 @@ function renderPublicBoutique() {
     let htmlStr = '';
     products.forEach(prod => {
         const cat = (db.boutique_categories || []).find(c => c.id === prod.categoryId);
+        
+        let stockQty = null;
+        let isOutOfStock = false;
+        if (prod.stockId && db.vinted_stock) {
+            const stockItem = db.vinted_stock.find(s => s.id === prod.stockId);
+            if (stockItem) {
+                stockQty = parseInt(stockItem.quantity) || 0;
+                if (stockQty <= 0) isOutOfStock = true;
+            }
+        }
+        
+        const opacity = isOutOfStock ? '0.6' : '1';
+        const pointerEvent = isOutOfStock ? 'none' : 'auto';
+        const stockBadge = isOutOfStock ? `<div style="position:absolute; top:10px; right:10px; background:red; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; z-index:2;">Rupture</div>` : '';
+        const qtyBadge = (!isOutOfStock && stockQty !== null) ? `<div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; z-index:2;">En stock: ${stockQty}</div>` : '';
+        
         htmlStr += `
-        <div class="glass-panel" style="padding: 15px; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s;" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-            <div style="height: 200px; overflow: hidden; border-radius: 8px; margin-bottom: 15px;">
+        <div class="glass-panel" style="padding: 15px; display: flex; flex-direction: column; cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'}; transition: transform 0.2s; opacity: ${opacity}; pointer-events: ${pointerEvent}; position: relative;" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            ${stockBadge}
+            ${qtyBadge}
+            <div style="height: 200px; overflow: hidden; border-radius: 8px; margin-bottom: 15px; position: relative;">
                 <img src="${prod.image || 'https://via.placeholder.com/300'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/300'">
             </div>
             <div style="flex-grow: 1;">
@@ -1404,7 +1422,7 @@ function renderPublicBoutique() {
             </div>
             <div class="flex justify-between items-center" style="margin-top: auto;">
                 <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.3rem;">${prod.price}</span>
-                <button class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 8px;">Voir</button>
+                <button class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 8px;" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Épuisé' : 'Voir'}</button>
             </div>
         </div>`;
     });
@@ -1442,8 +1460,25 @@ function addBoutiqueToCart(prodId) {
     const prod = (db.boutique_products || []).find(p => p.id === prodId);
     if (!prod) return;
     
+    // Check actual stock
+    let maxQty = null;
+    if (prod.stockId && db.vinted_stock) {
+        const stockItem = db.vinted_stock.find(s => s.id === prod.stockId);
+        if (stockItem) {
+            maxQty = parseInt(stockItem.quantity) || 0;
+            if (maxQty <= 0) {
+                alert("Désolé, ce produit est en rupture de stock.");
+                return;
+            }
+        }
+    }
+    
     const existingItem = boutiqueCart.find(item => item.id === prodId);
     if (existingItem) {
+        if (maxQty !== null && (existingItem.quantity + 1) > maxQty) {
+            alert("Désolé, vous ne pouvez pas ajouter plus de " + maxQty + " exemplaires (limite du stock).");
+            return;
+        }
         existingItem.quantity += 1;
     } else {
         boutiqueCart.push({

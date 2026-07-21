@@ -3342,13 +3342,30 @@ function renderAdminBoutiqueProducts() {
     let htmlStr = '';
     db.boutique_products.forEach(prod => {
         const cat = (db.boutique_categories || []).find(c => c.id === prod.categoryId);
+        
+        let stockHtml = '';
+        if (prod.stockId && db.vinted_stock) {
+            const stockItem = db.vinted_stock.find(s => s.id === prod.stockId);
+            if (stockItem) {
+                const qty = parseInt(stockItem.quantity) || 0;
+                if (qty <= 0) {
+                    stockHtml = `<p style="color: #ef4444; font-weight: bold; font-size: 0.85rem; margin: 0 0 10px 0;"><span class="material-icons-round" style="font-size: 1rem; vertical-align: middle;">error_outline</span> Rupture de stock</p>`;
+                } else {
+                    stockHtml = `<p style="color: #10b981; font-size: 0.85rem; margin: 0 0 10px 0;"><span class="material-icons-round" style="font-size: 1rem; vertical-align: middle;">inventory_2</span> En stock : ${qty}</p>`;
+                }
+            }
+        } else {
+            stockHtml = `<p class="text-muted text-xs" style="margin: 0 0 10px 0;">Non lié au stock</p>`;
+        }
+        
         htmlStr += `
         <div class="glass-panel" style="padding: 15px;">
             <div style="height: 150px; overflow: hidden; border-radius: 8px; margin-bottom: 10px;">
                 <img src="${prod.image || 'https://via.placeholder.com/300'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/300'">
             </div>
             <h4 style="margin: 0 0 5px 0;">${prod.title}</h4>
-            <p class="text-muted text-sm" style="margin: 0 0 10px 0;">${cat ? cat.name : 'Sans catégorie'}</p>
+            <p class="text-muted text-sm" style="margin: 0 0 5px 0;">${cat ? cat.name : 'Sans catégorie'}</p>
+            ${stockHtml}
             <p style="font-weight: bold; color: var(--accent-gold); margin: 0 0 15px 0;">${prod.price}</p>
             <div class="flex gap-2">
                 <button class="btn-secondary text-sm" onclick="openBoutiqueProductModal('${prod.id}')" style="flex:1;">Modifier</button>
