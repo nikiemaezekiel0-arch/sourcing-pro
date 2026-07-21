@@ -1399,7 +1399,7 @@ function renderPublicBoutique() {
         if (prod.stockId && db.vinted_stock) {
             const stockItem = db.vinted_stock.find(s => s.id === prod.stockId);
             if (stockItem) {
-                stockQty = parseInt(stockItem.quantity) || 0;
+                stockQty = parseInt(stockItem.availableQty) || 0;
                 if (stockQty <= 0) isOutOfStock = true;
             }
         }
@@ -1465,7 +1465,7 @@ function addBoutiqueToCart(prodId) {
     if (prod.stockId && db.vinted_stock) {
         const stockItem = db.vinted_stock.find(s => s.id === prod.stockId);
         if (stockItem) {
-            maxQty = parseInt(stockItem.quantity) || 0;
+            maxQty = parseInt(stockItem.availableQty) || 0;
             if (maxQty <= 0) {
                 alert("Désolé, ce produit est en rupture de stock.");
                 return;

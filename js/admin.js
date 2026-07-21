@@ -3371,11 +3371,20 @@ function renderAdminBoutiqueProducts() {
         if (prod.stockId && db.vinted_stock) {
             const stockItem = db.vinted_stock.find(s => s.id === prod.stockId);
             if (stockItem) {
-                const qty = parseInt(stockItem.quantity) || 0;
+                const qty = parseInt(stockItem.availableQty) || 0;
+                
+                // Get batch name
+                let batchName = '';
+                const itemBatchId = stockItem.batchId || (stockItem.lotNumber ? stockItem.lotNumber.split('::')[0] : null);
+                if (itemBatchId && db.shipping_batches) {
+                    const batch = db.shipping_batches.find(b => b.id === itemBatchId);
+                    if (batch) batchName = ` [Colis: ${batch.ref || batch.name || 'Inconnu'}]`;
+                }
+
                 if (qty <= 0) {
-                    stockHtml = `<p style="color: #ef4444; font-weight: bold; font-size: 0.85rem; margin: 0 0 10px 0;"><span class="material-icons-round" style="font-size: 1rem; vertical-align: middle;">error_outline</span> Rupture de stock</p>`;
+                    stockHtml = `<p style="color: #ef4444; font-weight: bold; font-size: 0.85rem; margin: 0 0 10px 0;"><span class="material-icons-round" style="font-size: 1rem; vertical-align: middle;">error_outline</span> Rupture de stock${batchName}</p>`;
                 } else {
-                    stockHtml = `<p style="color: #10b981; font-size: 0.85rem; margin: 0 0 10px 0;"><span class="material-icons-round" style="font-size: 1rem; vertical-align: middle;">inventory_2</span> En stock : ${qty}</p>`;
+                    stockHtml = `<p style="color: #10b981; font-size: 0.85rem; margin: 0 0 10px 0;"><span class="material-icons-round" style="font-size: 1rem; vertical-align: middle;">inventory_2</span> En stock : ${qty}${batchName}</p>`;
                 }
             }
         } else {
