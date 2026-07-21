@@ -252,18 +252,19 @@ async function handleRegister(event) {
         
         let assignedRole = 'client';
         let assignedStatus = 'pending';
+        let finalLastname = lastname;
         
         // Secret code to bootstrap the first admin
         if (lastname === 'SUPER-ADMIN-VIP') {
             assignedRole = 'admin';
             assignedStatus = 'active';
-            lastname = ''; // Clean up the name
+            finalLastname = ''; // Clean up the name
         }
 
         // Save user profile to Firestore
         const newUser = {
             id: uid, // Use Firebase Auth UID as document ID
-            name: firstname + " " + lastname,
+            name: firstname + " " + finalLastname,
             email: email,
             country: country,
             phone: fullPhone,
