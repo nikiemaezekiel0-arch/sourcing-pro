@@ -701,6 +701,10 @@ async function addSupplier(e) {
     } else {
         alert("✅ Le fournisseur '" + name + "' a été ajouté avec succès à la liste !");
     }
+    } catch (error) {
+        console.error("Erreur dans addSupplier :", error);
+        alert("Erreur : " + error.message);
+    }
 }
 
 function renderAdminSuppliers() {
