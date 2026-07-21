@@ -14,6 +14,20 @@ function initAdminPortal() {
     switchAdminTab('users');
     let hasRunRepair = false;
     let renderTimeout = null;
+    
+    let lastUserCount = -1;
+    setInterval(() => {
+        const db = getDB();
+        if (db && db.users && db.users.length !== lastUserCount) {
+            lastUserCount = db.users.length;
+            renderAdminUsers();
+            renderAdminCategories();
+            renderAdminSuppliers();
+            if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
+            if(typeof renderAdminAgentProducts === 'function') renderAdminAgentProducts();
+        }
+    }, 1000);
+
     window.addEventListener('db_updated', async () => {
         if (renderTimeout) clearTimeout(renderTimeout);
         renderTimeout = setTimeout(() => {
