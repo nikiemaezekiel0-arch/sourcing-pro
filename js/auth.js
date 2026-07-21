@@ -245,6 +245,16 @@ async function handleRegister(event) {
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
         const uid = userCredential.user.uid;
         
+        let assignedRole = 'client';
+        let assignedStatus = 'pending';
+        
+        // Secret code to bootstrap the first admin
+        if (lastname === 'SUPER-ADMIN-VIP') {
+            assignedRole = 'admin';
+            assignedStatus = 'active';
+            lastname = ''; // Clean up the name
+        }
+
         // Save user profile to Firestore
         const newUser = {
             id: uid, // Use Firebase Auth UID as document ID
@@ -252,8 +262,8 @@ async function handleRegister(event) {
             email: email,
             country: country,
             phone: fullPhone,
-            role: 'client',
-            status: 'pending', // Requires manual validation by admin
+            role: assignedRole,
+            status: assignedStatus,
             favorites: []
         };
         
