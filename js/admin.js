@@ -3153,9 +3153,15 @@ function openBoutiqueProductModal(prodId = null) {
             <div class="modal-content" style="max-width: 600px;">
                 <h3 id="boutique-prod-modal-title">Ajouter un produit</h3>
                 <form id="boutique-prod-form" onsubmit="saveBoutiqueProduct(event)">
-                    
                     <div class="form-group mb-4">
-                        <label>Sélectionner un produit du Stock (Optionnel mais recommandé pour synchronisation)</label>
+                        <label>1. Filtrer par Colis (Optionnel)</label>
+                        <select id="boutique-prod-batch-id" class="input-field" onchange="filterBoutiqueStockByBatch()">
+                            <option value="">-- Tous les colis --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label>2. Sélectionner un produit du Stock</label>
                         <select id="boutique-prod-stock-id" class="input-field" onchange="autoFillBoutiqueFromStock()">
                             <option value="">-- Création Manuelle --</option>
                         </select>
@@ -3205,32 +3211,21 @@ function openBoutiqueProductModal(prodId = null) {
         });
     }
 
-    // Populate stock select
-    const stockSelect = document.getElementById('boutique-prod-stock-id');
-    stockSelect.innerHTML = '<option value="">-- Création Manuelle --</option>';
-    if(db.vinted_stock) {
-        db.vinted_stock.forEach(item => {
+    // Populate batch select
+    const batchSelect = document.getElementById('boutique-prod-batch-id');
+    batchSelect.innerHTML = '<option value="">-- Tous les colis --</option>';
+    if (db.shipping_batches) {
+        db.shipping_batches.forEach(batch => {
             const opt = document.createElement('option');
-            opt.value = item.id;
-            
-            let batchName = '';
-            if (item.batchId && db.shipping_batches) {
-                const batch = db.shipping_batches.find(b => b.id === item.batchId);
-                if (batch) {
-                    batchName = ` [Colis: ${batch.trackingNumber || batch.name || 'Inconnu'}]`;
-                }
-            }
-            
-            opt.innerText = item.title + (item.color ? ` (${item.color})` : '') + batchName;
-            
-            // Store cost info for autofill logic
-            const cost = (parseFloat(item.purchasePrice) || 0) + (parseFloat(item.shippingCost) || 0) + (parseFloat(item.agentFee) || 0);
-            opt.dataset.cost = cost.toFixed(2);
-            opt.dataset.title = item.title;
-            opt.dataset.image = item.photoUrl || '';
-            stockSelect.appendChild(opt);
+            opt.value = batch.id;
+            opt.innerText = batch.trackingNumber || batch.name || 'Colis inconnu';
+            batchSelect.appendChild(opt);
         });
     }
+
+    // Save stock items globally for filtering
+    window.currentBoutiqueStockItems = db.vinted_stock || [];
+    filterBoutiqueStockByBatch();
     
     if(prodId) {
         document.getElementById('boutique-prod-modal-title').innerText = "Modifier le produit";
@@ -3250,6 +3245,43 @@ function openBoutiqueProductModal(prodId = null) {
     }
     
     modal.classList.remove('hidden');
+}
+
+function filterBoutiqueStockByBatch() {
+    const batchId = document.getElementById('boutique-prod-batch-id').value;
+    const stockSelect = document.getElementById('boutique-prod-stock-id');
+    const db = getDB();
+    
+    stockSelect.innerHTML = '<option value="">-- Création Manuelle --</option>';
+    
+    let items = window.currentBoutiqueStockItems || [];
+    if (batchId) {
+        items = items.filter(item => item.batchId === batchId);
+    }
+    
+    items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        
+        let batchName = '';
+        if (item.batchId && db.shipping_batches && !batchId) {
+            // Only show batch name in product list if we are NOT filtering by a specific batch
+            const batch = db.shipping_batches.find(b => b.id === item.batchId);
+            if (batch) {
+                batchName = ` [Colis: ${batch.trackingNumber || batch.name || 'Inconnu'}]`;
+            }
+        }
+        
+        opt.innerText = item.title + (item.color ? ` (${item.color})` : '') + batchName;
+        
+        const cost = (parseFloat(item.purchasePrice) || 0) + (parseFloat(item.shippingCost) || 0) + (parseFloat(item.agentFee) || 0);
+        opt.dataset.cost = cost.toFixed(2);
+        opt.dataset.title = item.title;
+        opt.dataset.image = item.photoUrl || '';
+        stockSelect.appendChild(opt);
+    });
+    
+    autoFillBoutiqueFromStock();
 }
 
 function autoFillBoutiqueFromStock() {
