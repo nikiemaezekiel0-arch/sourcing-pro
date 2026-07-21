@@ -3154,16 +3154,16 @@ function openBoutiqueProductModal(prodId = null) {
                 <h3 id="boutique-prod-modal-title" style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem;">Ajouter un produit</h3>
                 <form id="boutique-prod-form" onsubmit="saveBoutiqueProduct(event)">
                     <div class="form-group mb-4">
-                        <label>1. Filtrer par Colis (Optionnel)</label>
+                        <label>1. Colis d'origine (Requis pour calcul de rentabilité)</label>
                         <select id="boutique-prod-batch-id" class="input-field" onchange="filterBoutiqueStockByBatch()">
-                            <option value="">-- Tous les colis --</option>
+                            <option value="">-- Sans colis (ex: Véhicules/Local) --</option>
                         </select>
                     </div>
 
                     <div class="form-group mb-4">
-                        <label>2. Sélectionner un produit du Stock</label>
+                        <label>2. Produit à mettre en vente</label>
                         <select id="boutique-prod-stock-id" class="input-field" onchange="autoFillBoutiqueFromStock()">
-                            <option value="">-- Création Manuelle --</option>
+                            <option value="">-- Création Manuelle (Indépendant) --</option>
                         </select>
                         <p id="boutique-prod-cost-hint" class="text-xs text-muted mt-1 hidden"></p>
                     </div>
@@ -3214,7 +3214,7 @@ function openBoutiqueProductModal(prodId = null) {
 
     // Populate batch select
     const batchSelect = document.getElementById('boutique-prod-batch-id');
-    batchSelect.innerHTML = '<option value="">-- Tous les colis --</option>';
+    batchSelect.innerHTML = '<option value="">-- Sans colis (ex: Véhicules/Local) --</option>';
     if (db.shipping_batches) {
         db.shipping_batches.forEach(batch => {
             const opt = document.createElement('option');
@@ -3261,7 +3261,7 @@ function filterBoutiqueStockByBatch() {
     const stockSelect = document.getElementById('boutique-prod-stock-id');
     const db = getDB();
     
-    stockSelect.innerHTML = '<option value="">-- Création Manuelle --</option>';
+    stockSelect.innerHTML = '<option value="">-- Création Manuelle (Indépendant) --</option>';
     
     let items = window.currentBoutiqueStockItems || [];
     if (batchId) {
