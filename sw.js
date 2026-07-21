@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sourcing-pro-cache-v16';
+const CACHE_NAME = 'sourcing-pro-cache-v17';
 const urlsToCache = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -60,6 +61,7 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
+  event.waitUntil(clients.claim());
   const cacheAllowlist = [CACHE_NAME];
   
   event.waitUntil(
