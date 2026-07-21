@@ -3150,8 +3150,8 @@ function openBoutiqueProductModal(prodId = null) {
         modal.className = 'modal-overlay hidden';
         modal.style.zIndex = '2000';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
-                <h3 id="boutique-prod-modal-title">Ajouter un produit</h3>
+            <div class="modal-content glass-panel" style="max-width: 600px; padding: 2.5rem; border-radius: 12px; background: rgba(30, 41, 59, 0.95); box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); margin: auto; position: relative;">
+                <h3 id="boutique-prod-modal-title" style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem;">Ajouter un produit</h3>
                 <form id="boutique-prod-form" onsubmit="saveBoutiqueProduct(event)">
                     <div class="form-group mb-4">
                         <label>1. Filtrer par Colis (Optionnel)</label>
@@ -3185,8 +3185,9 @@ function openBoutiqueProductModal(prodId = null) {
                         <textarea id="boutique-prod-desc" required class="input-field" rows="3"></textarea>
                     </div>
                     <div class="form-group mb-4">
-                        <label>Lien Image Principale *</label>
-                        <input type="text" id="boutique-prod-image" required class="input-field" placeholder="https://lien-image.com/img.jpg">
+                        <label>Image Principale *</label>
+                        <input type="file" id="boutique-prod-upload" class="input-field" accept="image/*" onchange="handleImageUpload('boutique-prod-upload', 'boutique-prod-preview')">
+                        <img id="boutique-prod-preview" src="" class="hidden mt-2" style="max-height: 150px; border-radius: 8px;">
                     </div>
                     <div class="flex gap-2 justify-end mt-6">
                         <button type="button" class="btn-secondary" onclick="document.getElementById('modal-boutique-product-v2').classList.add('hidden')">Annuler</button>
@@ -3235,12 +3236,20 @@ function openBoutiqueProductModal(prodId = null) {
             document.getElementById('boutique-prod-category').value = prod.categoryId || '';
             document.getElementById('boutique-prod-price').value = prod.price || '';
             document.getElementById('boutique-prod-desc').value = prod.description || '';
-            document.getElementById('boutique-prod-image').value = prod.image || '';
+            if (prod.image) {
+                document.getElementById('boutique-prod-preview').src = prod.image;
+                document.getElementById('boutique-prod-preview').classList.remove('hidden');
+            } else {
+                document.getElementById('boutique-prod-preview').src = '';
+                document.getElementById('boutique-prod-preview').classList.add('hidden');
+            }
             document.getElementById('boutique-prod-stock-id').value = prod.stockId || '';
         }
     } else {
         document.getElementById('boutique-prod-modal-title').innerText = "Ajouter un produit";
         document.getElementById('boutique-prod-form').reset();
+        document.getElementById('boutique-prod-preview').src = '';
+        document.getElementById('boutique-prod-preview').classList.add('hidden');
         document.getElementById('boutique-prod-cost-hint').classList.add('hidden');
     }
     
@@ -3295,7 +3304,10 @@ function autoFillBoutiqueFromStock() {
         const cost = opt.dataset.cost;
         
         document.getElementById('boutique-prod-title').value = title;
-        if (image) document.getElementById('boutique-prod-image').value = image;
+        if (image) {
+            document.getElementById('boutique-prod-preview').src = image;
+            document.getElementById('boutique-prod-preview').classList.remove('hidden');
+        }
         
         hint.innerHTML = `Ce produit vous a coûté environ <strong>${cost} €</strong>. Ajustez votre prix de vente en conséquence.`;
         hint.classList.remove('hidden');
@@ -3310,7 +3322,14 @@ async function saveBoutiqueProduct(e) {
     const categoryId = document.getElementById('boutique-prod-category').value;
     const price = parseFloat(document.getElementById('boutique-prod-price').value);
     const description = document.getElementById('boutique-prod-desc').value;
-    const image = document.getElementById('boutique-prod-image').value;
+    
+    let image = document.getElementById('boutique-prod-preview').src;
+    // Don't save empty string or default url as valid base64
+    if (!image || image === window.location.href) {
+        alert("Veuillez ajouter une image pour le produit.");
+        return;
+    }
+    
     const stockId = document.getElementById('boutique-prod-stock-id').value;
     
     const prod = {
