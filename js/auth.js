@@ -158,6 +158,8 @@ async function handleLogin(event) {
                     return; // Block login
                 }
             }
+        }
+        
         // Success
         setCurrentUser(userDoc);
         showNotification('Connexion réussie !', 'success');
