@@ -3212,7 +3212,17 @@ function openBoutiqueProductModal(prodId = null) {
         db.vinted_stock.forEach(item => {
             const opt = document.createElement('option');
             opt.value = item.id;
-            opt.innerText = item.title + (item.color ? ` (${item.color})` : '');
+            
+            let batchName = '';
+            if (item.batchId && db.shipping_batches) {
+                const batch = db.shipping_batches.find(b => b.id === item.batchId);
+                if (batch) {
+                    batchName = ` [Colis: ${batch.trackingNumber || batch.name || 'Inconnu'}]`;
+                }
+            }
+            
+            opt.innerText = item.title + (item.color ? ` (${item.color})` : '') + batchName;
+            
             // Store cost info for autofill logic
             const cost = (parseFloat(item.purchasePrice) || 0) + (parseFloat(item.shippingCost) || 0) + (parseFloat(item.agentFee) || 0);
             opt.dataset.cost = cost.toFixed(2);
