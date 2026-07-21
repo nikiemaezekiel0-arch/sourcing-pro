@@ -3147,33 +3147,43 @@ function openBoutiqueProductModal(prodId = null) {
     if(!modal) {
         modal = document.createElement('div');
         modal.id = 'modal-boutique-product';
-        modal.className = 'modal';
+        modal.className = 'modal-overlay hidden';
+        modal.style.zIndex = '2000';
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 600px;">
                 <h3 id="boutique-prod-modal-title">Ajouter un produit</h3>
                 <form id="boutique-prod-form" onsubmit="saveBoutiqueProduct(event)">
+                    
                     <div class="form-group mb-4">
-                        <label>Titre du produit</label>
+                        <label>Sélectionner un produit du Stock (Optionnel mais recommandé pour synchronisation)</label>
+                        <select id="boutique-prod-stock-id" class="input-field" onchange="autoFillBoutiqueFromStock()">
+                            <option value="">-- Création Manuelle --</option>
+                        </select>
+                        <p id="boutique-prod-cost-hint" class="text-xs text-muted mt-1 hidden"></p>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label>Titre du produit *</label>
                         <input type="text" id="boutique-prod-title" required class="input-field">
                     </div>
                     <div class="form-group mb-4">
-                        <label>Catégorie</label>
+                        <label>Catégorie *</label>
                         <select id="boutique-prod-category" required class="input-field"></select>
                     </div>
                     <div class="form-group mb-4">
-                        <label>Prix (CFA ou Euros)</label>
-                        <input type="text" id="boutique-prod-price" required class="input-field" placeholder="Ex: 15000 CFA">
+                        <label>Prix de vente (CFA ou Euros) *</label>
+                        <input type="number" step="0.01" id="boutique-prod-price" required class="input-field" placeholder="Ex: 50.00">
                     </div>
                     <div class="form-group mb-4">
-                        <label>Description</label>
+                        <label>Description *</label>
                         <textarea id="boutique-prod-desc" required class="input-field" rows="3"></textarea>
                     </div>
                     <div class="form-group mb-4">
-                        <label>Image principale (URL ou Fichier non géré pour l'instant, utilisez une URL)</label>
+                        <label>Lien Image Principale *</label>
                         <input type="text" id="boutique-prod-image" required class="input-field" placeholder="https://lien-image.com/img.jpg">
                     </div>
                     <div class="flex gap-2 justify-end mt-6">
-                        <button type="button" class="btn-secondary" onclick="document.getElementById('modal-boutique-product').style.display='none'">Annuler</button>
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('modal-boutique-product').classList.add('hidden')">Annuler</button>
                         <button type="submit" class="btn-primary">Enregistrer</button>
                     </div>
                 </form>
@@ -3194,6 +3204,23 @@ function openBoutiqueProductModal(prodId = null) {
             catSelect.appendChild(opt);
         });
     }
+
+    // Populate stock select
+    const stockSelect = document.getElementById('boutique-prod-stock-id');
+    stockSelect.innerHTML = '<option value="">-- Création Manuelle --</option>';
+    if(db.vinted_stock) {
+        db.vinted_stock.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.innerText = item.title + (item.color ? ` (${item.color})` : '');
+            // Store cost info for autofill logic
+            const cost = (parseFloat(item.purchasePrice) || 0) + (parseFloat(item.shippingCost) || 0) + (parseFloat(item.agentFee) || 0);
+            opt.dataset.cost = cost.toFixed(2);
+            opt.dataset.title = item.title;
+            opt.dataset.image = item.photoUrl || '';
+            stockSelect.appendChild(opt);
+        });
+    }
     
     if(prodId) {
         document.getElementById('boutique-prod-modal-title').innerText = "Modifier le produit";
@@ -3204,32 +3231,55 @@ function openBoutiqueProductModal(prodId = null) {
             document.getElementById('boutique-prod-price').value = prod.price || '';
             document.getElementById('boutique-prod-desc').value = prod.description || '';
             document.getElementById('boutique-prod-image').value = prod.image || '';
+            document.getElementById('boutique-prod-stock-id').value = prod.stockId || '';
         }
     } else {
         document.getElementById('boutique-prod-modal-title').innerText = "Ajouter un produit";
         document.getElementById('boutique-prod-form').reset();
+        document.getElementById('boutique-prod-cost-hint').classList.add('hidden');
     }
     
-    modal.style.display = 'flex';
+    modal.classList.remove('hidden');
+}
+
+function autoFillBoutiqueFromStock() {
+    const select = document.getElementById('boutique-prod-stock-id');
+    const hint = document.getElementById('boutique-prod-cost-hint');
+    const opt = select.options[select.selectedIndex];
+    
+    if(opt && opt.value) {
+        const title = opt.dataset.title;
+        const image = opt.dataset.image;
+        const cost = opt.dataset.cost;
+        
+        document.getElementById('boutique-prod-title').value = title;
+        if (image) document.getElementById('boutique-prod-image').value = image;
+        
+        hint.innerHTML = `Ce produit vous a coûté environ <strong>${cost} €</strong>. Ajustez votre prix de vente en conséquence.`;
+        hint.classList.remove('hidden');
+    } else {
+        hint.classList.add('hidden');
+    }
 }
 
 async function saveBoutiqueProduct(e) {
     e.preventDefault();
     const title = document.getElementById('boutique-prod-title').value;
     const categoryId = document.getElementById('boutique-prod-category').value;
-    const price = document.getElementById('boutique-prod-price').value;
+    const price = parseFloat(document.getElementById('boutique-prod-price').value);
     const description = document.getElementById('boutique-prod-desc').value;
     const image = document.getElementById('boutique-prod-image').value;
+    const stockId = document.getElementById('boutique-prod-stock-id').value;
     
     const prod = {
         id: currentEditBoutiqueProductId || generateId('bprod_'),
-        title, categoryId, price, description, image,
+        title, categoryId, price, description, image, stockId,
         updatedAt: new Date().toISOString()
     };
     
     try {
         await saveDoc('boutique_products', prod);
-        document.getElementById('modal-boutique-product').style.display = 'none';
+        document.getElementById('modal-boutique-product').classList.add('hidden');
         renderAdminBoutiqueProducts();
     } catch(err) {
         console.error(err);
