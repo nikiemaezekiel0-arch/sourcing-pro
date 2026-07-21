@@ -930,6 +930,12 @@
             <main class="main-content">
                 <!-- Suppliers View -->
                 <div id="client-view-suppliers">
+                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 10px;">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Annuaire Fournisseurs</h2>
+                        <button onclick="switchClientTab('boutique')" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 0.8rem 1.5rem; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); animation: pulse 2s infinite;">
+                            <span class="material-icons-round">local_mall</span> ACCÉDER À LA BOUTIQUE
+                        </button>
+                    </div>
                     <div id="client-stats-banner" class="flex flex-row flex-wrap gap-4 mb-4" style="align-items: center;">
                         <!-- Injected by client.js?v=2 -->
                     </div>
@@ -1532,7 +1538,12 @@
             <main class="main-content">
                 <!-- Users View -->
                 <div id="admin-view-users" class="glass-panel">
-                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-warning">group</span> Inscriptions & Utilisateurs</h3>
+                    <div class="flex justify-between items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
+                        <h3 class="flex items-center gap-2 m-0"><span class="material-icons-round text-warning">group</span> Inscriptions & Utilisateurs</h3>
+                        <button onclick="switchAdminTab('boutique')" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 0.8rem 1.5rem; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); animation: pulse 2s infinite;">
+                            <span class="material-icons-round">storefront</span> GÉRER LA BOUTIQUE
+                        </button>
+                    </div>
                     <p class="text-muted text-sm mb-4">Validez manuellement les comptes après vérification de leur paiement.</p>
                     
                     <!-- Stats Counters -->
