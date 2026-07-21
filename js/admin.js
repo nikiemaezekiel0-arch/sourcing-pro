@@ -3170,7 +3170,7 @@ function openBoutiqueProductModal(prodId = null) {
                     </div>
                     <div class="form-group mb-4">
                         <label>Image principale (URL ou Fichier non géré pour l'instant, utilisez une URL)</label>
-                        <input type="url" id="boutique-prod-image" required class="input-field" placeholder="https://lien-image.com/img.jpg">
+                        <input type="text" id="boutique-prod-image" required class="input-field" placeholder="https://lien-image.com/img.jpg">
                     </div>
                     <div class="flex gap-2 justify-end mt-6">
                         <button type="button" class="btn-secondary" onclick="document.getElementById('modal-boutique-product').style.display='none'">Annuler</button>
