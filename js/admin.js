@@ -3419,6 +3419,24 @@ async function updateBoutiqueOrderStatus(orderId, newStatus) {
     order.updatedAt = new Date().toISOString();
     
     try {
+        // Automatic stock deduction
+        if ((newStatus === 'shipped' || newStatus === 'delivered') && !order.stockDeducted) {
+            if (order.items && order.items.length > 0) {
+                for (const item of order.items) {
+                    // item.id is the boutique_product id
+                    const bProd = db.boutique_products.find(bp => bp.id === item.id);
+                    if (bProd && bProd.stockId) {
+                        const stockItem = db.vinted_stock.find(vs => vs.id === bProd.stockId);
+                        if (stockItem) {
+                            stockItem.quantity = Math.max(0, (parseInt(stockItem.quantity) || 0) - (parseInt(item.quantity) || 1));
+                            await saveDoc('vinted_stock', stockItem);
+                        }
+                    }
+                }
+            }
+            order.stockDeducted = true;
+        }
+
         await saveDoc('boutique_orders', order);
         renderAdminBoutiqueOrders();
         showNotification("Statut de la commande mis à jour", "success");
