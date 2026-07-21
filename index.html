@@ -56,6 +56,11 @@
                 <div class="auth-left-content">
                     <h1>Maîtrisez l'import depuis la Chine.</h1>
                     <p>Accédez au carnet d'adresses exclusif des meilleurs fournisseurs et formez-vous pour sourcer comme un pro.</p>
+                    <div style="margin-top: 30px;">
+                        <button onclick="showPublicBoutique()" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 1rem 2rem; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); border-radius: 50px;">
+                            <span class="material-icons-round" style="margin-right: 10px;">local_mall</span> VISITER LA BOUTIQUE E-COMMERCE
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -906,6 +911,28 @@
             </div>
         </div>
 
+        <!-- PUBLIC BOUTIQUE VIEW -->
+        <div id="public-boutique-view" class="hidden" style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+            <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 10px;">
+                <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 2.2rem; letter-spacing: -0.5px;">Boutique Sourcing Pro</h2>
+                <button onclick="hidePublicBoutique()" class="btn-secondary" style="border-radius: 50px;">
+                    <span class="material-icons-round">arrow_back</span> Retour à l'accueil
+                </button>
+            </div>
+            
+            <p class="text-muted mb-8" style="font-size: 1.1rem;">Découvrez notre sélection de produits exclusifs. Tous les achats se font de manière sécurisée via WhatsApp.</p>
+            
+            <!-- Categories filter -->
+            <div id="public-boutique-categories-filter" class="flex gap-2 mb-8" style="overflow-x: auto; padding-bottom: 10px;">
+                <button class="btn-primary" style="padding: 0.5rem 1.5rem; border-radius: 50px;">Toutes</button>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                <p class="text-muted">Chargement de la boutique...</p>
+            </div>
+        </div>
+
         <!-- 2. CLIENT DASHBOARD -->
         <div id="client-dashboard" class="dashboard-container hidden">
             <!-- Sidebar is minimal for client, mostly for favorites or user info -->
@@ -937,7 +964,7 @@
                         </button>
                     </div>
                     <div id="client-stats-banner" class="flex flex-row flex-wrap gap-4 mb-4" style="align-items: center;">
-                        <!-- Injected by client.js?v=2 -->
+                        <!-- Injected by client.js?v=3 -->
                     </div>
                     <div class="search-bar-container">
                         <div class="search-bar">
@@ -947,11 +974,11 @@
                     </div>
 
                     <div id="category-filters" class="category-filters">
-                        <!-- Injected by client.js?v=2 -->
+                        <!-- Injected by client.js?v=3 -->
                     </div>
 
                     <div id="suppliers-grid" class="suppliers-grid">
-                        <!-- Injected by client.js?v=2 -->
+                        <!-- Injected by client.js?v=3 -->
                     </div>
                     <div id="load-more-trigger" style="height: 20px; width: 100%; margin-top: 20px;"></div>
                 </div>
@@ -1262,7 +1289,7 @@
                         </div>
 
                         <div id="client-ebooks-list" class="ebook-premium-grid">
-                            <!-- Injected by client.js?v=2 -->
+                            <!-- Injected by client.js?v=3 -->
                         </div>
                     </div>
                 </div>
@@ -2405,12 +2432,12 @@
 
             <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">Contacts Rapides (Cliquez pour agrandir)</h4>
             <div id="modal-qr-container" class="qr-grid">
-                <!-- Injected via client.js?v=2 -->
+                <!-- Injected via client.js?v=3 -->
             </div>
 
             <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">E-Catalogues (Vue en Ligne)</h4>
             <div id="modal-catalog-container" style="display:flex; flex-direction:column; gap:1rem;">
-                <!-- Injected via client.js?v=2 -->
+                <!-- Injected via client.js?v=3 -->
             </div>
             
             <button class="btn-secondary w-full mt-6" onclick="closeModal('supplier-modal')" style="justify-content:center;">
@@ -2521,7 +2548,7 @@
     <div id="lightbox-modal" class="modal-overlay hidden" style="z-index: 200; background:rgba(0,0,0,0.95);" onclick="closeModal('lightbox-modal')">
         <button class="close-btn" style="top:2rem; right:2rem; opacity:1;"><span class="material-icons-round" style="font-size:48px; color:white;">close</span></button>
         <div id="lightbox-container" class="flex justify-center items-center" style="width:100%; height:100%; padding:2rem; flex-wrap:wrap; gap:1rem; overflow-y:auto;" onclick="event.stopPropagation()">
-            <!-- Injected via client.js?v=2 -->
+            <!-- Injected via client.js?v=3 -->
         </div>
     </div>
     <!-- DEMO EXPIRED OVERLAY -->
@@ -2699,7 +2726,7 @@
     <script src="js/auth.js?v=34"></script>
     <script src="js/admin.js?v=37"></script>
     <script src="js/admin-agent.js?v=34"></script>
-    <script src="js/client.js?v=2?v=34"></script>
+    <script src="js/client.js?v=3?v=34"></script>
     <script src="js/client-agent.js?v=34"></script>
     <script src="js/supplier.js?v=34"></script>
     
