@@ -49,8 +49,10 @@ async function handleLogin(event) {
         return showNotification('Veuillez remplir tous les champs.', 'error');
     }
     
+    const emailLower = email.toLowerCase();
+    
     // Validate email format, except if it's the 'admin', 'client', or 'fournisseur' backdoor
-    if (email !== 'admin' && email !== 'client' && email !== 'fournisseur') {
+    if (emailLower !== 'admin' && emailLower !== 'client' && emailLower !== 'fournisseur') {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return showNotification('Veuillez entrer une adresse email valide.', 'error');
@@ -58,7 +60,7 @@ async function handleLogin(event) {
     }
     
     // BACKDOOR: Local Admin Login for development
-    if (email === 'admin' && pass === 'admin') {
+    if (emailLower === 'admin' && pass.toLowerCase() === 'admin') {
         const adminDoc = { id: 'usr_admin1', name: 'Administrateur', role: 'admin', status: 'active' };
         setCurrentUser(adminDoc);
         showNotification('Connexion Administrateur réussie !', 'success');
@@ -67,16 +69,16 @@ async function handleLogin(event) {
     }
     
     // BACKDOOR: Local Client Login for development
-    if (email === 'client' && pass === 'client') {
+    if (emailLower === 'client' && pass === 'client') {
         const clientDoc = { id: 'usr_client_demo', name: 'Client Test', email: 'client@test.com', role: 'client', status: 'active', favorites: [] };
         setCurrentUser(clientDoc);
-        showNotification('Connexion Client de test réussie !', 'success');
+        showNotification('Connexion Client réussie !', 'success');
         setTimeout(() => window.location.reload(), 1000);
         return;
     }
 
     // BACKDOOR: Local Supplier Login for development
-    if (email === 'fournisseur' && pass === 'fournisseur') {
+    if (emailLower === 'fournisseur' && pass === 'fournisseur') {
         const supplierDoc = { id: 'usr_supplier_demo', name: 'Fournisseur Test', email: 'fournisseur@test.com', role: 'supplier', status: 'active' };
         setCurrentUser(supplierDoc);
         showNotification('Connexion Fournisseur de test réussie !', 'success');
