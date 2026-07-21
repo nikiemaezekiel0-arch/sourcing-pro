@@ -620,6 +620,7 @@ function handleImageUpload(inputId, previewId) {
 }
 
 async function addSupplier(e) {
+    try {
     e.preventDefault();
     const name = document.getElementById('sup-name').value;
     const categoryId = document.getElementById('sup-category').value;
