@@ -3219,7 +3219,7 @@ function openBoutiqueProductModal(prodId = null) {
         db.shipping_batches.forEach(batch => {
             const opt = document.createElement('option');
             opt.value = batch.id;
-            opt.innerText = batch.trackingNumber || batch.name || 'Colis inconnu';
+            opt.innerText = batch.ref || batch.name || 'Colis inconnu';
             batchSelect.appendChild(opt);
         });
     }
@@ -3265,7 +3265,10 @@ function filterBoutiqueStockByBatch() {
     
     let items = window.currentBoutiqueStockItems || [];
     if (batchId) {
-        items = items.filter(item => item.batchId === batchId);
+        items = items.filter(item => {
+            const itemBatchId = item.batchId || (item.lotNumber ? item.lotNumber.split('::')[0] : null);
+            return itemBatchId === batchId;
+        });
     }
     
     items.forEach(item => {
@@ -3273,11 +3276,13 @@ function filterBoutiqueStockByBatch() {
         opt.value = item.id;
         
         let batchName = '';
-        if (item.batchId && db.shipping_batches && !batchId) {
+        const itemBatchId = item.batchId || (item.lotNumber ? item.lotNumber.split('::')[0] : null);
+        
+        if (itemBatchId && db.shipping_batches && !batchId) {
             // Only show batch name in product list if we are NOT filtering by a specific batch
-            const batch = db.shipping_batches.find(b => b.id === item.batchId);
+            const batch = db.shipping_batches.find(b => b.id === itemBatchId);
             if (batch) {
-                batchName = ` [Colis: ${batch.trackingNumber || batch.name || 'Inconnu'}]`;
+                batchName = ` [Colis: ${batch.ref || batch.name || 'Inconnu'}]`;
             }
         }
         
