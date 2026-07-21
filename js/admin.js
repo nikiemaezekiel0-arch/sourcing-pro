@@ -1888,10 +1888,15 @@ async function submitNewSale(e) {
         date: new Date().toISOString()
     });
     
-    await saveDoc('vinted_stock', product);
-    alert("✅ Vente enregistrée avec succès !");
-    e.target.reset();
-    switchAdminTab('sales'); // Rediriger vers le suivi des ventes
+    try {
+        await saveDoc('vinted_stock', product);
+        alert("✅ Vente enregistrée avec succès !");
+        e.target.reset();
+        switchAdminTab('sales'); // Rediriger vers le suivi des ventes
+    } catch (err) {
+        // Error already handled and notified by saveDoc
+        console.error("Failed to save sale:", err);
+    }
 }
 
 async function markProductShipped(productId, saleId) {

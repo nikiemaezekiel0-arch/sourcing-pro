@@ -104,8 +104,8 @@ async function saveDoc(collectionName, docObj) {
         return true;
     } catch (e) {
         console.error("Error saving doc:", e);
-        showNotification("Erreur de sauvegarde", "error");
-        return false;
+        showNotification("Erreur de sauvegarde: Permissions insuffisantes", "error");
+        throw e; // IMPORTANT: Throw the error so calling functions don't pretend it succeeded
     }
 }
 
