@@ -1535,6 +1535,9 @@
         <!-- 4. ADMIN DASHBOARD -->
         <div id="admin-dashboard" class="dashboard-container hidden">
             <div class="sidebar">
+                <div class="nav-item" id="admin-nav-team" onclick="switchAdminTab('team')">
+                    <span class="material-icons-round">badge</span> Mon Équipe
+                </div>
                 <div class="nav-item active" id="admin-nav-users" onclick="switchAdminTab('users')">
                     <span class="material-icons-round">group</span> Validations Clients
                 </div>
@@ -1571,6 +1574,18 @@
             </div>
 
             <main class="main-content">
+                <!-- Team View -->
+                <div id="admin-view-team" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="flex items-center gap-2 m-0"><span class="material-icons-round text-primary">badge</span> Mon Équipe</h3>
+                    </div>
+                    <p class="text-muted text-sm mb-6">Gérez les accès de votre personnel (ex: Chargé(e) de Vente). Pour ajouter un collaborateur, il doit d'abord s'inscrire sur le site, puis vous pourrez modifier son rôle ici.</p>
+
+                    <div id="admin-team-list" class="flex flex-col gap-4">
+                        <p class="text-muted">Chargement de l'équipe...</p>
+                    </div>
+                </div>
+
                 <!-- Users View -->
                 <div id="admin-view-users" class="glass-panel">
                     <div class="flex justify-between items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
@@ -2743,7 +2758,7 @@
     <script src="js/currency.js?v=34"></script>
     <script src="js/db.js?v=2?v=34"></script>
     <script src="js/auth.js?v=34"></script>
-    <script src="js/admin.js?v=39"></script>
+    <script src="js/admin.js?v=40"></script>
     <script src="js/admin-agent.js?v=34"></script>
     <script src="js/client.js?v=4?v=34"></script>
     <script src="js/client-agent.js?v=34"></script>
@@ -2764,8 +2779,28 @@
                 authView.classList.add('hidden');
                 navUserArea.classList.remove('hidden');
                 
-                if (user.role === 'admin') {
+                if (user.role === 'admin' || user.role === 'staff_sales') {
                     adminDash.classList.remove('hidden');
+                    
+                    // Restrict UI for staff_sales
+                    if (user.role === 'staff_sales') {
+                        // Hide all tabs except sales and boutique orders
+                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-categories', 'admin-nav-suppliers', 'admin-nav-trainings', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock'];
+                        hideNavs.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.style.display = 'none';
+                        });
+                        
+                        // Set default tab for staff
+                        setTimeout(() => {
+                            switchAdminTab('boutique');
+                            switchAdminBoutiqueTab('orders');
+                            
+                            // Hide Boutique sub-tabs (Products/Categories)
+                            document.getElementById('btn-admin-boutique-products').style.display = 'none';
+                            document.getElementById('btn-admin-boutique-categories').style.display = 'none';
+                        }, 500);
+                    }
                 } else if (user.role === 'supplier' && user.status === 'active') {
                     supplierDash.classList.remove('hidden');
                     // Load supplier profile script
