@@ -3142,11 +3142,11 @@ async function deleteBoutiqueCategory(id) {
 let currentEditBoutiqueProductId = null;
 function openBoutiqueProductModal(prodId = null) {
     currentEditBoutiqueProductId = prodId;
-    let modal = document.getElementById('modal-boutique-product');
+    let modal = document.getElementById('modal-boutique-product-v2');
     
     if(!modal) {
         modal = document.createElement('div');
-        modal.id = 'modal-boutique-product';
+        modal.id = 'modal-boutique-product-v2';
         modal.className = 'modal-overlay hidden';
         modal.style.zIndex = '2000';
         modal.innerHTML = `
@@ -3183,7 +3183,7 @@ function openBoutiqueProductModal(prodId = null) {
                         <input type="text" id="boutique-prod-image" required class="input-field" placeholder="https://lien-image.com/img.jpg">
                     </div>
                     <div class="flex gap-2 justify-end mt-6">
-                        <button type="button" class="btn-secondary" onclick="document.getElementById('modal-boutique-product').classList.add('hidden')">Annuler</button>
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('modal-boutique-product-v2').classList.add('hidden')">Annuler</button>
                         <button type="submit" class="btn-primary">Enregistrer</button>
                     </div>
                 </form>
@@ -3279,7 +3279,7 @@ async function saveBoutiqueProduct(e) {
     
     try {
         await saveDoc('boutique_products', prod);
-        document.getElementById('modal-boutique-product').classList.add('hidden');
+        document.getElementById('modal-boutique-product-v2').classList.add('hidden');
         renderAdminBoutiqueProducts();
     } catch(err) {
         console.error(err);
