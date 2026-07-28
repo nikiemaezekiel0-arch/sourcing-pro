@@ -10,6 +10,18 @@ service cloud.firestore {
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       ); 
     }
+    function isStaff() { 
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff_sales' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      ); 
+    }
+    function isSourcingStaff() { 
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff_sourcing' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      ); 
+    }
     function isSupplier() { 
       return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supplier'; 
     }
@@ -30,26 +42,42 @@ service cloud.firestore {
     // USERS
     match /users/{userId} {
       allow create: if true;
-      allow update: if isAuthenticated() && request.auth.uid == userId;
-      allow delete: if isAdmin();
+      allow update: if (isAuthenticated() && request.auth.uid == userId) || isSourcingStaff();
+      allow delete: if isSourcingStaff();
     }
 
     // SUPPLIERS
     match /suppliers/{supplierId} {
-      allow create, delete: if isAdmin();
-      allow update: if isAdmin() || (isSupplier() && request.auth.uid == resource.data.ownerId);
+      allow create, delete: if isSourcingStaff();
+      allow update: if isSourcingStaff() || (isSupplier() && request.auth.uid == resource.data.ownerId);
     }
 
     // CATALOG, CATEGORIES, TRAININGS
     match /agent_products/{productId} { allow write: if isAdmin(); }
-    match /categories/{categoryId} { allow write: if isAdmin(); }
+    match /categories/{categoryId} { allow write: if isSourcingStaff(); }
     match /trainings/{trainingId} { allow write: if isAdmin(); }
+    match /backups_history/{backupId} { allow write: if isSourcingStaff(); }
+    
+    // BOUTIQUE
+    match /boutique_products/{productId} { allow write: if isAdmin(); }
+    match /boutique_categories/{categoryId} { allow write: if isAdmin(); }
+    
+    // SALES & INVENTORY
+    match /vinted_stock/{stockId} { allow write: if isStaff(); }
+    match /sales_platforms/{platformId} { allow write: if isStaff(); }
+    match /shipping_batches/{batchId} { allow write: if isStaff(); }
 
     // ORDERS
     match /orders/{orderId} {
       allow create: if isAuthenticated() && request.resource.data.clientId == request.auth.uid;
       allow update: if isAuthenticated() && resource.data.clientId == request.auth.uid;
       allow delete: if isAdmin();
+    }
+    
+    // BOUTIQUE ORDERS
+    match /boutique_orders/{orderId} {
+      allow create: if true; // Public users can checkout without authentication
+      allow update, delete: if isStaff();
     }
   }
 }

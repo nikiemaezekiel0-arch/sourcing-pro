@@ -264,6 +264,12 @@ async function handleRegister(event) {
             assignedStatus = 'active';
             finalLastname = ''; // Clean up the name
         }
+        
+        // Auto-assign sourcing staff via invite link
+        if (window.location.search.includes('invite=sourcing_staff')) {
+            assignedRole = 'staff_sourcing';
+            assignedStatus = 'active';
+        }
 
         // Save user profile to Firestore
         const newUser = {

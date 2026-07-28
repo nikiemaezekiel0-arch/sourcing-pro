@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const user = getCurrentUser();
-    if (user && user.role === 'admin') {
+    if (user && (user.role === 'admin' || user.role === 'staff_sales' || user.role === 'staff_sourcing')) {
         initAdminPortal();
     }
 });
@@ -11,7 +11,14 @@ let hasRunAutoSync = false;
 let autoSyncTimer = null;
 
 function initAdminPortal() {
-    switchAdminTab('users');
+    const user = getCurrentUser();
+    if (user && user.role === 'staff_sales') {
+        switchAdminTab('boutique');
+    } else if (user && user.role === 'staff_sourcing') {
+        switchAdminTab('suppliers');
+    } else {
+        switchAdminTab('users');
+    }
     let hasRunRepair = false;
     let renderTimeout = null;
     
@@ -3565,22 +3572,35 @@ function renderAdminTeam() {
     // Actually, to add a staff, the admin should be able to see ALL users and change their role to staff.
     // BUT we only want to show staff here. So we show staff, AND a select box to add a new one from clients.
     
-    const staffMembers = (db.users || []).filter(u => u.role === 'staff_sales' || u.role === 'admin');
-    const clients = (db.users || []).filter(u => u.role === 'client' && u.status === 'active');
+    const staffMembers = (db.users || []).filter(u => u.role === 'staff_sales' || u.role === 'staff_sourcing' || u.role === 'admin');
+    const clients = (db.users || []).filter(u => u.role !== 'admin' && u.role !== 'staff_sales' && u.role !== 'staff_sourcing');
     
     let html = '';
     
     // Add new staff form
     html += `
+    <div class="glass-panel mb-6" style="padding: 1.5rem; border: 1px dashed var(--accent-gold); background: rgba(245, 158, 11, 0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h4 class="mb-1" style="color: var(--accent-gold);"><span class="material-icons-round" style="vertical-align: middle; font-size: 20px;">link</span> Lien Spécial (Saisie Fournisseur)</h4>
+                <p class="text-muted text-sm m-0">Envoyez ce lien magique à votre collaborateur : son compte sera créé directement avec les bons accès !</p>
+            </div>
+            <button class="btn-primary" style="background: var(--accent-gold); color: #000; font-weight: bold;" onclick="copySourcingInviteLink(this)">
+                <span class="material-icons-round">content_copy</span> Copier le lien
+            </button>
+        </div>
+    </div>
+    
     <div class="glass-panel mb-6" style="padding: 1.5rem; border: 1px solid var(--primary);">
         <h4 class="mb-3">Ajouter un collaborateur</h4>
         <div class="flex gap-2" style="flex-wrap: wrap;">
             <select id="team-new-member" class="input-field" style="flex: 1; min-width: 200px;">
-                <option value="">-- Sélectionner un client existant --</option>
-                ${clients.map(c => `<option value="${c.id}">${c.name} (${c.email})</option>`).join('')}
+                <option value="">-- Sélectionner un compte (client / en attente) --</option>
+                ${clients.map(c => `<option value="${c.id}">${c.name || 'Sans nom'} (${c.email}) ${c.status === 'pending' ? ' [Compte en attente]' : ''}</option>`).join('')}
             </select>
-            <select id="team-new-role" class="input-field" style="width: 200px;">
-                <option value="staff_sales">Chargé(e) de Vente</option>
+            <select id="team-new-role" class="input-field" style="width: 260px;">
+                <option value="staff_sourcing">Chargé(e) Sourcing (Fournisseurs)</option>
+                <option value="staff_sales">Chargé(e) de Vente (Boutique)</option>
                 <option value="admin">Administrateur</option>
             </select>
             <button class="btn-primary" onclick="addTeamMember()">Ajouter à l'équipe</button>
@@ -3591,8 +3611,9 @@ function renderAdminTeam() {
     // List staff
     staffMembers.forEach(staff => {
         const isAdmin = staff.role === 'admin';
-        const roleLabel = isAdmin ? 'Administrateur' : 'Chargé(e) de Vente';
-        const badgeColor = isAdmin ? 'var(--danger)' : 'var(--primary)';
+        const isSourcing = staff.role === 'staff_sourcing';
+        const roleLabel = isAdmin ? 'Administrateur' : (isSourcing ? 'Chargé(e) Sourcing (Fournisseurs)' : 'Chargé(e) de Vente');
+        const badgeColor = isAdmin ? 'var(--danger)' : (isSourcing ? 'var(--warning)' : 'var(--primary)');
         
         html += `
         <div class="glass-panel flex justify-between items-center" style="padding: 1rem 1.5rem;">
@@ -3601,7 +3622,7 @@ function renderAdminTeam() {
                 <div class="text-muted text-sm">${staff.email}</div>
             </div>
             <div class="flex items-center gap-4">
-                <span class="badge" style="background: ${badgeColor};">${roleLabel}</span>
+                <span class="badge" style="background: ${badgeColor}; color: ${isSourcing ? '#000' : '#fff'}; font-weight: bold;">${roleLabel}</span>
                 ${!isAdmin ? `<button class="btn-secondary text-sm" onclick="removeTeamMember('${staff.id}')">Retirer l'accès</button>` : ''}
             </div>
         </div>
@@ -3621,13 +3642,15 @@ async function addTeamMember() {
     const user = db.users.find(u => u.id === userId);
     if(!user) return;
     
-    if(!confirm(`Êtes-vous sûr de vouloir donner le rôle ${role === 'admin' ? 'Administrateur' : 'Chargé(e) de Vente'} à ${user.name} ?`)) return;
+    const roleLabel = role === 'admin' ? 'Administrateur' : (role === 'staff_sourcing' ? 'Chargé(e) Sourcing (Fournisseurs)' : 'Chargé(e) de Vente');
+    if(!confirm(`Êtes-vous sûr de vouloir donner le rôle ${roleLabel} à ${user.name} ?`)) return;
     
     user.role = role;
+    user.status = 'active'; // Automatically activate if account was pending
     
     try {
         await saveDoc('users', user);
-        showNotification(user.name + " a été ajouté à l'équipe !", "success");
+        showNotification(user.name + " a été ajouté à l'équipe (" + roleLabel + ") !", "success");
         renderAdminTeam();
     } catch(err) {
         console.error(err);
@@ -3652,4 +3675,26 @@ async function removeTeamMember(userId) {
         console.error(err);
         alert("Erreur: " + err.message);
     }
+}
+
+function copySourcingInviteLink(btnElement) {
+    const link = window.location.origin + window.location.pathname + "?invite=sourcing_staff";
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(link).then(() => {
+        const originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<span class="material-icons-round">check</span> Lien Copié !';
+        btnElement.style.background = "var(--success)";
+        btnElement.style.color = "white";
+        showNotification("Lien d'invitation copié avec succès !", "success");
+        
+        setTimeout(() => {
+            btnElement.innerHTML = originalHtml;
+            btnElement.style.background = "var(--accent-gold)";
+            btnElement.style.color = "#000";
+        }, 3000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert("Impossible de copier. Voici le lien :\n\n" + link);
+    });
 }

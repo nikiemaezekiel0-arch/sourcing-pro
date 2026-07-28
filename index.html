@@ -1535,8 +1535,8 @@
         <!-- 4. ADMIN DASHBOARD -->
         <div id="admin-dashboard" class="dashboard-container hidden">
             <div class="sidebar">
-                <div class="nav-item" id="admin-nav-team" onclick="switchAdminTab('team')">
-                    <span class="material-icons-round">badge</span> Mon Équipe
+                <div class="nav-item" id="admin-nav-team" onclick="switchAdminTab('team')" style="background: rgba(245, 158, 11, 0.15); border-left: 4px solid #f59e0b;">
+                    <span class="material-icons-round" style="color: #f59e0b;">badge</span> Équipe & Collaborateurs
                 </div>
                 <div class="nav-item active" id="admin-nav-users" onclick="switchAdminTab('users')">
                     <span class="material-icons-round">group</span> Validations Clients
@@ -1708,6 +1708,20 @@
 
                 <!-- Suppliers View -->
                 <div id="admin-view-suppliers" class="hidden">
+                    <div class="glass-panel mb-6" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(30, 41, 59, 0.9)); border: 1px solid #f59e0b; padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h4 style="margin: 0; color: #f59e0b; display: flex; align-items: center; gap: 8px;"><span class="material-icons-round">group_add</span> Déléguer la saisie des fournisseurs</h4>
+                            <p class="text-muted text-sm m-0">Vous avez beaucoup de fournisseurs ? Donnez l'accès "Chargé(e) Sourcing" à un collaborateur pour qu'il vous aide !</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" onclick="copySourcingInviteLink(this)" class="btn-primary" style="background: transparent; color: #f59e0b; border: 1px solid #f59e0b; font-weight: bold; display: flex; align-items: center; gap: 5px; padding: 0.6rem 1.2rem; cursor: pointer;">
+                                <span class="material-icons-round">link</span> Copier le lien
+                            </button>
+                            <button type="button" onclick="switchAdminTab('team')" class="btn-primary" style="background: #f59e0b; color: #000; font-weight: bold; display: flex; align-items: center; gap: 5px; padding: 0.6rem 1.2rem; cursor: pointer;">
+                                <span class="material-icons-round">badge</span> Gérer l'équipe
+                            </button>
+                        </div>
+                    </div>
                     <div class="glass-panel mb-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="m-0 mb-4">Ajouter un Fournisseur (1 par 1)</h3>
@@ -2758,9 +2772,9 @@
     <script src="js/currency.js?v=34"></script>
     <script src="js/db.js?v=2?v=34"></script>
     <script src="js/auth.js?v=38"></script>
-    <script src="js/admin.js?v=48"></script>
+    <script src="js/admin.js?v=50"></script>
     <script src="js/admin-agent.js?v=34"></script>
-    <script src="js/client.js?v=6?v=34"></script>
+    <script src="js/client.js?v=35"></script>
     <script src="js/client-agent.js?v=34"></script>
     <script src="js/supplier.js?v=34"></script>
     
@@ -2779,7 +2793,7 @@
                 authView.classList.add('hidden');
                 navUserArea.classList.remove('hidden');
                 
-                if (user.role === 'admin' || user.role === 'staff_sales') {
+                if (user.role === 'admin' || user.role === 'staff_sales' || user.role === 'staff_sourcing') {
                     adminDash.classList.remove('hidden');
                     
                     // Restrict UI for staff_sales
@@ -2800,6 +2814,18 @@
                             document.getElementById('btn-admin-boutique-products').style.display = 'none';
                             document.getElementById('btn-admin-boutique-categories').style.display = 'none';
                         }, 500);
+                    } else if (user.role === 'staff_sourcing') {
+                        // Hide all tabs except suppliers, categories, and backups
+                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-trainings', 'admin-nav-boutique', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock', 'admin-nav-salereg', 'admin-nav-sales'];
+                        hideNavs.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.style.display = 'none';
+                        });
+                        
+                        // Set default tab for sourcing staff
+                        setTimeout(() => {
+                            switchAdminTab('suppliers');
+                        }, 500);
                     }
                 } else if (user.role === 'supplier' && user.status === 'active') {
                     supplierDash.classList.remove('hidden');
@@ -2814,6 +2840,20 @@
             } else {
                 // Not logged in
                 authView.classList.remove('hidden');
+                
+                // Handle invite link for sourcing staff
+                if (window.location.search.includes('invite=sourcing_staff')) {
+                    if (typeof switchAuthMode === 'function') {
+                        switchAuthMode('register');
+                        setTimeout(() => {
+                            const regTitle = document.querySelector('#register-form h2');
+                            if (regTitle) {
+                                regTitle.innerHTML = '<span class="material-icons-round text-warning" style="font-size: 32px; vertical-align: middle; margin-right: 8px;">badge</span>Inscription Sourcing';
+                                regTitle.style.color = "var(--accent-gold)";
+                            }
+                        }, 100);
+                    }
+                }
             }
         });
     </script>

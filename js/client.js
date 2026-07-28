@@ -148,9 +148,11 @@ function switchClientTab(tab) {
         if(nav) nav.classList.add('active');
         
         renderClientAgentProducts();
-    }
-    
-    if (tab === 'boutique') {
+    } else if (tab === 'boutique') {
+        const view = document.getElementById('client-view-boutique');
+        const nav = document.getElementById('client-nav-boutique');
+        if(view) view.classList.remove('hidden');
+        if(nav) nav.classList.add('active');
         renderClientBoutique();
     }
 }
