@@ -1827,13 +1827,51 @@ async function renderSaleRegistration() {
         }
     }
     
-    // Populate products
-    const productSelect = document.getElementById('sale-product-id');
-    if(productSelect) {
-        const availableProducts = db.vinted_stock.filter(p => p.availableQty > 0);
-        productSelect.innerHTML = '<option value="">Sélectionnez un article en stock...</option>' + 
-            availableProducts.map(p => `<option value="${p.id}">${p.title} - Reste ${p.availableQty}</option>`).join('');
+    // Populate batch filter for sales
+    const batchFilter = document.getElementById('sale-batch-filter');
+    if (batchFilter) {
+        batchFilter.innerHTML = '<option value="">-- Tous les produits --</option>';
+        if (db.shipping_batches) {
+            db.shipping_batches.forEach(batch => {
+                const opt = document.createElement('option');
+                opt.value = batch.id;
+                opt.innerText = batch.ref || batch.name || 'Colis inconnu';
+                batchFilter.appendChild(opt);
+            });
+        }
     }
+    
+    // Populate products
+    window.currentSaleStockItems = db.vinted_stock || [];
+    filterSaleProductsByBatch();
+}
+
+function filterSaleProductsByBatch() {
+    const batchId = document.getElementById('sale-batch-filter') ? document.getElementById('sale-batch-filter').value : '';
+    const productSelect = document.getElementById('sale-product-id');
+    const db = getDB();
+    
+    if(!productSelect) return;
+    
+    let availableProducts = window.currentSaleStockItems.filter(p => p.availableQty > 0);
+    
+    if (batchId) {
+        availableProducts = availableProducts.filter(item => {
+            const itemBatchId = item.batchId || (item.lotNumber ? item.lotNumber.split('::')[0] : null);
+            return itemBatchId === batchId;
+        });
+    }
+    
+    productSelect.innerHTML = '<option value="">Sélectionnez un article en stock...</option>' + 
+        availableProducts.map(p => {
+            let batchInfo = '';
+            const itemBatchId = p.batchId || (p.lotNumber ? p.lotNumber.split('::')[0] : null);
+            if (itemBatchId && db.shipping_batches && !batchId) {
+                const batch = db.shipping_batches.find(b => b.id === itemBatchId);
+                if (batch) batchInfo = ` [Colis: ${batch.ref || batch.name || 'Inconnu'}]`;
+            }
+            return `<option value="${p.id}">${p.title} - Reste: ${p.availableQty}${batchInfo} - Achat: ${p.purchasePrice}€</option>`;
+        }).join('');
 }
 
 async function addSalesPlatform() {
@@ -2056,12 +2094,29 @@ function renderVintedStock() {
     const db = getDB();
     const list = document.getElementById('admin-stock-list');
     
-    // Populate batch select
+    // Populate batch select (for creation form)
     const batchSelect = document.getElementById('vinted-lot');
     if(batchSelect) {
         const currentVal = batchSelect.value;
         batchSelect.innerHTML = getBatchOptionsHtml();
         if(currentVal) batchSelect.value = currentVal;
+    }
+    
+    // Populate batch filter for the stock view
+    const stockBatchFilter = document.getElementById('filter-stock-batch');
+    let selectedBatchFilter = 'all';
+    if(stockBatchFilter) {
+        selectedBatchFilter = stockBatchFilter.value;
+        stockBatchFilter.innerHTML = '<option value="all">Tous les Colis / Lots</option>';
+        if (db.shipping_batches) {
+            db.shipping_batches.forEach(batch => {
+                const opt = document.createElement('option');
+                opt.value = batch.id;
+                opt.innerText = batch.ref || batch.name || 'Colis inconnu';
+                stockBatchFilter.appendChild(opt);
+            });
+        }
+        stockBatchFilter.value = selectedBatchFilter;
     }
     
     const profitCounter = document.getElementById('admin-stock-total-profit');
@@ -2075,8 +2130,15 @@ function renderVintedStock() {
     let totalRevenue = 0;
     let totalCosts = 0;
     
-    // Sort descending by creation date
-    const sortedStock = [...db.vinted_stock].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Sort descending by creation date and apply filter
+    let sortedStock = [...db.vinted_stock].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    if (selectedBatchFilter && selectedBatchFilter !== 'all') {
+        sortedStock = sortedStock.filter(item => {
+            const itemBatchId = item.batchId || (item.lotNumber ? item.lotNumber.split('::')[0] : null);
+            return itemBatchId === selectedBatchFilter;
+        });
+    }
     
     sortedStock.forEach(p => {
         let productProfit = 0;

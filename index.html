@@ -2153,7 +2153,13 @@
                             <form onsubmit="submitNewSale(event)">
                                 <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div class="form-group" style="grid-column: span 2;">
-                                        <label>Produit Vendu *</label>
+                                        <label>1. Filtrer par Colis d'origine (Optionnel)</label>
+                                        <select id="sale-batch-filter" class="input-control" onchange="filterSaleProductsByBatch()">
+                                            <option value="">-- Tous les produits --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="grid-column: span 2;">
+                                        <label>2. Produit Vendu *</label>
                                         <select id="sale-product-id" class="input-control" required>
                                             <option value="">Sélectionnez un article en stock...</option>
                                         </select>
@@ -2772,7 +2778,7 @@
     <script src="js/currency.js?v=34"></script>
     <script src="js/db.js?v=2?v=34"></script>
     <script src="js/auth.js?v=38"></script>
-    <script src="js/admin.js?v=50"></script>
+    <script src="js/admin.js?v=51"></script>
     <script src="js/admin-agent.js?v=34"></script>
     <script src="js/client.js?v=35"></script>
     <script src="js/client-agent.js?v=34"></script>
