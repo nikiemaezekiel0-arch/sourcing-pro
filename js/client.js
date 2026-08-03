@@ -1327,7 +1327,6 @@ function openBoutiqueProductDetail(prodId) {
     const adminPhone = "33600000000"; // IMPORTANT: L'utilisateur devra configurer son numéro
     
     modal.innerHTML = `
-    modal.innerHTML = `
         <div class="modal-content" style="max-width: 900px; padding: 0; overflow: hidden; background: rgba(15,23,42,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
             <div class="flex flex-col md:flex-row" style="min-height: 500px;">
                 <!-- Image -->
