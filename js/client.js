@@ -1268,18 +1268,34 @@ function renderClientBoutique() {
     let htmlStr = '';
     products.forEach(prod => {
         const cat = (db.boutique_categories || []).find(c => c.id === prod.categoryId);
+        
+        let stockQty = null;
+        let isOutOfStock = false;
+        if (prod.stockId && db.vinted_stock) {
+            const stockItem = db.vinted_stock.find(s => s.id === prod.stockId);
+            if (stockItem) {
+                stockQty = parseInt(stockItem.availableQty) || 0;
+                if (stockQty <= 0) isOutOfStock = true;
+            }
+        }
+        
         htmlStr += `
-        <div class="glass-panel" style="padding: 15px; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s;" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-            <div style="height: 180px; overflow: hidden; border-radius: 8px; margin-bottom: 15px;">
-                <img src="${prod.image || 'https://via.placeholder.com/300'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/300'">
+        <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.2); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.4)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.2)'; this.querySelector('img').style.transform='scale(1)';">
+            <div style="height: 220px; overflow: hidden; position: relative; background: #000;">
+                <img src="${prod.image || 'https://via.placeholder.com/400'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='https://via.placeholder.com/400'">
+                <div style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
+                    ${cat ? cat.name : 'Nouveau'}
+                </div>
+                ${isOutOfStock ? '<div style="position: absolute; top: 12px; right: 12px; background: #dc2626; color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;">Épuisé</div>' : ''}
             </div>
-            <div style="flex-grow: 1;">
-                <p class="text-muted text-sm" style="margin: 0 0 5px 0;">${cat ? cat.name : 'Divers'}</p>
-                <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;">${prod.title}</h4>
-            </div>
-            <div class="flex justify-between items-center" style="margin-top: auto;">
-                <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.2rem;">${prod.price}</span>
-                <button class="btn-primary" style="padding: 0.4rem 0.8rem; border-radius: 8px;">Voir</button>
+            <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column;">
+                <h4 style="margin: 0 0 12px 0; font-size: 1.15rem; font-weight: 700; color: #fff; line-height: 1.4;">${prod.title}</h4>
+                <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.3rem;">${prod.price}</span>
+                    <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        <span class="material-icons-round" style="font-size: 20px;">add_shopping_cart</span>
+                    </button>
+                </div>
             </div>
         </div>`;
     });
@@ -1311,30 +1327,37 @@ function openBoutiqueProductDetail(prodId) {
     const adminPhone = "33600000000"; // IMPORTANT: L'utilisateur devra configurer son numéro
     
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 800px; padding: 0; overflow: hidden; background: #1e293b;">
-            <div class="flex flex-col md:flex-row">
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 900px; padding: 0; overflow: hidden; background: rgba(15,23,42,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <div class="flex flex-col md:flex-row" style="min-height: 500px;">
                 <!-- Image -->
-                <div style="flex: 1; background: #000; display: flex; align-items: center; justify-content: center; min-height: 300px;">
-                    <img src="${prod.image || 'https://via.placeholder.com/600'}" style="max-width: 100%; max-height: 500px; object-fit: contain;" onerror="this.src='https://via.placeholder.com/600'">
+                <div style="flex: 1.2; background: #000; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <img src="${prod.image || 'https://via.placeholder.com/600'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/600'">
                 </div>
                 <!-- Details -->
-                <div style="flex: 1; padding: 2rem; display: flex; flex-direction: column;">
-                    <button class="material-icons-round text-muted hover-glow" style="background: none; border: none; align-self: flex-end; cursor: pointer; position: absolute; top: 1rem; right: 1rem; z-index: 10;" onclick="document.getElementById('modal-boutique-detail').style.display='none'">close</button>
+                <div style="flex: 1; padding: 3rem; display: flex; flex-direction: column; position: relative;">
+                    <button class="material-icons-round text-muted hover-glow" style="background: rgba(255,255,255,0.1); border: none; align-self: flex-end; cursor: pointer; position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onclick="document.getElementById('modal-boutique-detail').style.display='none'" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">close</button>
                     
-                    <p class="text-muted text-sm" style="margin: 0 0 5px 0;">${cat ? cat.name : 'Divers'}</p>
-                    <h2 style="margin: 0 0 15px 0; font-weight: 800; font-size: 1.8rem; line-height: 1.2;">${prod.title}</h2>
-                    <div style="font-weight: 900; color: var(--accent-gold); font-size: 1.5rem; margin-bottom: 20px;">${prod.price}</div>
-                    
-                    <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 25px; flex-grow: 1;">
-                        <h4 class="text-sm text-muted mb-2">Description du produit</h4>
-                        <p style="white-space: pre-wrap; margin: 0; font-size: 0.95rem; line-height: 1.5;">${prod.description}</p>
+                    <p style="margin: 0 0 10px 0; color: var(--accent-gold); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">${cat ? cat.name : 'Nouvelle Collection'}</p>
+                    <h2 style="margin: 0 0 20px 0; font-weight: 900; font-size: 2.2rem; line-height: 1.1; color: #fff;">${prod.title}</h2>
+                    <div style="font-weight: 900; color: #fff; font-size: 2rem; margin-bottom: 30px; display: flex; align-items: center; gap: 10px;">
+                        ${prod.price}
                     </div>
                     
-                    <button class="btn-primary w-full" style="justify-content: center; padding: 1rem; font-size: 1.1rem; gap: 10px; background: var(--accent-gold); color: black;" onclick="addBoutiqueToCart('${prod.id}')">
-        <span class="material-icons-round">add_shopping_cart</span>
-        Ajouter au panier
-    </button>
-                    <p class="text-center text-muted text-xs mt-3">Paiement sécurisé et livraison rapide.</p>
+                    <div style="margin-bottom: 30px; flex-grow: 1;">
+                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 10px; font-weight: 600;">À propos de ce produit</h4>
+                        <p style="white-space: pre-wrap; margin: 0; font-size: 1rem; line-height: 1.6; color: #cbd5e1;">${prod.description}</p>
+                    </div>
+                    
+                    <div style="margin-top: auto;">
+                        <button class="hover-grow" style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 1.2rem; font-size: 1.1rem; gap: 10px; background: var(--accent-gold); color: black; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);" onclick="addBoutiqueToCart('${prod.id}')">
+                            <span class="material-icons-round">shopping_bag</span>
+                            Ajouter au panier
+                        </button>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; color: #94a3b8; font-size: 0.85rem;">
+                            <span class="material-icons-round" style="font-size: 16px;">verified_user</span> Paiement 100% sécurisé
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1406,25 +1429,23 @@ function renderPublicBoutique() {
             }
         }
         
-        const opacity = isOutOfStock ? '0.6' : '1';
-        const pointerEvent = isOutOfStock ? 'none' : 'auto';
-        const stockBadge = isOutOfStock ? `<div style="position:absolute; top:10px; right:10px; background:red; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; z-index:2;">Rupture</div>` : '';
-        const qtyBadge = (!isOutOfStock && stockQty !== null) ? `<div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; z-index:2;">En stock: ${stockQty}</div>` : '';
-        
         htmlStr += `
-        <div class="glass-panel" style="padding: 15px; display: flex; flex-direction: column; cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'}; transition: transform 0.2s; opacity: ${opacity}; pointer-events: ${pointerEvent}; position: relative;" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-            ${stockBadge}
-            ${qtyBadge}
-            <div style="height: 200px; overflow: hidden; border-radius: 8px; margin-bottom: 15px; position: relative;">
-                <img src="${prod.image || 'https://via.placeholder.com/300'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/300'">
+        <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.2); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.4)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.2)'; this.querySelector('img').style.transform='scale(1)';">
+            <div style="height: 220px; overflow: hidden; position: relative; background: #000;">
+                <img src="${prod.image || 'https://via.placeholder.com/400'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='https://via.placeholder.com/400'">
+                <div style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
+                    ${cat ? cat.name : 'Nouveau'}
+                </div>
+                ${isOutOfStock ? '<div style="position: absolute; top: 12px; right: 12px; background: #dc2626; color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;">Épuisé</div>' : ''}
             </div>
-            <div style="flex-grow: 1;">
-                <p class="text-muted text-sm" style="margin: 0 0 5px 0;">${cat ? cat.name : 'Divers'}</p>
-                <h4 style="margin: 0 0 10px 0; font-size: 1.2rem;">${prod.title}</h4>
-            </div>
-            <div class="flex justify-between items-center" style="margin-top: auto;">
-                <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.3rem;">${prod.price}</span>
-                <button class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 8px;" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Épuisé' : 'Voir'}</button>
+            <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column;">
+                <h4 style="margin: 0 0 12px 0; font-size: 1.15rem; font-weight: 700; color: #fff; line-height: 1.4;">${prod.title}</h4>
+                <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.3rem;">${prod.price}</span>
+                    <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        <span class="material-icons-round" style="font-size: 20px;">add_shopping_cart</span>
+                    </button>
+                </div>
             </div>
         </div>`;
     });

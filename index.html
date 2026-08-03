@@ -912,29 +912,36 @@
         </div>
 
         <!-- PUBLIC BOUTIQUE VIEW -->
-        <div id="public-boutique-view" class="hidden" style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
-            <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 10px;">
-                <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 2.2rem; letter-spacing: -0.5px;">Boutique Sourcing Pro</h2>
-                <div class="flex gap-2">
-                    <button onclick="openBoutiqueCart()" class="btn-primary" style="background: var(--accent-gold); color: black; border-radius: 50px;">
-                        <span class="material-icons-round">shopping_cart</span> Panier (<span id="public-cart-count">0</span>)
-                    </button>
-                    <button onclick="hidePublicBoutique()" class="btn-secondary" style="border-radius: 50px;">
-                        <span class="material-icons-round">arrow_back</span> Retour à l'accueil
-                    </button>
+        <div id="public-boutique-view" class="hidden" style="padding: 0; max-width: 100%; margin: 0 auto;">
+            <!-- Hero Banner -->
+            <div style="background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80') center/cover; padding: 4rem 2rem; border-bottom: 1px solid rgba(245, 158, 11, 0.2); position: relative; overflow: hidden;">
+                <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                    <div>
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); margin-bottom: 1rem; display: inline-block;">Collection Exclusive</span>
+                        <h2 style="font-weight: 900; color: #ffffff; margin: 0 0 1rem 0; font-size: 3rem; letter-spacing: -1px; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">Boutique Premium</h2>
+                        <p class="text-muted" style="font-size: 1.1rem; max-width: 500px; line-height: 1.6;">Découvrez notre sélection de produits exclusifs sourcés avec soin. <br>Tous les achats se font de manière sécurisée.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="hidePublicBoutique()" class="btn-secondary hover-grow" style="border-radius: 50px; padding: 0.8rem 1.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                            <span class="material-icons-round">arrow_back</span> Retour
+                        </button>
+                        <button onclick="openBoutiqueCart()" class="btn-primary hover-grow" style="background: var(--accent-gold); color: black; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+                            <span class="material-icons-round">shopping_bag</span> Panier (<span id="public-cart-count">0</span>)
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <p class="text-muted mb-8" style="font-size: 1.1rem;">Découvrez notre sélection de produits exclusifs. Tous les achats se font de manière sécurisée via WhatsApp.</p>
-            
-            <!-- Categories filter -->
-            <div id="public-boutique-categories-filter" class="flex gap-2 mb-8" style="overflow-x: auto; padding-bottom: 10px;">
-                <button class="btn-primary" style="padding: 0.5rem 1.5rem; border-radius: 50px;">Toutes</button>
-            </div>
-
-            <!-- Products Grid -->
-            <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-                <p class="text-muted">Chargement de la boutique...</p>
+            <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+                <!-- Categories filter -->
+                <div id="public-boutique-categories-filter" class="flex gap-3 mb-8" style="overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -ms-overflow-style: none;">
+                    <button class="btn-primary" style="padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600;">Toutes</button>
+                </div>
+    
+                <!-- Products Grid -->
+                <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+                    <p class="text-muted text-center w-full" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
+                </div>
             </div>
         </div>
 
@@ -1300,22 +1307,31 @@
                 </div>
 
                 <!-- Boutique E-commerce View -->
-                <div id="client-view-boutique" class="hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem; letter-spacing: -0.5px;">La Boutique</h2>
-                        <button onclick="openBoutiqueCart()" class="btn-primary" style="background: var(--accent-gold); color: black; border-radius: 50px;">
-                            <span class="material-icons-round">shopping_cart</span> Panier (<span id="client-cart-count">0</span>)
-                        </button>
+                <div id="client-view-boutique" class="hidden" style="margin: -2rem -2rem 2rem -2rem;">
+                    <!-- Hero Banner -->
+                    <div style="background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80') center/cover; padding: 4rem 2rem; border-bottom: 1px solid rgba(245, 158, 11, 0.2); position: relative; overflow: hidden; border-radius: 0 0 20px 20px; margin-bottom: 2rem;">
+                        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                            <div>
+                                <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); margin-bottom: 1rem; display: inline-block;">Accès Privilège</span>
+                                <h2 style="font-weight: 900; color: #ffffff; margin: 0 0 1rem 0; font-size: 3rem; letter-spacing: -1px; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">La Boutique</h2>
+                                <p class="text-muted" style="font-size: 1.1rem; max-width: 500px; line-height: 1.6;">Découvrez notre sélection de produits exclusifs sourcés avec soin. <br>Vos achats se font en toute sécurité.</p>
+                            </div>
+                            <button onclick="openBoutiqueCart()" class="btn-primary hover-grow" style="background: var(--accent-gold); color: black; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+                                <span class="material-icons-round">shopping_bag</span> Panier (<span id="client-cart-count">0</span>)
+                            </button>
+                        </div>
                     </div>
                     
-                    <!-- Categories filter -->
-                    <div id="boutique-categories-filter" class="flex gap-2 mb-6" style="overflow-x: auto; padding-bottom: 5px;">
-                        <button class="btn-primary" style="padding: 0.4rem 1rem; border-radius: 50px;">Toutes</button>
-                    </div>
-
-                    <!-- Products Grid -->
-                    <div id="boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
-                        <p class="text-muted">Chargement de la boutique...</p>
+                    <div style="padding: 0 2rem;">
+                        <!-- Categories filter -->
+                        <div id="boutique-categories-filter" class="flex gap-3 mb-8" style="overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -ms-overflow-style: none;">
+                            <button class="btn-primary" style="padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600;">Toutes</button>
+                        </div>
+    
+                        <!-- Products Grid -->
+                        <div id="boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+                            <p class="text-muted w-full text-center" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
+                        </div>
                     </div>
                 </div>
                 
@@ -2780,7 +2796,7 @@
     <script src="js/auth.js?v=38"></script>
     <script src="js/admin.js?v=51"></script>
     <script src="js/admin-agent.js?v=34"></script>
-    <script src="js/client.js?v=35"></script>
+    <script src="js/client.js?v=36"></script>
     <script src="js/client-agent.js?v=34"></script>
     <script src="js/supplier.js?v=34"></script>
     
