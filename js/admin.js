@@ -1773,12 +1773,30 @@ async function markProductSold(id) {
         return;
     }
     
-    // Switch to new sale registration tab and pre-select the product
+    // Determine the product's batch
+    const itemBatchId = product.batchId || (product.lotNumber ? product.lotNumber.split('::')[0] : '');
+    
+    // Switch to new sale registration tab
     switchAdminTab('salereg');
+    
     setTimeout(() => {
+        const batchSelect = document.getElementById('sale-batch-filter');
+        if (batchSelect && itemBatchId) {
+            batchSelect.value = itemBatchId;
+            // Manually trigger filter to repopulate the products select
+            if (typeof filterSaleProductsByBatch === 'function') {
+                filterSaleProductsByBatch();
+            }
+        } else if (batchSelect) {
+            batchSelect.value = '';
+            if (typeof filterSaleProductsByBatch === 'function') {
+                filterSaleProductsByBatch();
+            }
+        }
+        
         const select = document.getElementById('sale-product-id');
         if(select) select.value = id;
-    }, 100);
+    }, 150); // Slightly longer timeout to ensure renderSaleRegistration has completed
 }
 
 async function renderSaleRegistration() {
