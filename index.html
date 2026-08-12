@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>SourcingDirectory Pro</title>
+    <title>Caplio Sourcing</title>
 
     <!-- PWA Manifest & iOS Support -->
     <link rel="manifest" href="./manifest.json">
@@ -30,9 +30,8 @@
     <div id="app">
         <!-- Navbar -->
         <nav class="navbar">
-            <div class="logo">
-                <span class="material-icons-round logo-icon">language</span>
-                SourcingDirectory<span class="text-warning">Pro</span>
+            <div class="logo" style="display: flex; align-items: center;">
+                <img src="img/logo.png" alt="Caplio Sourcing" style="height: 45px; width: auto; object-fit: contain;">
             </div>
             <div id="nav-user-area" class="hidden" style="display: flex; gap: 10px; align-items: center;">
                 <select id="currency-selector" onchange="setCurrency(this.value)" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); border-radius: 4px; padding: 4px;">
@@ -939,7 +938,7 @@
                 </div>
     
                 <!-- Products Grid -->
-                <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+                <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
                     <p class="text-muted text-center w-full" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
                 </div>
             </div>
@@ -1329,7 +1328,7 @@
                         </div>
     
                         <!-- Products Grid -->
-                        <div id="boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+                        <div id="boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
                             <p class="text-muted w-full text-center" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
                         </div>
                     </div>
@@ -2796,7 +2795,7 @@
     <script src="js/auth.js?v=38"></script>
     <script src="js/admin.js?v=52"></script>
     <script src="js/admin-agent.js?v=34"></script>
-    <script src="js/client.js?v=37"></script>
+    <script src="js/client.js?v=38"></script>
     <script src="js/client-agent.js?v=34"></script>
     <script src="js/supplier.js?v=34"></script>
     
