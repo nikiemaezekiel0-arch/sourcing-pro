@@ -30,8 +30,12 @@
     <div id="app">
         <!-- Navbar -->
         <nav class="navbar">
-            <div class="logo" style="display: flex; align-items: center;">
-                <img src="img/logo.png" alt="Caplio Sourcing" style="height: 45px; width: auto; object-fit: contain;">
+            <div class="logo" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <span class="material-icons-round" style="color: #cda45e; font-size: 36px;">language</span>
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="color: #ffffff; font-weight: 900; font-size: 1.3rem; letter-spacing: 1px; font-family: 'Outfit', sans-serif;">CAPLIO SOURCING</span>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 400; letter-spacing: 0.5px; font-family: 'Inter', sans-serif;">Your Trusted Sourcing Partner</span>
+                </div>
             </div>
             <div id="nav-user-area" class="hidden" style="display: flex; gap: 10px; align-items: center;">
                 <select id="currency-selector" onchange="setCurrency(this.value)" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); border-radius: 4px; padding: 4px;">
