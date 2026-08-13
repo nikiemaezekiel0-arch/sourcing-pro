@@ -967,6 +967,19 @@
                 <div class="nav-item" id="client-nav-trainings" onclick="switchClientTab('trainings')">
                     <span class="material-icons-round">school</span> Ma Formation
                 </div>
+                <!-- New tabs for Premium and VIP Packs -->
+                <div class="nav-item" id="client-nav-ai" onclick="switchClientTab('ai')" style="display: none;">
+                    <span class="material-icons-round text-accent-gold">translate</span> Traducteur IA
+                </div>
+                <div class="nav-item" id="client-nav-ebooks" onclick="switchClientTab('ebooks')" style="display: none;">
+                    <span class="material-icons-round text-accent-gold">menu_book</span> E-Books
+                </div>
+                <div class="nav-item" id="client-nav-support" onclick="switchClientTab('support')" style="display: none;">
+                    <span class="material-icons-round" style="color: #ef4444;">support_agent</span> Support Personnalisé
+                </div>
+                <div class="nav-item" id="client-nav-community" onclick="switchClientTab('community')" style="display: none;">
+                    <span class="material-icons-round" style="color: #3b82f6;">forum</span> Communauté VIP
+                </div>
             </div>
 
             <main class="main-content">
@@ -1335,6 +1348,54 @@
                         <div id="boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
                             <p class="text-muted w-full text-center" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- AI Translator View -->
+                <div id="client-view-ai" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Traducteur IA</h2>
+                    </div>
+                    <div class="glass-panel text-center" style="padding: 4rem 2rem;">
+                        <span class="material-icons-round text-accent-gold" style="font-size: 4rem; margin-bottom: 1rem;">translate</span>
+                        <h3>Bientôt disponible</h3>
+                        <p class="text-muted">Votre traducteur instantané propulsé par l'IA sera bientôt activé dans cette section.</p>
+                    </div>
+                </div>
+
+                <!-- E-Books View -->
+                <div id="client-view-ebooks" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Mes E-Books</h2>
+                    </div>
+                    <div class="glass-panel text-center" style="padding: 4rem 2rem;">
+                        <span class="material-icons-round text-accent-gold" style="font-size: 4rem; margin-bottom: 1rem;">menu_book</span>
+                        <h3>Bibliothèque Numérique</h3>
+                        <p class="text-muted">Retrouvez bientôt ici tous vos guides et e-books exclusifs.</p>
+                    </div>
+                </div>
+
+                <!-- Support Personnalisé View -->
+                <div id="client-view-support" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Support Personnalisé</h2>
+                    </div>
+                    <div class="glass-panel text-center" style="padding: 4rem 2rem; border-color: rgba(239, 68, 68, 0.3);">
+                        <span class="material-icons-round" style="color: #ef4444; font-size: 4rem; margin-bottom: 1rem;">support_agent</span>
+                        <h3>Assistance VIP</h3>
+                        <p class="text-muted">En tant que membre VIP, vous aurez bientôt accès à un conseiller dédié.</p>
+                    </div>
+                </div>
+
+                <!-- Communauté VIP View -->
+                <div id="client-view-community" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Communauté VIP</h2>
+                    </div>
+                    <div class="glass-panel text-center" style="padding: 4rem 2rem; border-color: rgba(59, 130, 246, 0.3);">
+                        <span class="material-icons-round" style="color: #3b82f6; font-size: 4rem; margin-bottom: 1rem;">forum</span>
+                        <h3>Le Cercle des Achats</h3>
+                        <p class="text-muted">L'espace d'échange privé pour la communauté VIP sera lancé très prochainement.</p>
                     </div>
                 </div>
                 

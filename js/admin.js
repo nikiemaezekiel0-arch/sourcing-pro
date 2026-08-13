@@ -270,14 +270,27 @@ function renderAdminUsers() {
         let actionBtn = '';
         let roleBadge = u.role === 'supplier' ? '<span class="badge text-warning" style="background:rgba(251,191,36,0.1)">Fournisseur</span>' : '<span class="badge" style="background:rgba(255,255,255,0.1)">Client</span>';
         
+        const getPackName = (pack) => {
+            if(pack === 'fournisseur') return 'Pack Fournisseur';
+            if(pack === 'standard') return 'Pack Standard';
+            if(pack === 'premium') return 'Pack Premium';
+            if(pack === 'vip') return 'Pack VIP';
+            return 'Sans Pack';
+        };
+
         if (u.status === 'pending') {
             statusBadge = '<span class="badge warning">En Attente</span>';
             if (u.role === 'client') {
                 actionBtn = `
-                    <button class="btn-icon text-primary" onclick="updateUserStatus('${u.id}', 'active', 'standard')" title="Valider (Formation Uniquement)"><span class="material-icons-round">school</span></button>
-                    <button class="btn-icon success" onclick="updateUserStatus('${u.id}', 'active', 'premium')" title="Valider (Premium : Formation + Fournisseurs)"><span class="material-icons-round">stars</span></button>
+                    <select class="input-control text-xs" style="padding: 4px; width: auto; background: var(--glass-bg); color: white; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateUserStatus('${u.id}', 'active', this.value)">
+                        <option value="" disabled selected>Activer (Choisir Pack)...</option>
+                        <option value="fournisseur">Pack Fournisseur</option>
+                        <option value="standard">Pack Standard</option>
+                        <option value="premium">Pack Premium</option>
+                        <option value="vip">Pack VIP</option>
+                    </select>
                     <button class="btn-icon danger" onclick="updateUserStatus('${u.id}', 'rejected')" title="Refuser"><span class="material-icons-round">cancel</span></button>
-                    <button class="btn-icon danger" onclick="deleteUser('${u.id}')" title="Supprimer définitivement"><span class="material-icons-round">delete_forever</span></button>
+                    <button class="btn-icon danger" onclick="deleteUser('${u.id}')" title="Supprimer"><span class="material-icons-round">delete_forever</span></button>
                 `;
             } else {
                 actionBtn = `
@@ -287,14 +300,20 @@ function renderAdminUsers() {
                 `;
             }
         } else if (u.status === 'active') {
-            let planBadge = (u.role === 'client' && u.planType === 'premium') ? '<span class="text-accent-gold text-xs ml-2 font-bold">Premium</span>' : (u.role === 'client' ? '<span class="text-primary text-xs ml-2 font-bold">Standard</span>' : '');
-            statusBadge = `<span class="badge success">Actif</span> ${planBadge}`;
+            let planBadge = u.role === 'client' && u.planType ? `<span class="text-accent-gold text-xs ml-2 font-bold">${getPackName(u.planType)}</span>` : '';
+            statusBadge = `<span class="badge success">Actif</span> <br>${planBadge}`;
             
             let switchPlanBtn = '';
             if (u.role === 'client') {
-                switchPlanBtn = u.planType === 'premium' 
-                    ? `<button class="btn-icon text-primary" onclick="updateUserStatus('${u.id}', 'active', 'standard')" title="Passer au Forfait Standard"><span class="material-icons-round">school</span></button>`
-                    : `<button class="btn-icon text-accent-gold" onclick="updateUserStatus('${u.id}', 'active', 'premium')" title="Passer au Forfait Premium"><span class="material-icons-round">stars</span></button>`;
+                switchPlanBtn = `
+                    <select class="input-control text-xs" style="padding: 4px; width: auto; background: var(--glass-bg); color: white; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateUserStatus('${u.id}', 'active', this.value)">
+                        <option value="" disabled>Changer Pack...</option>
+                        <option value="fournisseur" ${u.planType === 'fournisseur' ? 'selected' : ''}>Pack Fournisseur</option>
+                        <option value="standard" ${u.planType === 'standard' ? 'selected' : ''}>Pack Standard</option>
+                        <option value="premium" ${u.planType === 'premium' ? 'selected' : ''}>Pack Premium</option>
+                        <option value="vip" ${u.planType === 'vip' ? 'selected' : ''}>Pack VIP</option>
+                    </select>
+                `;
             }
                 
             actionBtn = `
@@ -315,7 +334,7 @@ function renderAdminUsers() {
                 <td>${roleBadge}</td>
                 <td>${u.phone}</td>
                 <td>${statusBadge}</td>
-                <td><div class="flex gap-2">${actionBtn}</div></td>
+                <td><div class="flex gap-2" style="align-items: center;">${actionBtn}</div></td>
             </tr>
         `;
     });

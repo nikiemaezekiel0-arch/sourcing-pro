@@ -50,19 +50,47 @@ function initClientPortal() {
     }
     
     // Check access based on plan
-    if (user && user.planType === 'standard') {
-        // Standard user: hide suppliers tab and show training
-        const supNav = document.getElementById('client-nav-suppliers');
-        const favNav = document.getElementById('client-nav-favorites');
-        if(supNav) supNav.style.display = 'none';
-        if(favNav) favNav.style.display = 'none';
-        switchClientTab('trainings');
-    } else {
-        // Premium or admin: show everything, default to suppliers
+    const allRestrictedTabs = ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community'];
+    const navElements = {};
+    allRestrictedTabs.forEach(t => navElements[t] = document.getElementById(`client-nav-${t}`));
+    
+    // Hide all restricted tabs by default
+    Object.values(navElements).forEach(el => { if(el) el.style.display = 'none'; });
+
+    if (user && (user.role === 'admin' || user.role === 'staff_sales' || user.role === 'staff_sourcing')) {
+        Object.values(navElements).forEach(el => { if(el) el.style.display = 'flex'; });
         switchClientTab('suppliers');
         renderClientStats();
         renderClientCategories();
         renderClientSuppliers();
+    } else if (user) {
+        const p = user.planType;
+        
+        // Unlocking cascade
+        if (p === 'fournisseur' || p === 'standard' || p === 'premium' || p === 'vip') {
+            if(navElements.suppliers) navElements.suppliers.style.display = 'flex';
+            if(navElements.favorites) navElements.favorites.style.display = 'flex';
+            switchClientTab('suppliers');
+            renderClientStats();
+            renderClientCategories();
+            renderClientSuppliers();
+        }
+        if (p === 'standard' || p === 'premium' || p === 'vip') {
+            if(navElements.trainings) navElements.trainings.style.display = 'flex';
+        }
+        if (p === 'premium' || p === 'vip') {
+            if(navElements.ai) navElements.ai.style.display = 'flex';
+            if(navElements.ebooks) navElements.ebooks.style.display = 'flex';
+        }
+        if (p === 'vip') {
+            if(navElements.support) navElements.support.style.display = 'flex';
+            if(navElements.community) navElements.community.style.display = 'flex';
+        }
+        
+        // If they have no recognized pack, default to boutique
+        if (!p || (p !== 'fournisseur' && p !== 'standard' && p !== 'premium' && p !== 'vip')) {
+            switchClientTab('boutique');
+        }
     }
     
     renderClientTrainings();
@@ -102,13 +130,16 @@ function initClientPortal() {
 function switchClientTab(tab) {
     const user = getCurrentUser();
     
-    // Access control
-    if (user && user.planType === 'standard' && tab !== 'trainings') {
-        alert("Vous devez avoir un forfait Premium pour accéder à cette section.");
-        return;
+    // Access control check for direct URL manipulation or console hacks
+    if (user && user.role !== 'admin' && user.role !== 'staff_sales' && user.role !== 'staff_sourcing') {
+        const p = user.planType || 'none';
+        if (['suppliers', 'favorites'].includes(tab) && !['fournisseur', 'standard', 'premium', 'vip'].includes(p)) return alert("Accès refusé.");
+        if (tab === 'trainings' && !['standard', 'premium', 'vip'].includes(p)) return alert("Accès refusé. Nécessite le Pack Standard.");
+        if (['ai', 'ebooks'].includes(tab) && !['premium', 'vip'].includes(p)) return alert("Accès refusé. Nécessite le Pack Premium.");
+        if (['support', 'community'].includes(tab) && p !== 'vip') return alert("Accès refusé. Nécessite le Pack VIP.");
     }
     
-    ['suppliers', 'trainings', 'agent', 'boutique', 'favorites'].forEach(t => {
+    ['suppliers', 'trainings', 'agent', 'boutique', 'favorites', 'ai', 'ebooks', 'support', 'community'].forEach(t => {
         const view = document.getElementById(`client-view-${t}`);
         const nav = document.getElementById(`client-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -136,24 +167,18 @@ function switchClientTab(tab) {
             if(favoritesNav) favoritesNav.classList.add('active');
             renderClientSuppliers('favorites');
         }
-    } else if (tab === 'trainings') {
-        const view = document.getElementById('client-view-trainings');
-        const nav = document.getElementById('client-nav-trainings');
-        if(view) view.classList.remove('hidden');
-        if(nav) nav.classList.add('active');
-    } else if (tab === 'agent') {
-        const view = document.getElementById('client-view-agent');
-        const nav = document.getElementById('client-nav-agent');
+    } else {
+        const view = document.getElementById(`client-view-${tab}`);
+        const nav = document.getElementById(`client-nav-${tab}`);
         if(view) view.classList.remove('hidden');
         if(nav) nav.classList.add('active');
         
-        renderClientAgentProducts();
-    } else if (tab === 'boutique') {
-        const view = document.getElementById('client-view-boutique');
-        const nav = document.getElementById('client-nav-boutique');
-        if(view) view.classList.remove('hidden');
-        if(nav) nav.classList.add('active');
-        renderClientBoutique();
+        if (tab === 'agent' && typeof renderClientAgentProducts === 'function') {
+            renderClientAgentProducts();
+        }
+        if (tab === 'boutique' && typeof renderClientBoutique === 'function') {
+            renderClientBoutique();
+        }
     }
 }
 
@@ -1280,20 +1305,20 @@ function renderClientBoutique() {
         }
         
         htmlStr += `
-        <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.2); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.4)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.2)'; this.querySelector('img').style.transform='scale(1)';">
-            <div style="height: 220px; overflow: hidden; position: relative; background: #000;">
+        <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.15); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 25px rgba(0,0,0,0.3)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)'; this.querySelector('img').style.transform='scale(1)';">
+            <div style="height: 160px; overflow: hidden; position: relative; background: #000;">
                 <img src="${prod.image || 'https://via.placeholder.com/400'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='https://via.placeholder.com/400'">
-                <div style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
+                <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
                     ${cat ? cat.name : 'Nouveau'}
                 </div>
-                ${isOutOfStock ? '<div style="position: absolute; top: 12px; right: 12px; background: #dc2626; color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;">Épuisé</div>' : ''}
+                ${isOutOfStock ? '<div style="position: absolute; top: 8px; right: 8px; background: #dc2626; color: white; padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; font-weight: 600;">Épuisé</div>' : ''}
             </div>
-            <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column;">
-                <h4 style="margin: 0 0 12px 0; font-size: 1.15rem; font-weight: 700; color: #fff; line-height: 1.4;">${prod.title}</h4>
-                <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.3rem;">${prod.price}</span>
-                    <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                        <span class="material-icons-round" style="font-size: 20px;">add_shopping_cart</span>
+            <div style="padding: 12px; flex-grow: 1; display: flex; flex-direction: column;">
+                <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; font-weight: 700; color: #fff; line-height: 1.3;">${prod.title}</h4>
+                <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.1rem;">${prod.price}</span>
+                    <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        <span class="material-icons-round" style="font-size: 18px;">add_shopping_cart</span>
                     </button>
                 </div>
             </div>
@@ -1429,20 +1454,20 @@ function renderPublicBoutique() {
         }
         
         htmlStr += `
-        <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.2); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.4)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.2)'; this.querySelector('img').style.transform='scale(1)';">
-            <div style="height: 220px; overflow: hidden; position: relative; background: #000;">
+        <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.15); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 25px rgba(0,0,0,0.3)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)'; this.querySelector('img').style.transform='scale(1)';">
+            <div style="height: 160px; overflow: hidden; position: relative; background: #000;">
                 <img src="${prod.image || 'https://via.placeholder.com/400'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='https://via.placeholder.com/400'">
-                <div style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
+                <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
                     ${cat ? cat.name : 'Nouveau'}
                 </div>
-                ${isOutOfStock ? '<div style="position: absolute; top: 12px; right: 12px; background: #dc2626; color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;">Épuisé</div>' : ''}
+                ${isOutOfStock ? '<div style="position: absolute; top: 8px; right: 8px; background: #dc2626; color: white; padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; font-weight: 600;">Épuisé</div>' : ''}
             </div>
-            <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column;">
-                <h4 style="margin: 0 0 12px 0; font-size: 1.15rem; font-weight: 700; color: #fff; line-height: 1.4;">${prod.title}</h4>
-                <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.3rem;">${prod.price}</span>
-                    <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                        <span class="material-icons-round" style="font-size: 20px;">add_shopping_cart</span>
+            <div style="padding: 12px; flex-grow: 1; display: flex; flex-direction: column;">
+                <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; font-weight: 700; color: #fff; line-height: 1.3;">${prod.title}</h4>
+                <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.1rem;">${prod.price}</span>
+                    <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        <span class="material-icons-round" style="font-size: 18px;">add_shopping_cart</span>
                     </button>
                 </div>
             </div>
