@@ -1018,6 +1018,7 @@ function renderAdminTrainingsConfig() {
     
     const trainingConfig = db.trainings.find(s => s.id === 'trainingConfig');
     if (trainingConfig) {
+        document.getElementById('config-training-title').value = trainingConfig.title || '';
         document.getElementById('config-training-link').value = trainingConfig.link || '';
         if (trainingConfig.imgUrl) {
             document.getElementById('config-training-img-base64').value = trainingConfig.imgUrl;
@@ -1080,13 +1081,14 @@ function handleConfigImageUpload(fileInputId, hiddenInputId, previewImgId) {
 
 async function saveTrainingConfig(e) {
     e.preventDefault();
+    const title = document.getElementById('config-training-title').value;
     const imgUrl = document.getElementById('config-training-img-base64').value;
     const link = document.getElementById('config-training-link').value;
     
     if (!imgUrl) return alert("Veuillez choisir une image.");
     
     try {
-        await saveDoc('trainings', { id: 'trainingConfig', imgUrl, link });
+        await saveDoc('trainings', { id: 'trainingConfig', title, imgUrl, link });
         showNotification("Configuration de la formation sauvegardée !", "success");
     } catch(err) {
         alert("Erreur : " + err.message);

@@ -298,7 +298,7 @@ function renderClientTrainings() {
 
     container.innerHTML = `
         ${trainingConfig.imgUrl ? `<img src="${trainingConfig.imgUrl}" alt="Formation" style="width:100%; max-height:200px; object-fit:cover; border-radius:12px; margin-bottom:2rem;">` : ''}
-        <h3 class="text-2xl font-bold mb-4">Accéder à ma formation</h3>
+        <h3 class="text-2xl font-bold mb-4">${trainingConfig.title || 'Accéder à ma formation'}</h3>
         <p class="text-muted mb-6">Cliquez sur le bouton ci-dessous pour obtenir votre lien d'accès secret.</p>
         <button class="btn-primary" onclick="requestTrainingAccess('${trainingConfig.link}')" style="font-size:1.2rem; padding: 1rem 2rem; margin: 0 auto;"><span class="material-icons-round">local_activity</span> Obtenir mon lien de formation</button>
     `;
