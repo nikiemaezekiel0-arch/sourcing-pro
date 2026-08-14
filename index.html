@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon" href="https://via.placeholder.com/192/0a0a0f/ffffff?text=SP">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css?v=103">
+    <link rel="stylesheet" href="css/style.css?v=104">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Material Icons -->
@@ -992,7 +992,7 @@
                         </button>
                     </div>
                     <div id="client-stats-banner" class="flex flex-row flex-wrap gap-4 mb-4" style="align-items: center;">
-                        <!-- Injected by client.js?v=103 -->
+                        <!-- Injected by client.js?v=104 -->
                     </div>
                     <div class="search-bar-container">
                         <div class="search-bar">
@@ -1002,11 +1002,11 @@
                     </div>
 
                     <div id="category-filters" class="category-filters">
-                        <!-- Injected by client.js?v=103 -->
+                        <!-- Injected by client.js?v=104 -->
                     </div>
 
                     <div id="suppliers-grid" class="suppliers-grid">
-                        <!-- Injected by client.js?v=103 -->
+                        <!-- Injected by client.js?v=104 -->
                     </div>
                     <div id="load-more-trigger" style="height: 20px; width: 100%; margin-top: 20px;"></div>
                 </div>
@@ -1328,6 +1328,9 @@
                 <div class="nav-item" id="admin-nav-trainings" onclick="switchAdminTab('trainings')">
                     <span class="material-icons-round">school</span> Ma Formation
                 </div>
+                <div class="nav-item" id="admin-nav-ebooks" onclick="switchAdminTab('ebooks')">
+                    <span class="material-icons-round">menu_book</span> Gestion E-Books
+                </div>
                 <div class="nav-item" id="admin-nav-boutique" onclick="switchAdminTab('boutique')">
                     <span class="material-icons-round">storefront</span> Boutique E-commerce
                 </div>
@@ -1622,16 +1625,19 @@
                 <!-- Trainings View -->
                 <!-- Trainings & E-books View -->
                 <div id="admin-view-trainings" class="hidden">
-                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">school</span> Contenus & Formations</h3>
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">school</span> Ma Formation</h3>
                     <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
-                        <!-- Configuration Formation Principale -->
                         <div class="glass-panel">
                             <h3 class="mb-4 text-primary flex items-center gap-2"><span class="material-icons-round">play_lesson</span> Formation Principale</h3>
                             <p class="text-sm text-muted mb-4">Définissez l'image de présentation et le lien secret d'accès à la plateforme de formation.</p>
                             <form onsubmit="saveTrainingConfig(event)">
                                 <div class="form-group">
-                                    <label>URL de l'image de présentation</label>
-                                    <input type="url" id="config-training-img" class="input-control" placeholder="https://..." required>
+                                    <label>Image de présentation (Upload)</label>
+                                    <input type="file" id="config-training-img-file" class="input-control" accept="image/*" onchange="handleConfigImageUpload('config-training-img-file', 'config-training-img-base64', 'config-training-img-preview')">
+                                    <input type="hidden" id="config-training-img-base64">
+                                    <div class="mt-2 text-center">
+                                        <img id="config-training-img-preview" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px; display: none;">
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label>Lien d'accès secret</label>
@@ -1643,7 +1649,13 @@
                                 </button>
                             </form>
                         </div>
-                        <!-- Configuration E-Books -->
+                    </div>
+                </div>
+
+                <!-- Ebooks View -->
+                <div id="admin-view-ebooks" class="hidden">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-warning">menu_book</span> Gestion E-Books</h3>
+                    <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
                         <div class="glass-panel">
                             <h3 class="mb-4 text-warning flex items-center gap-2"><span class="material-icons-round">menu_book</span> Gestion de l'E-book</h3>
                             <p class="text-sm text-muted mb-4">L'e-book unique affiché dans l'onglet E-books pour les clients Premium/VIP.</p>
@@ -1653,8 +1665,12 @@
                                     <input type="text" id="config-ebook-title" class="input-control" placeholder="Titre..." required>
                                 </div>
                                 <div class="form-group">
-                                    <label>URL de l'image de couverture</label>
-                                    <input type="url" id="config-ebook-img" class="input-control" placeholder="https://..." required>
+                                    <label>Image de couverture (Upload)</label>
+                                    <input type="file" id="config-ebook-img-file" class="input-control" accept="image/*" onchange="handleConfigImageUpload('config-ebook-img-file', 'config-ebook-img-base64', 'config-ebook-img-preview')">
+                                    <input type="hidden" id="config-ebook-img-base64">
+                                    <div class="mt-2 text-center">
+                                        <img id="config-ebook-img-preview" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px; display: none;">
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label>Lien de téléchargement</label>
@@ -2265,12 +2281,12 @@
 
             <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">Contacts Rapides (Cliquez pour agrandir)</h4>
             <div id="modal-qr-container" class="qr-grid">
-                <!-- Injected via client.js?v=103 -->
+                <!-- Injected via client.js?v=104 -->
             </div>
 
             <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">E-Catalogues (Vue en Ligne)</h4>
             <div id="modal-catalog-container" style="display:flex; flex-direction:column; gap:1rem;">
-                <!-- Injected via client.js?v=103 -->
+                <!-- Injected via client.js?v=104 -->
             </div>
             
             <button class="btn-secondary w-full mt-6" onclick="closeModal('supplier-modal')" style="justify-content:center;">
@@ -2381,7 +2397,7 @@
     <div id="lightbox-modal" class="modal-overlay hidden" style="z-index: 200; background:rgba(0,0,0,0.95);" onclick="closeModal('lightbox-modal')">
         <button class="close-btn" style="top:2rem; right:2rem; opacity:1;"><span class="material-icons-round" style="font-size:48px; color:white;">close</span></button>
         <div id="lightbox-container" class="flex justify-center items-center" style="width:100%; height:100%; padding:2rem; flex-wrap:wrap; gap:1rem; overflow-y:auto;" onclick="event.stopPropagation()">
-            <!-- Injected via client.js?v=103 -->
+            <!-- Injected via client.js?v=104 -->
         </div>
     </div>
     <!-- DEMO EXPIRED OVERLAY -->
@@ -2552,15 +2568,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=103"></script>
-    <script src="js/currency.js?v=103"></script>
-    <script src="js/db.js?v=103"></script>
-    <script src="js/auth.js?v=103"></script>
-    <script src="js/admin.js?v=103"></script>
-    <script src="js/admin-agent.js?v=103"></script>
-    <script src="js/client.js?v=103"></script>
-    <script src="js/client-agent.js?v=103"></script>
-    <script src="js/supplier.js?v=103"></script>
+    <script src="js/i18n.js?v=104"></script>
+    <script src="js/currency.js?v=104"></script>
+    <script src="js/db.js?v=104"></script>
+    <script src="js/auth.js?v=104"></script>
+    <script src="js/admin.js?v=104"></script>
+    <script src="js/admin-agent.js?v=104"></script>
+    <script src="js/client.js?v=104"></script>
+    <script src="js/client-agent.js?v=104"></script>
+    <script src="js/supplier.js?v=104"></script>
     
     <!-- Main Routing Logic -->
     <script>

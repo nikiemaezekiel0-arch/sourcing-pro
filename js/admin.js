@@ -123,7 +123,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'team', 'categories', 'suppliers', 'trainings', 'settings', 'agent', 'demos', 'stock', 'salereg', 'sales', 'backups', 'boutique'].forEach(t => {
+    ['users', 'team', 'categories', 'suppliers', 'trainings', 'ebooks', 'settings', 'agent', 'demos', 'stock', 'salereg', 'sales', 'backups', 'boutique'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -1018,22 +1018,72 @@ function renderAdminTrainingsConfig() {
     
     const trainingConfig = db.trainings.find(s => s.id === 'trainingConfig');
     if (trainingConfig) {
-        document.getElementById('config-training-img').value = trainingConfig.imgUrl || '';
         document.getElementById('config-training-link').value = trainingConfig.link || '';
+        if (trainingConfig.imgUrl) {
+            document.getElementById('config-training-img-base64').value = trainingConfig.imgUrl;
+            document.getElementById('config-training-img-preview').src = trainingConfig.imgUrl;
+            document.getElementById('config-training-img-preview').style.display = 'inline-block';
+        }
     }
     
     const ebookConfig = db.trainings.find(s => s.id === 'ebookConfig');
     if (ebookConfig) {
         document.getElementById('config-ebook-title').value = ebookConfig.title || '';
-        document.getElementById('config-ebook-img').value = ebookConfig.imgUrl || '';
         document.getElementById('config-ebook-link').value = ebookConfig.link || '';
+        if (ebookConfig.imgUrl) {
+            document.getElementById('config-ebook-img-base64').value = ebookConfig.imgUrl;
+            document.getElementById('config-ebook-img-preview').src = ebookConfig.imgUrl;
+            document.getElementById('config-ebook-img-preview').style.display = 'inline-block';
+        }
+    }
+}
+
+function handleConfigImageUpload(fileInputId, hiddenInputId, previewImgId) {
+    const file = document.getElementById(fileInputId).files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const base64data = canvas.toDataURL('image/jpeg', 0.7);
+                document.getElementById(hiddenInputId).value = base64data;
+                document.getElementById(previewImgId).src = base64data;
+                document.getElementById(previewImgId).style.display = 'inline-block';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 }
 
 async function saveTrainingConfig(e) {
     e.preventDefault();
-    const imgUrl = document.getElementById('config-training-img').value;
+    const imgUrl = document.getElementById('config-training-img-base64').value;
     const link = document.getElementById('config-training-link').value;
+    
+    if (!imgUrl) return alert("Veuillez choisir une image.");
     
     try {
         await saveDoc('trainings', { id: 'trainingConfig', imgUrl, link });
@@ -1046,8 +1096,10 @@ async function saveTrainingConfig(e) {
 async function saveEbookConfig(e) {
     e.preventDefault();
     const title = document.getElementById('config-ebook-title').value;
-    const imgUrl = document.getElementById('config-ebook-img').value;
+    const imgUrl = document.getElementById('config-ebook-img-base64').value;
     const link = document.getElementById('config-ebook-link').value;
+    
+    if (!imgUrl) return alert("Veuillez choisir une image de couverture.");
     
     try {
         await saveDoc('trainings', { id: 'ebookConfig', title, imgUrl, link });
