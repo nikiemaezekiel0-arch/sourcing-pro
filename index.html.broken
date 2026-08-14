@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Caplio Sourcing</title>
+
+    <!-- PWA Manifest & iOS Support -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sourcing Pro">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/0a0a0f/ffffff?text=SP">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css?v=16">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Driver.js CSS -->
+</head>
+<body>
+    <div class="bg-ambient"></div>
+
+    <div id="app">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="logo" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <span class="material-icons-round" style="color: #cda45e; font-size: 36px;">language</span>
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="color: #ffffff; font-weight: 900; font-size: 1.3rem; letter-spacing: 1px; font-family: 'Outfit', sans-serif;">CAPLIO SOURCING</span>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 400; letter-spacing: 0.5px; font-family: 'Inter', sans-serif;">Your Trusted Sourcing Partner</span>
+                </div>
+            </div>
+            <div id="nav-user-area" class="hidden" style="display: flex; gap: 10px; align-items: center;">
+                <select id="currency-selector" onchange="setCurrency(this.value)" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); border-radius: 4px; padding: 4px;">
+                    <option value="EUR">EUR (€)</option>
+                    <option value="CNY">CNY (¥)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="XOF">FCFA</option>
+                </select>
+                <select id="lang-selector" onchange="setLanguage(this.value)" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); border-radius: 4px; padding: 4px;">
+                    <option value="fr">FR</option>
+                    <option value="en">EN</option>
+                </select>
+                <button class="btn-secondary" onclick="logout()" data-i18n="btn_logout"><span class="material-icons-round">logout</span> Déconnexion</button>
+            </div>
+        </nav>
+
+        <!-- 1. AUTHENTICATION VIEW -->
+        <div id="auth-view" class="auth-wrapper">
+            <!-- Left side with image -->
+            <div class="auth-left">
+                <div class="auth-left-content">
+                    <h1>Maîtrisez l'import depuis la Chine.</h1>
+                    <p>Accédez au carnet d'adresses exclusif des meilleurs fournisseurs et formez-vous pour sourcer comme un pro.</p>
+                    <div style="margin-top: 30px;">
+                        <button onclick="showPublicBoutique()" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 1rem 2rem; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); border-radius: 50px;">
+                            <span class="material-icons-round" style="margin-right: 10px;">local_mall</span> VISITER LA BOUTIQUE E-COMMERCE
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right side with form -->
+            <div class="auth-right">
+                <div class="glass-panel auth-box">
+                    <div class="text-center mb-6">
+                        <span class="material-icons-round text-warning" style="font-size: 48px;">lock_person</span>
+                        <h2 class="mt-2">Espace Privé</h2>
+                        <p class="text-muted text-sm mt-2">Connectez-vous à votre espace SourcingPro.</p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+                        <div class="form-group">
+                            <input type="email" id="login-email" class="input-control" placeholder="Adresse Email" required>
+                        </div>
+                        <div class="form-group mb-4">
+                            <input type="password" id="login-password" class="input-control" placeholder="Mot de passe" required>
+                        </div>
+                        <div class="text-right mb-4">
+                            <a href="#" class="text-warning text-sm hover-glow" style="text-decoration:none;" onclick="switchAuthMode('forgot')">Mot de passe oublié ?</a>
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center;">Se connecter</button>
+                        <p class="text-center text-sm mt-4 text-muted">Pas encore membre ? <a href="#" class="text-warning" onclick="switchAuthMode('register')">S'inscrire</a></p>
+                        <p class="text-center text-sm mt-2 text-muted"><a href="#" style="color:#888;" onclick="switchAuthMode('supplier-register')">I am a Supplier (Partner Sign Up)</a></p>
+                    </form>
+
+                    <!-- Forgot Password Form -->
+                    <form id="forgot-form" class="hidden" onsubmit="handlePasswordReset(event)">
+                        <p class="text-muted text-sm mb-4">Entrez votre adresse email pour recevoir un lien de réinitialisation sécurisé.</p>
+                        <div class="form-group mb-6">
+                            <input type="email" id="forgot-email" class="input-control" placeholder="Adresse Email" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center;">Réinitialiser</button>
+                        <p class="text-center text-sm mt-4 text-muted"><a href="#" class="text-warning" onclick="switchAuthMode('login')">Retour à la connexion</a></p>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+                        <div class="flex gap-2 form-group">
+                            <input type="text" id="reg-firstname" class="input-control" placeholder="Prénom" required style="flex:1;">
+                            <input type="text" id="reg-lastname" class="input-control" placeholder="Nom" required style="flex:1;">
+                        </div>
+                        <div class="form-group">
+                            <select id="reg-country" class="input-control" required>
+<option value="" disabled selected>Pays de résidence</option>
+                                <option value="Afghanistan">Afghanistan</option>
+                                <option value="Albania">Albania</option>
+                                <option value="Algeria">Algeria</option>
+                                <option value="American Samoa">American Samoa</option>
+                                <option value="Andorra">Andorra</option>
+                                <option value="Angola">Angola</option>
+                                <option value="Anguilla">Anguilla</option>
+                                <option value="Antarctica">Antarctica</option>
+                                <option value="Antigua and Barbuda">Antigua and Barbuda</option>
+                                <option value="Argentina">Argentina</option>
+                                <option value="Armenia">Armenia</option>
+                                <option value="Aruba">Aruba</option>
+                                <option value="Australia">Australia</option>
+                                <option value="Austria">Austria</option>
+                                <option value="Azerbaijan">Azerbaijan</option>
+                                <option value="Bahamas">Bahamas</option>
+                                <option value="Bahrain">Bahrain</option>
+                                <option value="Bangladesh">Bangladesh</option>
+                                <option value="Barbados">Barbados</option>
+                                <option value="Belarus">Belarus</option>
+                                <option value="Belgium">Belgium</option>
+                                <option value="Belize">Belize</option>
+                                <option value="Benin">Benin</option>
+                                <option value="Bermuda">Bermuda</option>
+                                <option value="Bhutan">Bhutan</option>
+                                <option value="Bolivia">Bolivia</option>
+                                <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
+                                <option value="Botswana">Botswana</option>
+                                <option value="Bouvet Island">Bouvet Island</option>
+                                <option value="Brazil">Brazil</option>
+                                <option value="British Indian Ocean Territory">British Indian Ocean Territory</option>
+                                <option value="British Virgin Islands">British Virgin Islands</option>
+                                <option value="Brunei">Brunei</option>
+                                <option value="Bulgaria">Bulgaria</option>
+                                <option value="Burkina Faso">Burkina Faso</option>
+                                <option value="Burundi">Burundi</option>
+                                <option value="Cambodia">Cambodia</option>
+                                <option value="Cameroon">Cameroon</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Cape Verde">Cape Verde</option>
+                                <option value="Caribbean Netherlands">Caribbean Netherlands</option>
+                                <option value="Cayman Islands">Cayman Islands</option>
+                                <option value="Central African Republic">Central African Republic</option>
+                                <option value="Chad">Chad</option>
+                                <option value="Chile">Chile</option>
+                                <option value="China">China</option>
+                                <option value="Christmas Island">Christmas Island</option>
+                                <option value="Cocos (Keeling) Islands">Cocos (Keeling) Islands</option>
+                                <option value="Colombia">Colombia</option>
+                                <option value="Comoros">Comoros</option>
+                                <option value="Cook Islands">Cook Islands</option>
+                                <option value="Costa Rica">Costa Rica</option>
+                                <option value="Croatia">Croatia</option>
+                                <option value="Cuba">Cuba</option>
+                                <option value="Curaçao">Curaçao</option>
+                                <option value="Cyprus">Cyprus</option>
+                                <option value="Czechia">Czechia</option>
+                                <option value="DR Congo">DR Congo</option>
+                                <option value="Denmark">Denmark</option>
+                                <option value="Djibouti">Djibouti</option>
+                                <option value="Dominica">Dominica</option>
+                                <option value="Dominican Republic">Dominican Republic</option>
+                                <option value="Ecuador">Ecuador</option>
+                                <option value="Egypt">Egypt</option>
+                                <option value="El Salvador">El Salvador</option>
+                                <option value="Equatorial Guinea">Equatorial Guinea</option>
+                                <option value="Eritrea">Eritrea</option>
+                                <option value="Estonia">Estonia</option>
+                                <option value="Eswatini">Eswatini</option>
+                                <option value="Ethiopia">Ethiopia</option>
+                                <option value="Falkland Islands">Falkland Islands</option>
+                                <option value="Faroe Islands">Faroe Islands</option>
+                                <option value="Fiji">Fiji</option>
+                                <option value="Finland">Finland</option>
+                                <option value="France">France</option>
+                                <option value="French Guiana">French Guiana</option>
+                                <option value="French Polynesia">French Polynesia</option>
+                                <option value="French Southern and Antarctic Lands">French Southern and Antarctic Lands</option>
+                                <option value="Gabon">Gabon</option>
+                                <option value="Gambia">Gambia</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Germany">Germany</option>
+                                <option value="Ghana">Ghana</option>
+                                <option value="Gibraltar">Gibraltar</option>
+                                <option value="Greece">Greece</option>
+                                <option value="Greenland">Greenland</option>
+                                <option value="Grenada">Grenada</option>
+                                <option value="Guadeloupe">Guadeloupe</option>
+                                <option value="Guam">Guam</option>
+                                <option value="Guatemala">Guatemala</option>
+                                <option value="Guernsey">Guernsey</option>
+                                <option value="Guinea">Guinea</option>
+                                <option value="Guinea-Bissau">Guinea-Bissau</option>
+                                <option value="Guyana">Guyana</option>
+                                <option value="Haiti">Haiti</option>
+                                <option value="Heard Island and McDonald Islands">Heard Island and McDonald Islands</option>
+                                <option value="Honduras">Honduras</option>
+                                <option value="Hong Kong">Hong Kong</option>
+                                <option value="Hungary">Hungary</option>
+                                <option value="Iceland">Iceland</option>
+                                <option value="India">India</option>
+                                <option value="Indonesia">Indonesia</option>
+                                <option value="Iran">Iran</option>
+                                <option value="Iraq">Iraq</option>
+                                <option value="Ireland">Ireland</option>
+                                <option value="Isle of Man">Isle of Man</option>
+                                <option value="Israel">Israel</option>
+                                <option value="Italy">Italy</option>
+                                <option value="Ivory Coast">Ivory Coast</option>
+                                <option value="Jamaica">Jamaica</option>
+                                <option value="Japan">Japan</option>
+                                <option value="Jersey">Jersey</option>
+                                <option value="Jordan">Jordan</option>
+                                <option value="Kazakhstan">Kazakhstan</option>
+                                <option value="Kenya">Kenya</option>
+                                <option value="Kiribati">Kiribati</option>
+                                <option value="Kosovo">Kosovo</option>
+                                <option value="Kuwait">Kuwait</option>
+                                <option value="Kyrgyzstan">Kyrgyzstan</option>
+                                <option value="Laos">Laos</option>
+                                <option value="Latvia">Latvia</option>
+                                <option value="Lebanon">Lebanon</option>
+                                <option value="Lesotho">Lesotho</option>
+                                <option value="Liberia">Liberia</option>
+                                <option value="Libya">Libya</option>
+                                <option value="Liechtenstein">Liechtenstein</option>
+                                <option value="Lithuania">Lithuania</option>
+                                <option value="Luxembourg">Luxembourg</option>
+                                <option value="Macau">Macau</option>
+                                <option value="Madagascar">Madagascar</option>
+                                <option value="Malawi">Malawi</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Maldives">Maldives</option>
+                                <option value="Mali">Mali</option>
+                                <option value="Malta">Malta</option>
+                                <option value="Marshall Islands">Marshall Islands</option>
+                                <option value="Martinique">Martinique</option>
+                                <option value="Mauritania">Mauritania</option>
+                                <option value="Mauritius">Mauritius</option>
+                                <option value="Mayotte">Mayotte</option>
+                                <option value="Mexico">Mexico</option>
+                                <option value="Micronesia">Micronesia</option>
+                                <option value="Moldova">Moldova</option>
+                                <option value="Monaco">Monaco</option>
+                                <option value="Mongolia">Mongolia</option>
+                                <option value="Montenegro">Montenegro</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Morocco">Morocco</option>
+                                <option value="Mozambique">Mozambique</option>
+                                <option value="Myanmar">Myanmar</option>
+                                <option value="Namibia">Namibia</option>
+                                <option value="Nauru">Nauru</option>
+                                <option value="Nepal">Nepal</option>
+                                <option value="Netherlands">Netherlands</option>
+                                <option value="New Caledonia">New Caledonia</option>
+                                <option value="New Zealand">New Zealand</option>
+                                <option value="Nicaragua">Nicaragua</option>
+                                <option value="Niger">Niger</option>
+                                <option value="Nigeria">Nigeria</option>
+                                <option value="Niue">Niue</option>
+                                <option value="Norfolk Island">Norfolk Island</option>
+                                <option value="North Korea">North Korea</option>
+                                <option value="North Macedonia">North Macedonia</option>
+                                <option value="Northern Mariana Islands">Northern Mariana Islands</option>
+                                <option value="Norway">Norway</option>
+                                <option value="Oman">Oman</option>
+                                <option value="Pakistan">Pakistan</option>
+                                <option value="Palau">Palau</option>
+                                <option value="Palestine">Palestine</option>
+                                <option value="Panama">Panama</option>
+                                <option value="Papua New Guinea">Papua New Guinea</option>
+                                <option value="Paraguay">Paraguay</option>
+                                <option value="Peru">Peru</option>
+                                <option value="Philippines">Philippines</option>
+                                <option value="Pitcairn Islands">Pitcairn Islands</option>
+                                <option value="Poland">Poland</option>
+                                <option value="Portugal">Portugal</option>
+                                <option value="Puerto Rico">Puerto Rico</option>
+                                <option value="Qatar">Qatar</option>
+                                <option value="Republic of the Congo">Republic of the Congo</option>
+                                <option value="Romania">Romania</option>
+                                <option value="Russia">Russia</option>
+                                <option value="Rwanda">Rwanda</option>
+                                <option value="Réunion">Réunion</option>
+                                <option value="Saint Barthélemy">Saint Barthélemy</option>
+                                <option value="Saint Helena, Ascension and Tristan da Cunha">Saint Helena, Ascension and Tristan da Cunha</option>
+                                <option value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
+                                <option value="Saint Lucia">Saint Lucia</option>
+                                <option value="Saint Martin">Saint Martin</option>
+                                <option value="Saint Pierre and Miquelon">Saint Pierre and Miquelon</option>
+                                <option value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
+                                <option value="Samoa">Samoa</option>
+                                <option value="San Marino">San Marino</option>
+                                <option value="Saudi Arabia">Saudi Arabia</option>
+                                <option value="Senegal">Senegal</option>
+                                <option value="Serbia">Serbia</option>
+                                <option value="Seychelles">Seychelles</option>
+                                <option value="Sierra Leone">Sierra Leone</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Sint Maarten">Sint Maarten</option>
+                                <option value="Slovakia">Slovakia</option>
+                                <option value="Slovenia">Slovenia</option>
+                                <option value="Solomon Islands">Solomon Islands</option>
+                                <option value="Somalia">Somalia</option>
+                                <option value="South Africa">South Africa</option>
+                                <option value="South Georgia">South Georgia</option>
+                                <option value="South Korea">South Korea</option>
+                                <option value="South Sudan">South Sudan</option>
+                                <option value="Spain">Spain</option>
+                                <option value="Sri Lanka">Sri Lanka</option>
+                                <option value="Sudan">Sudan</option>
+                                <option value="Suriname">Suriname</option>
+                                <option value="Svalbard and Jan Mayen">Svalbard and Jan Mayen</option>
+                                <option value="Sweden">Sweden</option>
+                                <option value="Switzerland">Switzerland</option>
+                                <option value="Syria">Syria</option>
+                                <option value="São Tomé and Príncipe">São Tomé and Príncipe</option>
+                                <option value="Taiwan">Taiwan</option>
+                                <option value="Tajikistan">Tajikistan</option>
+                                <option value="Tanzania">Tanzania</option>
+                                <option value="Thailand">Thailand</option>
+                                <option value="Timor-Leste">Timor-Leste</option>
+                                <option value="Togo">Togo</option>
+                                <option value="Tokelau">Tokelau</option>
+                                <option value="Tonga">Tonga</option>
+                                <option value="Trinidad and Tobago">Trinidad and Tobago</option>
+                                <option value="Tunisia">Tunisia</option>
+                                <option value="Turkey">Turkey</option>
+                                <option value="Turkmenistan">Turkmenistan</option>
+                                <option value="Turks and Caicos Islands">Turks and Caicos Islands</option>
+                                <option value="Tuvalu">Tuvalu</option>
+                                <option value="Uganda">Uganda</option>
+                                <option value="Ukraine">Ukraine</option>
+                                <option value="United Arab Emirates">United Arab Emirates</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="United States">United States</option>
+                                <option value="United States Minor Outlying Islands">United States Minor Outlying Islands</option>
+                                <option value="United States Virgin Islands">United States Virgin Islands</option>
+                                <option value="Uruguay">Uruguay</option>
+                                <option value="Uzbekistan">Uzbekistan</option>
+                                <option value="Vanuatu">Vanuatu</option>
+                                <option value="Vatican City">Vatican City</option>
+                                <option value="Venezuela">Venezuela</option>
+                                <option value="Vietnam">Vietnam</option>
+                                <option value="Wallis and Futuna">Wallis and Futuna</option>
+                                <option value="Western Sahara">Western Sahara</option>
+                                <option value="Yemen">Yemen</option>
+                                <option value="Zambia">Zambia</option>
+                                <option value="Zimbabwe">Zimbabwe</option>
+                                <option value="Åland Islands">Åland Islands</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="reg-email" class="input-control" placeholder="Adresse Email" required>
+                        </div>
+                        <div class="form-group flex gap-2">
+                            <select id="reg-country-code" class="input-control" style="width: 130px; padding-right: 0.5rem;" required>
+<option value="" disabled selected>Indicatif</option>
+                                <option value="+93">🇦🇫 +93 (AF)</option>
+                                <option value="+355">🇦🇱 +355 (AL)</option>
+                                <option value="+213">🇩🇿 +213 (DZ)</option>
+                                <option value="+1684">🇦🇸 +1684 (AS)</option>
+                                <option value="+376">🇦🇩 +376 (AD)</option>
+                                <option value="+244">🇦🇴 +244 (AO)</option>
+                                <option value="+1264">🇦🇮 +1264 (AI)</option>
+                                <option value="+1268">🇦🇬 +1268 (AG)</option>
+                                <option value="+54">🇦🇷 +54 (AR)</option>
+                                <option value="+374">🇦🇲 +374 (AM)</option>
+                                <option value="+297">🇦🇼 +297 (AW)</option>
+                                <option value="+61">🇦🇺 +61 (AU)</option>
+                                <option value="+43">🇦🇹 +43 (AT)</option>
+                                <option value="+994">🇦🇿 +994 (AZ)</option>
+                                <option value="+1242">🇧🇸 +1242 (BS)</option>
+                                <option value="+973">🇧🇭 +973 (BH)</option>
+                                <option value="+880">🇧🇩 +880 (BD)</option>
+                                <option value="+1246">🇧🇧 +1246 (BB)</option>
+                                <option value="+375">🇧🇾 +375 (BY)</option>
+                                <option value="+32">🇧🇪 +32 (BE)</option>
+                                <option value="+501">🇧🇿 +501 (BZ)</option>
+                                <option value="+229">🇧🇯 +229 (BJ)</option>
+                                <option value="+1441">🇧🇲 +1441 (BM)</option>
+                                <option value="+975">🇧🇹 +975 (BT)</option>
+                                <option value="+591">🇧🇴 +591 (BO)</option>
+                                <option value="+387">🇧🇦 +387 (BA)</option>
+                                <option value="+267">🇧🇼 +267 (BW)</option>
+                                <option value="+47">🇧🇻 +47 (BV)</option>
+                                <option value="+55">🇧🇷 +55 (BR)</option>
+                                <option value="+246">🇮🇴 +246 (IO)</option>
+                                <option value="+1284">🇻🇬 +1284 (VG)</option>
+                                <option value="+673">🇧🇳 +673 (BN)</option>
+                                <option value="+359">🇧🇬 +359 (BG)</option>
+                                <option value="+226">🇧🇫 +226 (BF)</option>
+                                <option value="+257">🇧🇮 +257 (BI)</option>
+                                <option value="+855">🇰🇭 +855 (KH)</option>
+                                <option value="+237">🇨🇲 +237 (CM)</option>
+                                <option value="+1">🇨🇦 +1 (CA)</option>
+                                <option value="+238">🇨🇻 +238 (CV)</option>
+                                <option value="+599">🇧🇶 +599 (BQ)</option>
+                                <option value="+1345">🇰🇾 +1345 (KY)</option>
+                                <option value="+236">🇨🇫 +236 (CF)</option>
+                                <option value="+235">🇹🇩 +235 (TD)</option>
+                                <option value="+56">🇨🇱 +56 (CL)</option>
+                                <option value="+86">🇨🇳 +86 (CN)</option>
+                                <option value="+61">🇨🇽 +61 (CX)</option>
+                                <option value="+61">🇨🇨 +61 (CC)</option>
+                                <option value="+57">🇨🇴 +57 (CO)</option>
+                                <option value="+269">🇰🇲 +269 (KM)</option>
+                                <option value="+682">🇨🇰 +682 (CK)</option>
+                                <option value="+506">🇨🇷 +506 (CR)</option>
+                                <option value="+385">🇭🇷 +385 (HR)</option>
+                                <option value="+53">🇨🇺 +53 (CU)</option>
+                                <option value="+599">🇨🇼 +599 (CW)</option>
+                                <option value="+357">🇨🇾 +357 (CY)</option>
+                                <option value="+420">🇨🇿 +420 (CZ)</option>
+                                <option value="+243">🇨🇩 +243 (CD)</option>
+                                <option value="+45">🇩🇰 +45 (DK)</option>
+                                <option value="+253">🇩🇯 +253 (DJ)</option>
+                                <option value="+1767">🇩🇲 +1767 (DM)</option>
+                                <option value="+1809">🇩🇴 +1809 (DO)</option>
+                                <option value="+593">🇪🇨 +593 (EC)</option>
+                                <option value="+20">🇪🇬 +20 (EG)</option>
+                                <option value="+503">🇸🇻 +503 (SV)</option>
+                                <option value="+240">🇬🇶 +240 (GQ)</option>
+                                <option value="+291">🇪🇷 +291 (ER)</option>
+                                <option value="+372">🇪🇪 +372 (EE)</option>
+                                <option value="+268">🇸🇿 +268 (SZ)</option>
+                                <option value="+251">🇪🇹 +251 (ET)</option>
+                                <option value="+500">🇫🇰 +500 (FK)</option>
+                                <option value="+298">🇫🇴 +298 (FO)</option>
+                                <option value="+679">🇫🇯 +679 (FJ)</option>
+                                <option value="+358">🇫🇮 +358 (FI)</option>
+                                <option value="+33">🇫🇷 +33 (FR)</option>
+                                <option value="+594">🇬🇫 +594 (GF)</option>
+                                <option value="+689">🇵🇫 +689 (PF)</option>
+                                <option value="+262">🇹🇫 +262 (TF)</option>
+                                <option value="+241">🇬🇦 +241 (GA)</option>
+                                <option value="+220">🇬🇲 +220 (GM)</option>
+                                <option value="+995">🇬🇪 +995 (GE)</option>
+                                <option value="+49">🇩🇪 +49 (DE)</option>
+                                <option value="+233">🇬🇭 +233 (GH)</option>
+                                <option value="+350">🇬🇮 +350 (GI)</option>
+                                <option value="+30">🇬🇷 +30 (GR)</option>
+                                <option value="+299">🇬🇱 +299 (GL)</option>
+                                <option value="+1473">🇬🇩 +1473 (GD)</option>
+                                <option value="+590">🇬🇵 +590 (GP)</option>
+                                <option value="+1671">🇬🇺 +1671 (GU)</option>
+                                <option value="+502">🇬🇹 +502 (GT)</option>
+                                <option value="+44">🇬🇬 +44 (GG)</option>
+                                <option value="+224">🇬🇳 +224 (GN)</option>
+                                <option value="+245">🇬🇼 +245 (GW)</option>
+                                <option value="+592">🇬🇾 +592 (GY)</option>
+                                <option value="+509">🇭🇹 +509 (HT)</option>
+                                <option value="+504">🇭🇳 +504 (HN)</option>
+                                <option value="+852">🇭🇰 +852 (HK)</option>
+                                <option value="+36">🇭🇺 +36 (HU)</option>
+                                <option value="+354">🇮🇸 +354 (IS)</option>
+                                <option value="+91">🇮🇳 +91 (IN)</option>
+                                <option value="+62">🇮🇩 +62 (ID)</option>
+                                <option value="+98">🇮🇷 +98 (IR)</option>
+                                <option value="+964">🇮🇶 +964 (IQ)</option>
+                                <option value="+353">🇮🇪 +353 (IE)</option>
+                                <option value="+44">🇮🇲 +44 (IM)</option>
+                                <option value="+972">🇮🇱 +972 (IL)</option>
+                                <option value="+39">🇮🇹 +39 (IT)</option>
+                                <option value="+225">🇨🇮 +225 (CI)</option>
+                                <option value="+1876">🇯🇲 +1876 (JM)</option>
+                                <option value="+81">🇯🇵 +81 (JP)</option>
+                                <option value="+44">🇯🇪 +44 (JE)</option>
+                                <option value="+962">🇯🇴 +962 (JO)</option>
+                                <option value="+76">🇰🇿 +76 (KZ)</option>
+                                <option value="+254">🇰🇪 +254 (KE)</option>
+                                <option value="+686">🇰🇮 +686 (KI)</option>
+                                <option value="+383">🇽🇰 +383 (XK)</option>
+                                <option value="+965">🇰🇼 +965 (KW)</option>
+                                <option value="+996">🇰🇬 +996 (KG)</option>
+                                <option value="+856">🇱🇦 +856 (LA)</option>
+                                <option value="+371">🇱🇻 +371 (LV)</option>
+                                <option value="+961">🇱🇧 +961 (LB)</option>
+                                <option value="+266">🇱🇸 +266 (LS)</option>
+                                <option value="+231">🇱🇷 +231 (LR)</option>
+                                <option value="+218">🇱🇾 +218 (LY)</option>
+                                <option value="+423">🇱🇮 +423 (LI)</option>
+                                <option value="+370">🇱🇹 +370 (LT)</option>
+                                <option value="+352">🇱🇺 +352 (LU)</option>
+                                <option value="+853">🇲🇴 +853 (MO)</option>
+                                <option value="+261">🇲🇬 +261 (MG)</option>
+                                <option value="+265">🇲🇼 +265 (MW)</option>
+                                <option value="+60">🇲🇾 +60 (MY)</option>
+                                <option value="+960">🇲🇻 +960 (MV)</option>
+                                <option value="+223">🇲🇱 +223 (ML)</option>
+                                <option value="+356">🇲🇹 +356 (MT)</option>
+                                <option value="+692">🇲🇭 +692 (MH)</option>
+                                <option value="+596">🇲🇶 +596 (MQ)</option>
+                                <option value="+222">🇲🇷 +222 (MR)</option>
+                                <option value="+230">🇲🇺 +230 (MU)</option>
+                                <option value="+262">🇾🇹 +262 (YT)</option>
+                                <option value="+52">🇲🇽 +52 (MX)</option>
+                                <option value="+691">🇫🇲 +691 (FM)</option>
+                                <option value="+373">🇲🇩 +373 (MD)</option>
+                                <option value="+377">🇲🇨 +377 (MC)</option>
+                                <option value="+976">🇲🇳 +976 (MN)</option>
+                                <option value="+382">🇲🇪 +382 (ME)</option>
+                                <option value="+1664">🇲🇸 +1664 (MS)</option>
+                                <option value="+212">🇲🇦 +212 (MA)</option>
+                                <option value="+258">🇲🇿 +258 (MZ)</option>
+                                <option value="+95">🇲🇲 +95 (MM)</option>
+                                <option value="+264">🇳🇦 +264 (NA)</option>
+                                <option value="+674">🇳🇷 +674 (NR)</option>
+                                <option value="+977">🇳🇵 +977 (NP)</option>
+                                <option value="+31">🇳🇱 +31 (NL)</option>
+                                <option value="+687">🇳🇨 +687 (NC)</option>
+                                <option value="+64">🇳🇿 +64 (NZ)</option>
+                                <option value="+505">🇳🇮 +505 (NI)</option>
+                                <option value="+227">🇳🇪 +227 (NE)</option>
+                                <option value="+234">🇳🇬 +234 (NG)</option>
+                                <option value="+683">🇳🇺 +683 (NU)</option>
+                                <option value="+672">🇳🇫 +672 (NF)</option>
+                                <option value="+850">🇰🇵 +850 (KP)</option>
+                                <option value="+389">🇲🇰 +389 (MK)</option>
+                                <option value="+1670">🇲🇵 +1670 (MP)</option>
+                                <option value="+47">🇳🇴 +47 (NO)</option>
+                                <option value="+968">🇴🇲 +968 (OM)</option>
+                                <option value="+92">🇵🇰 +92 (PK)</option>
+                                <option value="+680">🇵🇼 +680 (PW)</option>
+                                <option value="+970">🇵🇸 +970 (PS)</option>
+                                <option value="+507">🇵🇦 +507 (PA)</option>
+                                <option value="+675">🇵🇬 +675 (PG)</option>
+                                <option value="+595">🇵🇾 +595 (PY)</option>
+                                <option value="+51">🇵🇪 +51 (PE)</option>
+                                <option value="+63">🇵🇭 +63 (PH)</option>
+                                <option value="+64">🇵🇳 +64 (PN)</option>
+                                <option value="+48">🇵🇱 +48 (PL)</option>
+                                <option value="+351">🇵🇹 +351 (PT)</option>
+                                <option value="+1787">🇵🇷 +1787 (PR)</option>
+                                <option value="+974">🇶🇦 +974 (QA)</option>
+                                <option value="+242">🇨🇬 +242 (CG)</option>
+                                <option value="+40">🇷🇴 +40 (RO)</option>
+                                <option value="+73">🇷🇺 +73 (RU)</option>
+                                <option value="+250">🇷🇼 +250 (RW)</option>
+                                <option value="+262">🇷🇪 +262 (RE)</option>
+                                <option value="+590">🇧🇱 +590 (BL)</option>
+                                <option value="+290">🇸🇭 +290 (SH)</option>
+                                <option value="+1869">🇰🇳 +1869 (KN)</option>
+                                <option value="+1758">🇱🇨 +1758 (LC)</option>
+                                <option value="+590">🇲🇫 +590 (MF)</option>
+                                <option value="+508">🇵🇲 +508 (PM)</option>
+                                <option value="+1784">🇻🇨 +1784 (VC)</option>
+                                <option value="+685">🇼🇸 +685 (WS)</option>
+                                <option value="+378">🇸🇲 +378 (SM)</option>
+                                <option value="+966">🇸🇦 +966 (SA)</option>
+                                <option value="+221">🇸🇳 +221 (SN)</option>
+                                <option value="+381">🇷🇸 +381 (RS)</option>
+                                <option value="+248">🇸🇨 +248 (SC)</option>
+                                <option value="+232">🇸🇱 +232 (SL)</option>
+                                <option value="+65">🇸🇬 +65 (SG)</option>
+                                <option value="+1721">🇸🇽 +1721 (SX)</option>
+                                <option value="+421">🇸🇰 +421 (SK)</option>
+                                <option value="+386">🇸🇮 +386 (SI)</option>
+                                <option value="+677">🇸🇧 +677 (SB)</option>
+                                <option value="+252">🇸🇴 +252 (SO)</option>
+                                <option value="+27">🇿🇦 +27 (ZA)</option>
+                                <option value="+500">🇬🇸 +500 (GS)</option>
+                                <option value="+82">🇰🇷 +82 (KR)</option>
+                                <option value="+211">🇸🇸 +211 (SS)</option>
+                                <option value="+34">🇪🇸 +34 (ES)</option>
+                                <option value="+94">🇱🇰 +94 (LK)</option>
+                                <option value="+249">🇸🇩 +249 (SD)</option>
+                                <option value="+597">🇸🇷 +597 (SR)</option>
+                                <option value="+4779">🇸🇯 +4779 (SJ)</option>
+                                <option value="+46">🇸🇪 +46 (SE)</option>
+                                <option value="+41">🇨🇭 +41 (CH)</option>
+                                <option value="+963">🇸🇾 +963 (SY)</option>
+                                <option value="+239">🇸🇹 +239 (ST)</option>
+                                <option value="+886">🇹🇼 +886 (TW)</option>
+                                <option value="+992">🇹🇯 +992 (TJ)</option>
+                                <option value="+255">🇹🇿 +255 (TZ)</option>
+                                <option value="+66">🇹🇭 +66 (TH)</option>
+                                <option value="+670">🇹🇱 +670 (TL)</option>
+                                <option value="+228">🇹🇬 +228 (TG)</option>
+                                <option value="+690">🇹🇰 +690 (TK)</option>
+                                <option value="+676">🇹🇴 +676 (TO)</option>
+                                <option value="+1868">🇹🇹 +1868 (TT)</option>
+                                <option value="+216">🇹🇳 +216 (TN)</option>
+                                <option value="+90">🇹🇷 +90 (TR)</option>
+                                <option value="+993">🇹🇲 +993 (TM)</option>
+                                <option value="+1649">🇹🇨 +1649 (TC)</option>
+                                <option value="+688">🇹🇻 +688 (TV)</option>
+                                <option value="+256">🇺🇬 +256 (UG)</option>
+                                <option value="+380">🇺🇦 +380 (UA)</option>
+                                <option value="+971">🇦🇪 +971 (AE)</option>
+                                <option value="+44">🇬🇧 +44 (GB)</option>
+                                <option value="+1201">🇺🇸 +1201 (US)</option>
+                                <option value="+268">🇺🇲 +268 (UM)</option>
+                                <option value="+1340">🇻🇮 +1340 (VI)</option>
+                                <option value="+598">🇺🇾 +598 (UY)</option>
+                                <option value="+998">🇺🇿 +998 (UZ)</option>
+                                <option value="+678">🇻🇺 +678 (VU)</option>
+                                <option value="+3906698">🇻🇦 +3906698 (VA)</option>
+                                <option value="+58">🇻🇪 +58 (VE)</option>
+                                <option value="+84">🇻🇳 +84 (VN)</option>
+                                <option value="+681">🇼🇫 +681 (WF)</option>
+                                <option value="+2125288">🇪🇭 +2125288 (EH)</option>
+                                <option value="+967">🇾🇪 +967 (YE)</option>
+                                <option value="+260">🇿🇲 +260 (ZM)</option>
+                                <option value="+263">🇿🇼 +263 (ZW)</option>
+                                <option value="+35818">🇦🇽 +35818 (AX)</option>
+                            </select>
+                            <input type="tel" id="reg-phone" class="input-control" placeholder="Numéro sans indicatif" pattern="[0-9]{8,15}" title="Uniquement des chiffres, sans espaces" required style="flex:1;">
+                        </div>
+                        <div class="form-group mb-6">
+                            <input type="password" id="reg-password" class="input-control" placeholder="Mot de passe (8 car., 1 maj., 1 chiffre)" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center;">Créer mon compte</button>
+                        <p class="text-center text-sm mt-4 text-muted">Déjà inscrit ? <a href="#" class="text-warning" onclick="switchAuthMode('login')">Se connecter</a></p>
+                    </form>
+
+                    <!-- Supplier Register Form (English) -->
+                    <form id="supplier-register-form" class="hidden" onsubmit="handleSupplierRegister(event)">
+                        <h3 class="text-center text-warning mb-4" style="font-weight: 700;">Supplier Application</h3>
+                        <div class="form-group">
+                            <input type="text" id="sup-company" class="input-control" placeholder="Company Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="sup-contact" class="input-control" placeholder="Contact Person Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="sup-email" class="input-control" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group flex gap-2">
+                            <select id="sup-country-code" class="input-control" style="width: 110px; padding-right: 0.5rem;" required>
+<option value="" disabled selected>Indicatif</option>
+                                <option value="+93">🇦🇫 +93 (AF)</option>
+                                <option value="+355">🇦🇱 +355 (AL)</option>
+                                <option value="+213">🇩🇿 +213 (DZ)</option>
+                                <option value="+1684">🇦🇸 +1684 (AS)</option>
+                                <option value="+376">🇦🇩 +376 (AD)</option>
+                                <option value="+244">🇦🇴 +244 (AO)</option>
+                                <option value="+1264">🇦🇮 +1264 (AI)</option>
+                                <option value="+1268">🇦🇬 +1268 (AG)</option>
+                                <option value="+54">🇦🇷 +54 (AR)</option>
+                                <option value="+374">🇦🇲 +374 (AM)</option>
+                                <option value="+297">🇦🇼 +297 (AW)</option>
+                                <option value="+61">🇦🇺 +61 (AU)</option>
+                                <option value="+43">🇦🇹 +43 (AT)</option>
+                                <option value="+994">🇦🇿 +994 (AZ)</option>
+                                <option value="+1242">🇧🇸 +1242 (BS)</option>
+                                <option value="+973">🇧🇭 +973 (BH)</option>
+                                <option value="+880">🇧🇩 +880 (BD)</option>
+                                <option value="+1246">🇧🇧 +1246 (BB)</option>
+                                <option value="+375">🇧🇾 +375 (BY)</option>
+                                <option value="+32">🇧🇪 +32 (BE)</option>
+                                <option value="+501">🇧🇿 +501 (BZ)</option>
+                                <option value="+229">🇧🇯 +229 (BJ)</option>
+                                <option value="+1441">🇧🇲 +1441 (BM)</option>
+                                <option value="+975">🇧🇹 +975 (BT)</option>
+                                <option value="+591">🇧🇴 +591 (BO)</option>
+                                <option value="+387">🇧🇦 +387 (BA)</option>
+                                <option value="+267">🇧🇼 +267 (BW)</option>
+                                <option value="+47">🇧🇻 +47 (BV)</option>
+                                <option value="+55">🇧🇷 +55 (BR)</option>
+                                <option value="+246">🇮🇴 +246 (IO)</option>
+                                <option value="+1284">🇻🇬 +1284 (VG)</option>
+                                <option value="+673">🇧🇳 +673 (BN)</option>
+                                <option value="+359">🇧🇬 +359 (BG)</option>
+                                <option value="+226">🇧🇫 +226 (BF)</option>
+                                <option value="+257">🇧🇮 +257 (BI)</option>
+                                <option value="+855">🇰🇭 +855 (KH)</option>
+                                <option value="+237">🇨🇲 +237 (CM)</option>
+                                <option value="+1">🇨🇦 +1 (CA)</option>
+                                <option value="+238">🇨🇻 +238 (CV)</option>
+                                <option value="+599">🇧🇶 +599 (BQ)</option>
+                                <option value="+1345">🇰🇾 +1345 (KY)</option>
+                                <option value="+236">🇨🇫 +236 (CF)</option>
+                                <option value="+235">🇹🇩 +235 (TD)</option>
+                                <option value="+56">🇨🇱 +56 (CL)</option>
+                                <option value="+86">🇨🇳 +86 (CN)</option>
+                                <option value="+61">🇨🇽 +61 (CX)</option>
+                                <option value="+61">🇨🇨 +61 (CC)</option>
+                                <option value="+57">🇨🇴 +57 (CO)</option>
+                                <option value="+269">🇰🇲 +269 (KM)</option>
+                                <option value="+682">🇨🇰 +682 (CK)</option>
+                                <option value="+506">🇨🇷 +506 (CR)</option>
+                                <option value="+385">🇭🇷 +385 (HR)</option>
+                                <option value="+53">🇨🇺 +53 (CU)</option>
+                                <option value="+599">🇨🇼 +599 (CW)</option>
+                                <option value="+357">🇨🇾 +357 (CY)</option>
+                                <option value="+420">🇨🇿 +420 (CZ)</option>
+                                <option value="+243">🇨🇩 +243 (CD)</option>
+                                <option value="+45">🇩🇰 +45 (DK)</option>
+                                <option value="+253">🇩🇯 +253 (DJ)</option>
+                                <option value="+1767">🇩🇲 +1767 (DM)</option>
+                                <option value="+1809">🇩🇴 +1809 (DO)</option>
+                                <option value="+593">🇪🇨 +593 (EC)</option>
+                                <option value="+20">🇪🇬 +20 (EG)</option>
+                                <option value="+503">🇸🇻 +503 (SV)</option>
+                                <option value="+240">🇬🇶 +240 (GQ)</option>
+                                <option value="+291">🇪🇷 +291 (ER)</option>
+                                <option value="+372">🇪🇪 +372 (EE)</option>
+                                <option value="+268">🇸🇿 +268 (SZ)</option>
+                                <option value="+251">🇪🇹 +251 (ET)</option>
+                                <option value="+500">🇫🇰 +500 (FK)</option>
+                                <option value="+298">🇫🇴 +298 (FO)</option>
+                                <option value="+679">🇫🇯 +679 (FJ)</option>
+                                <option value="+358">🇫🇮 +358 (FI)</option>
+                                <option value="+33">🇫🇷 +33 (FR)</option>
+                                <option value="+594">🇬🇫 +594 (GF)</option>
+                                <option value="+689">🇵🇫 +689 (PF)</option>
+                                <option value="+262">🇹🇫 +262 (TF)</option>
+                                <option value="+241">🇬🇦 +241 (GA)</option>
+                                <option value="+220">🇬🇲 +220 (GM)</option>
+                                <option value="+995">🇬🇪 +995 (GE)</option>
+                                <option value="+49">🇩🇪 +49 (DE)</option>
+                                <option value="+233">🇬🇭 +233 (GH)</option>
+                                <option value="+350">🇬🇮 +350 (GI)</option>
+                                <option value="+30">🇬🇷 +30 (GR)</option>
+                                <option value="+299">🇬🇱 +299 (GL)</option>
+                                <option value="+1473">🇬🇩 +1473 (GD)</option>
+                                <option value="+590">🇬🇵 +590 (GP)</option>
+                                <option value="+1671">🇬🇺 +1671 (GU)</option>
+                                <option value="+502">🇬🇹 +502 (GT)</option>
+                                <option value="+44">🇬🇬 +44 (GG)</option>
+                                <option value="+224">🇬🇳 +224 (GN)</option>
+                                <option value="+245">🇬🇼 +245 (GW)</option>
+                                <option value="+592">🇬🇾 +592 (GY)</option>
+                                <option value="+509">🇭🇹 +509 (HT)</option>
+                                <option value="+504">🇭🇳 +504 (HN)</option>
+                                <option value="+852">🇭🇰 +852 (HK)</option>
+                                <option value="+36">🇭🇺 +36 (HU)</option>
+                                <option value="+354">🇮🇸 +354 (IS)</option>
+                                <option value="+91">🇮🇳 +91 (IN)</option>
+                                <option value="+62">🇮🇩 +62 (ID)</option>
+                                <option value="+98">🇮🇷 +98 (IR)</option>
+                                <option value="+964">🇮🇶 +964 (IQ)</option>
+                                <option value="+353">🇮🇪 +353 (IE)</option>
+                                <option value="+44">🇮🇲 +44 (IM)</option>
+                                <option value="+972">🇮🇱 +972 (IL)</option>
+                                <option value="+39">🇮🇹 +39 (IT)</option>
+                                <option value="+225">🇨🇮 +225 (CI)</option>
+                                <option value="+1876">🇯🇲 +1876 (JM)</option>
+                                <option value="+81">🇯🇵 +81 (JP)</option>
+                                <option value="+44">🇯🇪 +44 (JE)</option>
+                                <option value="+962">🇯🇴 +962 (JO)</option>
+                                <option value="+76">🇰🇿 +76 (KZ)</option>
+                                <option value="+254">🇰🇪 +254 (KE)</option>
+                                <option value="+686">🇰🇮 +686 (KI)</option>
+                                <option value="+383">🇽🇰 +383 (XK)</option>
+                                <option value="+965">🇰🇼 +965 (KW)</option>
+                                <option value="+996">🇰🇬 +996 (KG)</option>
+                                <option value="+856">🇱🇦 +856 (LA)</option>
+                                <option value="+371">🇱🇻 +371 (LV)</option>
+                                <option value="+961">🇱🇧 +961 (LB)</option>
+                                <option value="+266">🇱🇸 +266 (LS)</option>
+                                <option value="+231">🇱🇷 +231 (LR)</option>
+                                <option value="+218">🇱🇾 +218 (LY)</option>
+                                <option value="+423">🇱🇮 +423 (LI)</option>
+                                <option value="+370">🇱🇹 +370 (LT)</option>
+                                <option value="+352">🇱🇺 +352 (LU)</option>
+                                <option value="+853">🇲🇴 +853 (MO)</option>
+                                <option value="+261">🇲🇬 +261 (MG)</option>
+                                <option value="+265">🇲🇼 +265 (MW)</option>
+                                <option value="+60">🇲🇾 +60 (MY)</option>
+                                <option value="+960">🇲🇻 +960 (MV)</option>
+                                <option value="+223">🇲🇱 +223 (ML)</option>
+                                <option value="+356">🇲🇹 +356 (MT)</option>
+                                <option value="+692">🇲🇭 +692 (MH)</option>
+                                <option value="+596">🇲🇶 +596 (MQ)</option>
+                                <option value="+222">🇲🇷 +222 (MR)</option>
+                                <option value="+230">🇲🇺 +230 (MU)</option>
+                                <option value="+262">🇾🇹 +262 (YT)</option>
+                                <option value="+52">🇲🇽 +52 (MX)</option>
+                                <option value="+691">🇫🇲 +691 (FM)</option>
+                                <option value="+373">🇲🇩 +373 (MD)</option>
+                                <option value="+377">🇲🇨 +377 (MC)</option>
+                                <option value="+976">🇲🇳 +976 (MN)</option>
+                                <option value="+382">🇲🇪 +382 (ME)</option>
+                                <option value="+1664">🇲🇸 +1664 (MS)</option>
+                                <option value="+212">🇲🇦 +212 (MA)</option>
+                                <option value="+258">🇲🇿 +258 (MZ)</option>
+                                <option value="+95">🇲🇲 +95 (MM)</option>
+                                <option value="+264">🇳🇦 +264 (NA)</option>
+                                <option value="+674">🇳🇷 +674 (NR)</option>
+                                <option value="+977">🇳🇵 +977 (NP)</option>
+                                <option value="+31">🇳🇱 +31 (NL)</option>
+                                <option value="+687">🇳🇨 +687 (NC)</option>
+                                <option value="+64">🇳🇿 +64 (NZ)</option>
+                                <option value="+505">🇳🇮 +505 (NI)</option>
+                                <option value="+227">🇳🇪 +227 (NE)</option>
+                                <option value="+234">🇳🇬 +234 (NG)</option>
+                                <option value="+683">🇳🇺 +683 (NU)</option>
+                                <option value="+672">🇳🇫 +672 (NF)</option>
+                                <option value="+850">🇰🇵 +850 (KP)</option>
+                                <option value="+389">🇲🇰 +389 (MK)</option>
+                                <option value="+1670">🇲🇵 +1670 (MP)</option>
+                                <option value="+47">🇳🇴 +47 (NO)</option>
+                                <option value="+968">🇴🇲 +968 (OM)</option>
+                                <option value="+92">🇵🇰 +92 (PK)</option>
+                                <option value="+680">🇵🇼 +680 (PW)</option>
+                                <option value="+970">🇵🇸 +970 (PS)</option>
+                                <option value="+507">🇵🇦 +507 (PA)</option>
+                                <option value="+675">🇵🇬 +675 (PG)</option>
+                                <option value="+595">🇵🇾 +595 (PY)</option>
+                                <option value="+51">🇵🇪 +51 (PE)</option>
+                                <option value="+63">🇵🇭 +63 (PH)</option>
+                                <option value="+64">🇵🇳 +64 (PN)</option>
+                                <option value="+48">🇵🇱 +48 (PL)</option>
+                                <option value="+351">🇵🇹 +351 (PT)</option>
+                                <option value="+1787">🇵🇷 +1787 (PR)</option>
+                                <option value="+974">🇶🇦 +974 (QA)</option>
+                                <option value="+242">🇨🇬 +242 (CG)</option>
+                                <option value="+40">🇷🇴 +40 (RO)</option>
+                                <option value="+73">🇷🇺 +73 (RU)</option>
+                                <option value="+250">🇷🇼 +250 (RW)</option>
+                                <option value="+262">🇷🇪 +262 (RE)</option>
+                                <option value="+590">🇧🇱 +590 (BL)</option>
+                                <option value="+290">🇸🇭 +290 (SH)</option>
+                                <option value="+1869">🇰🇳 +1869 (KN)</option>
+                                <option value="+1758">🇱🇨 +1758 (LC)</option>
+                                <option value="+590">🇲🇫 +590 (MF)</option>
+                                <option value="+508">🇵🇲 +508 (PM)</option>
+                                <option value="+1784">🇻🇨 +1784 (VC)</option>
+                                <option value="+685">🇼🇸 +685 (WS)</option>
+                                <option value="+378">🇸🇲 +378 (SM)</option>
+                                <option value="+966">🇸🇦 +966 (SA)</option>
+                                <option value="+221">🇸🇳 +221 (SN)</option>
+                                <option value="+381">🇷🇸 +381 (RS)</option>
+                                <option value="+248">🇸🇨 +248 (SC)</option>
+                                <option value="+232">🇸🇱 +232 (SL)</option>
+                                <option value="+65">🇸🇬 +65 (SG)</option>
+                                <option value="+1721">🇸🇽 +1721 (SX)</option>
+                                <option value="+421">🇸🇰 +421 (SK)</option>
+                                <option value="+386">🇸🇮 +386 (SI)</option>
+                                <option value="+677">🇸🇧 +677 (SB)</option>
+                                <option value="+252">🇸🇴 +252 (SO)</option>
+                                <option value="+27">🇿🇦 +27 (ZA)</option>
+                                <option value="+500">🇬🇸 +500 (GS)</option>
+                                <option value="+82">🇰🇷 +82 (KR)</option>
+                                <option value="+211">🇸🇸 +211 (SS)</option>
+                                <option value="+34">🇪🇸 +34 (ES)</option>
+                                <option value="+94">🇱🇰 +94 (LK)</option>
+                                <option value="+249">🇸🇩 +249 (SD)</option>
+                                <option value="+597">🇸🇷 +597 (SR)</option>
+                                <option value="+4779">🇸🇯 +4779 (SJ)</option>
+                                <option value="+46">🇸🇪 +46 (SE)</option>
+                                <option value="+41">🇨🇭 +41 (CH)</option>
+                                <option value="+963">🇸🇾 +963 (SY)</option>
+                                <option value="+239">🇸🇹 +239 (ST)</option>
+                                <option value="+886">🇹🇼 +886 (TW)</option>
+                                <option value="+992">🇹🇯 +992 (TJ)</option>
+                                <option value="+255">🇹🇿 +255 (TZ)</option>
+                                <option value="+66">🇹🇭 +66 (TH)</option>
+                                <option value="+670">🇹🇱 +670 (TL)</option>
+                                <option value="+228">🇹🇬 +228 (TG)</option>
+                                <option value="+690">🇹🇰 +690 (TK)</option>
+                                <option value="+676">🇹🇴 +676 (TO)</option>
+                                <option value="+1868">🇹🇹 +1868 (TT)</option>
+                                <option value="+216">🇹🇳 +216 (TN)</option>
+                                <option value="+90">🇹🇷 +90 (TR)</option>
+                                <option value="+993">🇹🇲 +993 (TM)</option>
+                                <option value="+1649">🇹🇨 +1649 (TC)</option>
+                                <option value="+688">🇹🇻 +688 (TV)</option>
+                                <option value="+256">🇺🇬 +256 (UG)</option>
+                                <option value="+380">🇺🇦 +380 (UA)</option>
+                                <option value="+971">🇦🇪 +971 (AE)</option>
+                                <option value="+44">🇬🇧 +44 (GB)</option>
+                                <option value="+1201">🇺🇸 +1201 (US)</option>
+                                <option value="+268">🇺🇲 +268 (UM)</option>
+                                <option value="+1340">🇻🇮 +1340 (VI)</option>
+                                <option value="+598">🇺🇾 +598 (UY)</option>
+                                <option value="+998">🇺🇿 +998 (UZ)</option>
+                                <option value="+678">🇻🇺 +678 (VU)</option>
+                                <option value="+3906698">🇻🇦 +3906698 (VA)</option>
+                                <option value="+58">🇻🇪 +58 (VE)</option>
+                                <option value="+84">🇻🇳 +84 (VN)</option>
+                                <option value="+681">🇼🇫 +681 (WF)</option>
+                                <option value="+2125288">🇪🇭 +2125288 (EH)</option>
+                                <option value="+967">🇾🇪 +967 (YE)</option>
+                                <option value="+260">🇿🇲 +260 (ZM)</option>
+                                <option value="+263">🇿🇼 +263 (ZW)</option>
+                                <option value="+35818">🇦🇽 +35818 (AX)</option>
+                            </select>
+                            <input type="tel" id="sup-phone" class="input-control" placeholder="Phone / WhatsApp" pattern="[0-9]{8,15}" required style="flex:1;">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="sup-password" class="input-control" placeholder="Password (min 8 chars)" required>
+                        </div>
+                        <div class="form-group mb-6">
+                            <input type="text" id="sup-vip-code" class="input-control" placeholder="VIP Invitation Code" required style="border-color: var(--accent-gold);">
+                        </div>
+                        <button type="submit" class="btn-primary w-full" style="justify-content:center; background: var(--accent-gold); color: black;">Submit Application</button>
+                        <p class="text-center text-sm mt-4 text-muted">Already approved? <a href="#" class="text-warning" onclick="switchAuthMode('login')">Login here</a></p>
+                    </form>
+
+                    <!-- Supplier Registration Success Message -->
+                    <div id="supplier-register-success" class="hidden text-center py-6" style="display: flex; flex-direction: column; align-items: center;">
+                        <span class="material-icons-round text-success" style="font-size: 64px; color: var(--accent-gold); margin-bottom: 1rem;">check_circle</span>
+                        <h3 class="text-warning mb-2" style="font-weight: 700;">Application Received!</h3>
+                        <p class="text-muted mb-4 text-sm" style="line-height: 1.5;">Your supplier account is now <strong class="text-warning">pending administrator review</strong>.<br>You will be able to log in and set up your catalog once approved.</p>
+                        <button class="btn-primary w-full" style="justify-content:center;" onclick="switchAuthMode('login')">Return to Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PUBLIC BOUTIQUE VIEW -->
+        <div id="public-boutique-view" class="hidden" style="padding: 0; max-width: 100%; margin: 0 auto;">
+            <!-- Hero Banner -->
+            <div style="background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80') center/cover; padding: 4rem 2rem; border-bottom: 1px solid rgba(245, 158, 11, 0.2); position: relative; overflow: hidden;">
+                <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                    <div>
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); margin-bottom: 1rem; display: inline-block;">Collection Exclusive</span>
+                        <h2 style="font-weight: 900; color: #ffffff; margin: 0 0 1rem 0; font-size: 3rem; letter-spacing: -1px; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">Boutique Premium</h2>
+                        <p class="text-muted" style="font-size: 1.1rem; max-width: 500px; line-height: 1.6;">Découvrez notre sélection de produits exclusifs sourcés avec soin. <br>Tous les achats se font de manière sécurisée.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="hidePublicBoutique()" class="btn-secondary hover-grow" style="border-radius: 50px; padding: 0.8rem 1.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                            <span class="material-icons-round">arrow_back</span> Retour
+                        </button>
+                        <button onclick="openBoutiqueCart()" class="btn-primary hover-grow" style="background: var(--accent-gold); color: black; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+                            <span class="material-icons-round">shopping_bag</span> Panier (<span id="public-cart-count">0</span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+                <!-- Categories filter -->
+                <div id="public-boutique-categories-filter" class="flex gap-3 mb-8" style="overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -ms-overflow-style: none;">
+                    <button class="btn-primary" style="padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600;">Toutes</button>
+                </div>
+    
+                <!-- Products Grid -->
+                <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <p class="text-muted text-center w-full" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. CLIENT DASHBOARD -->
+        <div id="client-dashboard" class="dashboard-container hidden">
+            <!-- Sidebar is minimal for client, mostly for favorites or user info -->
+            <div class="sidebar">
+                <div class="nav-item" id="client-nav-agent" onclick="switchClientTab('agent')">
+                    <span class="material-icons-round">storefront</span> <span data-i18n="nav_catalogue">Catalogue Agent</span>
+                </div>
+                <div class="nav-item active" id="client-nav-suppliers" onclick="switchClientTab('suppliers')">
+                    <span class="material-icons-round">explore</span> Fournisseurs <span id="premium-lock-icon" class="material-icons-round text-sm ml-1 text-accent-gold hidden">lock</span>
+                </div>
+                <div class="nav-item" id="client-nav-boutique" onclick="switchClientTab('boutique')">
+                    <span class="material-icons-round">local_mall</span> Boutique E-commerce
+                </div>
+                <div class="nav-item" id="client-nav-favorites" onclick="switchClientTab('favorites')">
+                    <span class="material-icons-round">favorite</span> Mes Favoris
+                </div>
+                <div class="nav-item" id="client-nav-trainings" onclick="switchClientTab('trainings')">
+                    <span class="material-icons-round">school</span> Ma Formation
+                </div>
+                <!-- New tabs for Premium and VIP Packs -->
+                <div class="nav-item" id="client-nav-ai" onclick="switchClientTab('ai')" style="display: none;">
+                    <span class="material-icons-round text-accent-gold">translate</span> Traducteur IA
+                </div>
+                <div class="nav-item" id="client-nav-ebooks" onclick="switchClientTab('ebooks')" style="display: none;">
+                    <span class="material-icons-round text-accent-gold">menu_book</span> E-Books
+                </div>
+                <div class="nav-item" id="client-nav-support" onclick="switchClientTab('support')" style="display: none;">
+                    <span class="material-icons-round" style="color: #ef4444;">support_agent</span> Support Personnalisé
+                </div>
+                <div class="nav-item" id="client-nav-community" onclick="switchClientTab('community')" style="display: none;">
+                    <span class="material-icons-round" style="color: #3b82f6;">forum</span> Communauté VIP
+                </div>
+            </div>
+
+            <main class="main-content">
+                <!-- Suppliers View -->
+                <div id="client-view-suppliers">
+                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 10px;">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Annuaire Fournisseurs</h2>
+                        <button onclick="switchClientTab('boutique')" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 0.8rem 1.5rem; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); animation: pulse 2s infinite;">
+                            <span class="material-icons-round">local_mall</span> ACCÉDER À LA BOUTIQUE
+                        </button>
+                    </div>
+                    <div id="client-stats-banner" class="flex flex-row flex-wrap gap-4 mb-4" style="align-items: center;">
+                        <!-- Injected by client.js?v=6 -->
+                    </div>
+                    <div class="search-bar-container">
+                        <div class="search-bar">
+                            <span class="material-icons-round">search</span>
+                            <input type="text" id="search-input" class="input-control" placeholder="Rechercher un fournisseur, un produit, un mot-clé...">
+                        </div>
+                    </div>
+
+                    <div id="category-filters" class="category-filters">
+                        <!-- Injected by client.js?v=6 -->
+                    </div>
+
+                    <div id="suppliers-grid" class="suppliers-grid">
+                        <!-- Injected by client.js?v=6 -->
+                    </div>
+                    <div id="load-more-trigger" style="height: 20px; width: 100%; margin-top: 20px;"></div>
+                </div>
+
+                <!-- Trainings View -->
+                <div id="client-view-trainings" class="hidden">
+                    <div id="client-training-container" class="glass-panel" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 3rem 2rem;">
+                        <!-- Content rendered dynamically by renderClientTrainings() -->
+                        <span class="material-icons-round animate-spin" style="font-size: 3rem; color: var(--accent-gold);">sync</span>
+                        <p class="mt-4">Chargement de la formation...</p>
+                    </div>
+                </div>
+                <div id="client-view-ai" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Traducteur IA</h2>
+                    </div>
+                    <div class="glass-panel text-center" style="padding: 4rem 2rem;">
+                        <span class="material-icons-round text-accent-gold" style="font-size: 4rem; margin-bottom: 1rem;">translate</span>
+                        <h3>Bientôt disponible</h3>
+                        <p class="text-muted">Votre traducteur instantané propulsé par l'IA sera bientôt activé dans cette section.</p>
+                    </div>
+                </div>
+
+                <!-- E-Books View -->
+                <div id="client-view-ebooks" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Mes E-Books</h2>
+                    </div>
+                    <div id="client-ebook-container">
+                        <!-- Rempli par renderClientEbook() -->
+                    </div>
+                </div>
+
+                <!-- Support Personnalisé View -->
+                <div id="client-view-support" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Support Personnalisé</h2>
+                    </div>
+                    <div class="glass-panel text-center" style="padding: 4rem 2rem; border-color: rgba(239, 68, 68, 0.3);">
+                        <span class="material-icons-round" style="color: #ef4444; font-size: 4rem; margin-bottom: 1rem;">support_agent</span>
+                        <h3>Assistance VIP</h3>
+                        <p class="text-muted">En tant que membre VIP, vous aurez bientôt accès à un conseiller dédié.</p>
+                    </div>
+                </div>
+
+                <!-- Communauté VIP View -->
+                <div id="client-view-community" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Communauté VIP</h2>
+                    </div>
+                    <div class="glass-panel text-center" style="padding: 4rem 2rem; border-color: rgba(59, 130, 246, 0.3);">
+                        <span class="material-icons-round" style="color: #3b82f6; font-size: 4rem; margin-bottom: 1rem;">forum</span>
+                        <h3>Le Cercle des Achats</h3>
+                        <p class="text-muted">L'espace d'échange privé pour la communauté VIP sera lancé très prochainement.</p>
+                    </div>
+                </div>
+                
+                <!-- Agent Catalogue View -->
+                <div id="client-view-agent" class="hidden">
+                    <div id="client-agent-header-title" class="flex justify-between items-center mb-6">
+                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem; letter-spacing: -0.5px;">Catalogue Produits</h2>
+                        <button style="background-color: #f59e0b; color: #0f172a; border: none; border-radius: 50px; padding: 0.6rem 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" onclick="openCartView()" class="hover-grow">
+                            <span class="material-icons-round" style="font-size: 20px;">shopping_cart</span>
+                            <span data-i18n="nav_cart">Panier</span>
+                            <span id="cart-count" style="background: #0f172a; color: #f59e0b; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; margin-left: 4px;">0</span>
+                        </button>
+                    </div>
+
+                    <div id="client-agent-header-tabs" class="flex gap-4 mb-8" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                        <button id="btn-client-agent-catalog" onclick="switchClientAgentTab('catalog')" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; border: none; background: #f59e0b; color: #0f172a;">Catalogue</button>
+                        <button id="btn-client-agent-orders" onclick="switchClientAgentTab('orders')" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; background: transparent; color: #ffffff; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 6px;"><span class="material-icons-round" style="font-size: 18px; color: rgba(255,255,255,0.6);">receipt_long</span> Mes Commandes</button>
+                    </div>
+
+                    <div id="client-agent-subview-catalog">
+                        <div id="client-agent-list" class="ecommerce-grid"></div>
+                    </div>
+                    
+                    <div id="client-agent-subview-orders" class="hidden">
+                        <div id="client-orders-list"></div>
+                    </div>
+                </div>
+
+                <!-- Product Detail Page View -->
+                <div id="client-product-detail-view" class="hidden" style="animation: fadeInUp 0.3s ease;">
+                    <div class="flex justify-between items-center mb-6">
+                        <button class="btn-ghost flex items-center gap-2 text-white" onclick="closeProductDetailView()">
+                            <span class="material-icons-round">arrow_back</span> Retour au catalogue
+                        </button>
+                        <button class="btn-primary flex items-center gap-2" onclick="openCartView()">
+                            <span class="material-icons-round">shopping_cart</span>
+                            <span data-i18n="nav_cart">Panier</span>
+                            <span id="detail-cart-count" style="background:var(--accent-gold); color:black; border-radius:50%; padding:2px 8px; font-weight:bold; font-size:12px;">0</span>
+                        </button>
+                    </div>
+                    <div id="product-detail-content" class="glass-panel" style="padding: 2rem;">
+                        <!-- Injected by client-agent.js -->
+                    </div>
+                </div>
+
+                <!-- Cart Page View -->
+                <div id="client-cart-view" class="hidden" style="animation: fadeInUp 0.3s ease;">
+                    <div class="flex justify-between items-center mb-6">
+                        <button class="btn-ghost flex items-center gap-2 text-white" onclick="closeCartView()">
+                            <span class="material-icons-round">arrow_back</span> Retour
+                        </button>
+                    </div>
+                    <div id="cart-view-content" class="glass-panel" style="padding: 2rem;">
+                        <!-- Injected by client-agent.js -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 3. SUPPLIER DASHBOARD -->
+        <div id="supplier-dashboard" class="dashboard-container hidden">
+            <div class="sidebar">
+                <div class="nav-item active" onclick="switchSupplierTab('profile')" id="nav-sp-profile">
+                    <span class="material-icons-round">store</span> Mon Profil
+                </div>
+                <div class="nav-item" onclick="switchSupplierTab('stats')" id="nav-sp-stats">
+                    <span class="material-icons-round">analytics</span> Statistiques
+                </div>
+            </div>
+            <main class="main-content">
+                <div class="search-bar-container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 class="text-warning">Supplier Dashboard</h2>
+                        <p class="text-muted">Manage your SourcingPro presence</p>
+                    </div>
+                    <div class="glass-panel" style="padding: 0.5rem 1rem; text-align: center; border-color: var(--accent-gold);">
+                        <span class="material-icons-round text-accent-gold">visibility</span>
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="sp-views-count">0</div>
+                        <div class="text-xs text-muted">Consultations (Catalogue)</div>
+                    </div>
+                </div>
+                
+                
+                <!-- Tab: Profile -->
+                <div id="sp-view-profile" class="glass-panel" style="max-width: 800px; margin: 2rem auto;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3>Company Profile</h3>
+                        <div class="flex gap-2">
+                            <button type="button" class="btn-ghost text-primary hidden" id="sp-preview-btn" onclick="openSupplierModal(currentSupplierProfile.id)">
+                                <span class="material-icons-round">visibility</span> Rendu Client
+                            </button>
+                            <button type="button" class="btn-ghost text-warning hidden" id="sp-edit-btn" onclick="setSupplierFormMode('edit')">
+                                <span class="material-icons-round">edit</span> Modifier
+                            </button>
+                        </div>
+                    </div>
+                    <form id="supplier-profile-form" onsubmit="handleSupplierProfileSave(event)">
+                        <div class="form-group mb-4">
+                            <label class="text-sm text-muted">Company Name</label>
+                            <input type="text" id="sp-name" class="input-control">
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="text-sm text-muted">Category</label>
+                            <select id="sp-category" class="input-control">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="text-sm text-muted">Company Description</label>
+                            <textarea id="sp-desc" class="input-control" rows="4"></textarea>
+                        </div>
+                        <div class="flex gap-4 mb-4">
+                            <div class="form-group" style="flex:1">
+                                <label class="text-sm text-muted">WhatsApp</label>
+                                <input type="text" id="sp-whatsapp" class="input-control">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label class="text-sm text-muted">WeChat ID</label>
+                                <input type="text" id="sp-wechat" class="input-control">
+                            </div>
+                        </div>
+                        
+                        <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
+                        
+                        <h3>Images & Media</h3>
+                        <div class="grid mb-6" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                            <!-- Card Front -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">Business Card (Front)</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-front" accept="image/*" onchange="previewSpImage(this, 'sp-preview-front')">
+                                    <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                </div>
+                                <img id="sp-preview-front" class="img-preview hidden">
+                            </div>
+                            <!-- Card Back -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">Business Card (Back)</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-back" accept="image/*" onchange="previewSpImage(this, 'sp-preview-back')">
+                                    <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                </div>
+                                <img id="sp-preview-back" class="img-preview hidden">
+                            </div>
+                            <!-- WhatsApp -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">WhatsApp QR Code</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-wa" accept="image/*" onchange="previewSpImage(this, 'sp-preview-wa')">
+                                    <span class="material-icons-round">qr_code_2</span><br>Upload
+                                </div>
+                                <img id="sp-preview-wa" class="img-preview hidden">
+                            </div>
+                            <!-- WeChat -->
+                            <div class="form-group">
+                                <label class="text-sm text-muted">WeChat QR Code</label>
+                                <div class="file-upload-zone">
+                                    <input type="file" id="sp-upload-wc" accept="image/*" onchange="previewSpImage(this, 'sp-preview-wc')">
+                                    <span class="material-icons-round">qr_code_scanner</span><br>Upload
+                                </div>
+                                <img id="sp-preview-wc" class="img-preview hidden">
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-6">
+                            <label class="text-sm text-muted">PDF Catalog (Max 50MB)</label>
+                            <div class="file-upload-zone" style="max-width: 300px; padding:1.5rem;">
+                                <input type="file" id="sp-pdf" accept="application/pdf">
+                                <span class="material-icons-round" style="font-size: 32px; color: var(--accent-gold);">picture_as_pdf</span><br>
+                                <span style="display:inline-block; margin-top:5px;">Upload PDF</span>
+                            </div>
+                            <div id="sp-pdf-status" class="text-sm mt-1 text-warning"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" id="sp-save-btn">Save Profile & Publish</button>
+                    </form>
+                </div>
+
+                <!-- Tab: Statistics -->
+                <div id="sp-view-stats" class="hidden" style="max-width: 1000px; margin: 2rem auto;">
+                    <h3 class="mb-4">Statistiques de Visites</h3>
+                    
+                    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="glass-panel text-center" style="border-color: var(--accent-gold);">
+                            <span class="material-icons-round text-accent-gold" style="font-size: 32px;">today</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-today">0</div>
+                            <div class="text-sm text-muted">Aujourd'hui</div>
+                        </div>
+                        <div class="glass-panel text-center">
+                            <span class="material-icons-round text-primary" style="font-size: 32px;">date_range</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-week">0</div>
+                            <div class="text-sm text-muted">7 derniers jours</div>
+                        </div>
+                        <div class="glass-panel text-center">
+                            <span class="material-icons-round text-warning" style="font-size: 32px;">calendar_month</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-month">0</div>
+                            <div class="text-sm text-muted">30 derniers jours</div>
+                        </div>
+                        <div class="glass-panel text-center">
+                            <span class="material-icons-round text-success" style="font-size: 32px;">public</span>
+                            <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-total">0</div>
+                            <div class="text-sm text-muted">Visites Totales</div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel">
+                        <h4 class="mb-4">Répartition par Pays</h4>
+                        <div id="stat-countries-container" style="display:flex; flex-direction:column; gap:10px;">
+                            <!-- Populated dynamically -->
+                            <p class="text-muted text-sm text-center">Aucune donnée disponible</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 4. ADMIN DASHBOARD -->
+        <div id="admin-dashboard" class="dashboard-container hidden">
+            <div class="sidebar">
+                <div class="nav-item" id="admin-nav-team" onclick="switchAdminTab('team')" style="background: rgba(245, 158, 11, 0.15); border-left: 4px solid #f59e0b;">
+                    <span class="material-icons-round" style="color: #f59e0b;">badge</span> Équipe & Collaborateurs
+                </div>
+                <div class="nav-item active" id="admin-nav-users" onclick="switchAdminTab('users')">
+                    <span class="material-icons-round">group</span> Validations Clients
+                </div>
+                <div class="nav-item" id="admin-nav-categories" onclick="switchAdminTab('categories')">
+                    <span class="material-icons-round">category</span> Catégories
+                </div>
+                <div class="nav-item" id="admin-nav-suppliers" onclick="switchAdminTab('suppliers')">
+                    <span class="material-icons-round">business_center</span> Fournisseurs
+                </div>
+                <div class="nav-item" id="admin-nav-trainings" onclick="switchAdminTab('trainings')">
+                    <span class="material-icons-round">school</span> Formations & E-Books
+                </div>
+                <div class="nav-item" id="admin-nav-settings" onclick="switchAdminTab('settings')">
+                    <span class="material-icons-round">settings</span> Paramètres des Packs
+                </div>
+                <div class="nav-item" id="admin-nav-boutique" onclick="switchAdminTab('boutique')">
+                    <span class="material-icons-round">storefront</span> Boutique E-commerce
+                </div>
+                <div class="nav-item" id="admin-nav-agent" onclick="switchAdminTab('agent')">
+                    <span class="material-icons-round">shopping_cart</span> Agent d'Achat
+                </div>
+                <div class="nav-item" id="admin-nav-demos" onclick="switchAdminTab('demos')">
+                    <span class="material-icons-round">timer</span> Accès Démo
+                </div>
+                <div class="nav-item" id="admin-nav-backups" onclick="switchAdminTab('backups')">
+                    <span class="material-icons-round">history</span> Historique
+                </div>
+                <div class="nav-item" id="admin-nav-stock" onclick="switchAdminTab('stock')">
+                    <span class="material-icons-round">inventory_2</span> Gestion Stocks (Vinted)
+                </div>
+                <div class="nav-item" id="admin-nav-salereg" onclick="switchAdminTab('salereg')">
+                    <span class="material-icons-round">add_shopping_cart</span> Nouvelle Vente
+                </div>
+                <div class="nav-item" id="admin-nav-sales" onclick="switchAdminTab('sales')">
+                    <span class="material-icons-round">receipt_long</span> Suivi des Ventes
+                </div>
+            </div>
+
+            <main class="main-content">
+                <!-- Team View -->
+                <div id="admin-view-team" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="flex items-center gap-2 m-0"><span class="material-icons-round text-primary">badge</span> Mon Équipe</h3>
+                    </div>
+                    <p class="text-muted text-sm mb-6">Gérez les accès de votre personnel (ex: Chargé(e) de Vente). Pour ajouter un collaborateur, il doit d'abord s'inscrire sur le site, puis vous pourrez modifier son rôle ici.</p>
+
+                    <div id="admin-team-list" class="flex flex-col gap-4">
+                        <p class="text-muted">Chargement de l'équipe...</p>
+                    </div>
+                </div>
+
+                <!-- Users View -->
+                <div id="admin-view-users" class="glass-panel">
+                    <div class="flex justify-between items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
+                        <h3 class="flex items-center gap-2 m-0"><span class="material-icons-round text-warning">group</span> Inscriptions & Utilisateurs</h3>
+                        <button onclick="switchAdminTab('boutique')" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 0.8rem 1.5rem; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); animation: pulse 2s infinite;">
+                            <span class="material-icons-round">storefront</span> GÉRER LA BOUTIQUE
+                        </button>
+                    </div>
+                    <p class="text-muted text-sm mb-4">Validez manuellement les comptes après vérification de leur paiement.</p>
+                    
+                    <!-- Stats Counters -->
+                    <div class="flex gap-4 mb-6" style="flex-wrap: wrap;">
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem;">
+                            <span class="material-icons-round text-primary" style="font-size: 32px;">person</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-clients">0</div>
+                            <div class="text-muted text-sm">Clients Inscrits</div>
+                        </div>
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem;">
+                            <span class="material-icons-round text-warning" style="font-size: 32px;">store</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-suppliers">0</div>
+                            <div class="text-muted text-sm">Fournisseurs Inscrits</div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Charts -->
+                    <div class="flex gap-4 mb-8" style="flex-wrap: wrap;">
+                        <div class="glass-panel" style="flex: 1; min-width: 250px; text-align: center;">
+                            <h4 class="text-sm text-muted mb-4">Répartition des Accès Clients</h4>
+                            <canvas id="chart-roles" style="max-height: 250px; width: 100%;"></canvas>
+                        </div>
+                        <div class="glass-panel" style="flex: 1; min-width: 250px; text-align: center;">
+                            <h4 class="text-sm text-muted mb-4">Statut des Comptes</h4>
+                            <canvas id="chart-status" style="max-height: 250px; width: 100%;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search -->
+                    <div class="flex justify-between items-center mb-4 gap-4" style="flex-wrap: wrap;">
+                        <select id="admin-user-filter" class="input-control" style="max-width: 200px;" onchange="renderAdminUsers()">
+                            <option value="all">Tous les utilisateurs</option>
+                            <option value="client">Clients uniquement</option>
+                            <option value="supplier">Fournisseurs uniquement</option>
+                        </select>
+                        <button type="button" class="btn-primary" onclick="generateDemoAccess()" style="background: var(--accent-blue); color: white;">
+                            <span class="material-icons-round">timer</span> Générer Accès Démo (1H)
+                        </button>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="admin-table">
+                            <thead><tr><th>Utilisateur</th><th>Rôle</th><th>WhatsApp</th><th>Statut</th><th>Actions</th></tr></thead>
+                            <tbody id="admin-users-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Demos View -->
+                <div id="admin-view-demos" class="hidden glass-panel">
+                    <div class="flex justify-between items-start mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="mb-2 flex items-center gap-2"><span class="material-icons-round text-warning">timer</span> Gestion des Accès Démo</h3>
+                            <p class="text-muted text-sm">Générez et suivez en direct les sessions de démonstration de vos prospects.</p>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="generateDemoAccess()" style="background: var(--accent-blue); color: white;">
+                            <span class="material-icons-round">timer</span> Générer Accès Démo (1H)
+                        </button>
+                    </div>
+
+                    <!-- Stats Counters -->
+                    <div class="flex gap-4 mb-6" style="flex-wrap: wrap;">
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem; border-color: var(--accent-gold);">
+                            <span class="material-icons-round text-warning" style="font-size: 32px;">hourglass_top</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-demos-active">0</div>
+                            <div class="text-muted text-sm">Démos en Cours</div>
+                        </div>
+                        <div class="glass-panel" style="flex: 1; min-width: 150px; text-align: center; padding: 1.5rem;">
+                            <span class="material-icons-round text-muted" style="font-size: 32px;">pause_circle_filled</span>
+                            <div style="font-size: 2rem; font-weight: 800;" id="admin-count-demos-waiting">0</div>
+                            <div class="text-muted text-sm">En Attente (Inutilisés)</div>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="admin-table">
+                            <thead><tr><th>Prospect</th><th>Email</th><th>Statut</th><th>Temps Restant</th><th>Actions</th></tr></thead>
+                            <tbody id="admin-demos-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Categories View -->
+                <div id="admin-view-categories" class="hidden">
+                    <div class="glass-panel mb-6">
+                        <h3 id="cat-form-title" class="mb-4">Nouvelle Catégorie</h3>
+                        <form onsubmit="addCategory(event)">
+                            <input type="hidden" id="cat-id" value="">
+                            <div class="flex gap-4 items-end mb-4 flex-wrap">
+                                <div class="form-group flex-1 mb-0" style="min-width: 200px;">
+                                    <label>Nom de la catégorie</label>
+                                    <input type="text" id="cat-name" class="input-control" placeholder="ex: Sneakers" required>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="submit" id="cat-submit-btn" class="btn-primary">Ajouter</button>
+                                    <button type="button" id="cat-cancel-btn" class="btn-secondary hidden" onclick="cancelEditCategory()">Annuler</button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-0">
+                                <label>Choisissez une Icône :</label>
+                                <input type="hidden" id="cat-icon" value="category">
+                                <div id="icon-picker-grid" class="flex gap-2 flex-wrap mt-2 p-2" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: rgba(0,0,0,0.2);">
+                                    <!-- Icons injected via JS -->
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <h3 class="mb-4">Catégories Existantes</h3>
+                    <div id="admin-categories-list"></div>
+                </div>
+
+                <!-- Suppliers View -->
+                <div id="admin-view-suppliers" class="hidden">
+                    <div class="glass-panel mb-6" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(30, 41, 59, 0.9)); border: 1px solid #f59e0b; padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h4 style="margin: 0; color: #f59e0b; display: flex; align-items: center; gap: 8px;"><span class="material-icons-round">group_add</span> Déléguer la saisie des fournisseurs</h4>
+                            <p class="text-muted text-sm m-0">Vous avez beaucoup de fournisseurs ? Donnez l'accès "Chargé(e) Sourcing" à un collaborateur pour qu'il vous aide !</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" onclick="copySourcingInviteLink(this)" class="btn-primary" style="background: transparent; color: #f59e0b; border: 1px solid #f59e0b; font-weight: bold; display: flex; align-items: center; gap: 5px; padding: 0.6rem 1.2rem; cursor: pointer;">
+                                <span class="material-icons-round">link</span> Copier le lien
+                            </button>
+                            <button type="button" onclick="switchAdminTab('team')" class="btn-primary" style="background: #f59e0b; color: #000; font-weight: bold; display: flex; align-items: center; gap: 5px; padding: 0.6rem 1.2rem; cursor: pointer;">
+                                <span class="material-icons-round">badge</span> Gérer l'équipe
+                            </button>
+                        </div>
+                    </div>
+                    <div class="glass-panel mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="m-0 mb-4">Ajouter un Fournisseur (1 par 1)</h3>
+                        </div>
+                        <form onsubmit="addSupplier(event)">
+                            <div class="flex gap-4 mb-4" style="flex-wrap:wrap;">
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Nom du Fournisseur *</label>
+                                    <input type="text" id="sup-name" class="input-control">
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Catégorie *</label>
+                                    <select id="sup-category" class="input-control"></select>
+                                </div>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label>Lien du Fournisseur (Site Web, Alibaba, etc.)</label>
+                                <input type="text" id="sup-link" class="input-control" placeholder="https://...">
+                            </div>
+                            <div class="form-group mb-4">
+                                <label>Description (Que fait-il ? Que vend-il ?) *</label>
+                                <textarea id="sup-desc" class="input-control"></textarea>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="checkbox" id="sup-premium" style="width:18px; height:18px;">
+                                    Badge "Fournisseur Premium Vérifié"
+                                </label>
+                            </div>
+
+                            <h4 class="mb-4 mt-6 border-b pb-2 text-warning">Images & Médias</h4>
+                            
+                            <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                                <!-- Card Front -->
+                                <div class="form-group">
+                                    <label>Carte de visite (Recto)</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-front" accept="image/*" onchange="handleImageUpload('upload-front', 'preview-front')">
+                                        <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                    </div>
+                                    <img id="preview-front" class="img-preview hidden">
+                                </div>
+                                <!-- Card Back -->
+                                <div class="form-group">
+                                    <label>Carte de visite (Verso)</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-back" accept="image/*" onchange="handleImageUpload('upload-back', 'preview-back')">
+                                        <span class="material-icons-round">add_photo_alternate</span><br>Upload
+                                    </div>
+                                    <img id="preview-back" class="img-preview hidden">
+                                </div>
+                                <!-- WhatsApp -->
+                                <div class="form-group">
+                                    <label>QR Code WhatsApp</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-wa" accept="image/*" onchange="handleImageUpload('upload-wa', 'preview-wa')">
+                                        <span class="material-icons-round">qr_code_2</span><br>Upload
+                                    </div>
+                                    <img id="preview-wa" class="img-preview hidden">
+                                </div>
+                                <!-- WeChat -->
+                                <div class="form-group">
+                                    <label>QR Code WeChat</label>
+                                    <div class="file-upload-zone">
+                                        <input type="file" id="upload-wc" accept="image/*" onchange="handleImageUpload('upload-wc', 'preview-wc')">
+                                        <span class="material-icons-round">qr_code_scanner</span><br>Upload
+                                    </div>
+                                    <img id="preview-wc" class="img-preview hidden">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-4 mb-6">
+                                <label>E-Catalogues (Format PDF)</label>
+                                <div class="file-upload-zone" style="max-width: 300px; margin-bottom:1rem; padding:1.5rem;" id="main-pdf-upload-zone">
+                                    <input type="file" id="upload-catalog" accept="application/pdf" multiple onchange="handlePdfUpload('upload-catalog', 'sup-catalog-data')">
+                                    <span class="material-icons-round" style="font-size: 32px; color: var(--accent-gold);">picture_as_pdf</span><br>
+                                    <span style="display:inline-block; margin-top:5px;">Uploader un PDF</span>
+                                </div>
+                                <div id="pdf-list-preview" class="flex flex-col gap-2 mb-2"></div>
+                                <button type="button" class="btn-secondary" style="max-width:300px; justify-content:center;" onclick="document.getElementById('upload-catalog').click()">
+                                    <span class="material-icons-round">add</span> Ajouter un autre PDF
+                                </button>
+                                <input type="hidden" id="sup-catalog-data">
+                            </div>
+
+                            <div class="flex gap-4">
+                                <button type="submit" id="btn-submit-supplier" class="btn-primary" style="flex:1; justify-content:center;">
+                                    <span class="material-icons-round" id="btn-submit-supplier-icon">save</span> 
+                                    <span id="btn-submit-supplier-text">Enregistrer le fournisseur</span>
+                                </button>
+                                <button type="button" id="btn-cancel-edit" class="btn-secondary hidden" onclick="cancelEditSupplier()" style="justify-content:center;">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <h3 class="mb-4">Liste des Fournisseurs</h3>
+                    
+                    <!-- Filtres Admin -->
+                    <div class="flex gap-4 mb-4" style="flex-wrap:wrap; background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                        <div class="form-group" style="flex:1; min-width:200px; margin-bottom:0;">
+                            <input type="text" id="admin-filter-text" class="input-control" placeholder="Rechercher (Nom, Description)..." oninput="renderAdminSuppliers()" style="margin-bottom:0;">
+                        </div>
+                        <div class="form-group" style="flex:1; min-width:150px; margin-bottom:0;">
+                            <select id="admin-filter-cat" class="input-control" onchange="renderAdminSuppliers()" style="margin-bottom:0;">
+                                <option value="all">Toutes les catégories</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:0; min-width:100px; display:flex; align-items:center; justify-content:center; margin-bottom:0;">
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:0.5rem; white-space:nowrap; margin-bottom:0;">
+                                <input type="checkbox" id="admin-filter-premium" style="width:18px; height:18px;" onchange="renderAdminSuppliers()"> Premium
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="admin-suppliers-list"></div>
+                </div>
+
+                <!-- Trainings & E-books View -->
+                <div id="admin-view-trainings" class="hidden">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">school</span> Contenus & Formations</h3>
+                    
+                    <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                        
+                        <!-- Configuration Formation Principale -->
+                        <div class="glass-panel">
+                            <h3 class="mb-4 text-primary flex items-center gap-2"><span class="material-icons-round">play_lesson</span> Formation Principale</h3>
+                            <p class="text-sm text-muted mb-4">Définissez l'image de présentation et le lien secret d'accès à la plateforme de formation.</p>
+                            <form onsubmit="saveTrainingConfig(event)">
+                                <div class="form-group">
+                                    <label>URL de l'image de présentation</label>
+                                    <input type="url" id="config-training-img" class="input-control" placeholder="https://..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Lien d'accès secret</label>
+                                    <input type="url" id="config-training-link" class="input-control" placeholder="https://..." required>
+                                    <small class="text-muted mt-1 inline-block">Ce lien ne sera dévoilé au client qu'après clic sur le bouton de réclamation.</small>
+                                </div>
+                                <button type="submit" class="btn-primary w-full" style="justify-content:center;">
+                                    <span class="material-icons-round">save</span> Enregistrer Formation
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Configuration E-Books -->
+                        <div class="glass-panel">
+                            <h3 class="mb-4 text-warning flex items-center gap-2"><span class="material-icons-round">menu_book</span> Gestion de l'E-book</h3>
+                            <p class="text-sm text-muted mb-4">L'e-book unique affiché dans l'onglet E-books pour les clients Premium/VIP.</p>
+                            <form onsubmit="saveEbookConfig(event)">
+                                <div class="form-group">
+                                    <label>Titre de l'E-book</label>
+                                    <input type="text" id="config-ebook-title" class="input-control" placeholder="Titre..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>URL de l'image de couverture</label>
+                                    <input type="url" id="config-ebook-img" class="input-control" placeholder="https://..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Lien de téléchargement</label>
+                                    <input type="url" id="config-ebook-link" class="input-control" placeholder="https://drive.google.com/..." required>
+                                </div>
+                                <button type="submit" class="btn-primary w-full" style="background: var(--accent-gold); color: black; justify-content:center;">
+                                    <span class="material-icons-round">save</span> Enregistrer E-book
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings / Packs View -->
+                <div id="admin-view-settings" class="hidden">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">settings</span> Paramètres des Packs d'Accès</h3>
+                    <p class="text-muted mb-6">Cochez les onglets que chaque pack débloque dans l'espace client. Les modifications s'appliquent en temps réel.</p>
+                    
+                    <div class="glass-panel mb-6">
+                        <form onsubmit="savePackSettings(event)">
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Onglet (Fonctionnalité)</th>
+                                            <th class="text-center">Fournisseur</th>
+                                            <th class="text-center">Standard</th>
+                                            <th class="text-center">Premium</th>
+                                            <th class="text-center">VIP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pack-settings-tbody">
+                                        <!-- Rempli par admin.js -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-6 flex justify-end">
+                                <button type="submit" class="btn-primary">
+                                    <span class="material-icons-round">save</span> Sauvegarder les permissions
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Agent d'Achat View -->
+                <div id="admin-view-agent" class="glass-panel hidden">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-warning">shopping_cart</span> Espace Agent d'Achat</h3>
+                    
+                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button id="btn-admin-agent-catalog" class="btn-primary" onclick="switchAdminAgentTab('catalog')" style="padding: 0.5rem 1rem;">📦 Catalogue</button>
+                        <button id="btn-admin-agent-orders" class="btn-secondary" onclick="switchAdminAgentTab('orders')" style="padding: 0.5rem 1rem;">📝 Commandes Clients</button>
+                    </div>
+
+                    <div id="admin-agent-subview-catalog">
+                        <p class="text-muted text-sm mb-4">Ajoutez manuellement les produits provenant de Taobao, Weidian ou 1688. La marge de 10% sera appliquée automatiquement pour le client.</p>
+                        
+                        <div class="glass-panel mb-8">
+                            <h4 class="mb-4 text-primary">Ajouter un produit</h4>
+                            <form id="admin-agent-form" onsubmit="addAgentProduct(event)">
+                                <div class="form-group mb-4">
+                                    <label>Lien Original (Taobao/Weidian)</label>
+                                    <input type="text" id="agent-prod-link" required placeholder="https://item.taobao.com/..." class="input-field">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Nom du produit</label>
+                                    <input type="text" id="agent-prod-name" required class="input-field">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Images du produit (Sélectionnez une ou plusieurs photos)</label>
+                                    <input type="file" id="agent-prod-images" multiple accept="image/*" class="input-field" onchange="previewAgentImages(this)">
+                                    <div id="agent-images-preview" class="flex gap-2 mt-2" style="overflow-x: auto; padding-bottom: 5px;"></div>
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Prix d'Achat (en CNY ¥)</label>
+                                    <input type="number" step="0.01" id="agent-prod-price" required class="input-field" placeholder="Ex: 89.00">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Couleurs / Modèles disponibles (Séparés par des virgules)</label>
+                                    <input type="text" id="agent-prod-colors" class="input-field" placeholder="Rouge, Bleu, Noir">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>Tailles disponibles (Séparées par des virgules)</label>
+                                    <input type="text" id="agent-prod-sizes" class="input-field" placeholder="S, M, L, XL">
+                                </div>
+                                <button type="submit" class="btn-primary w-full">
+                                    <span class="material-icons-round">add_circle</span> Ajouter au Catalogue Agent
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="glass-panel mt-8">
+                            <h3 class="mb-4">Produits Importés</h3>
+                            <div id="admin-agent-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"></div>
+                        </div>
+                    </div>
+
+                    <div id="admin-agent-subview-orders" class="hidden">
+                        <h4 class="mb-4 text-warning">Gestion des Commandes Clients</h4>
+                        <p class="text-muted text-sm mb-4">Consultez les commandes de vos clients et mettez à jour leur statut.</p>
+                        
+                        <div id="admin-orders-list"></div>
+                    </div>
+                </div>
+
+                <!-- Boutique E-commerce View -->
+                <div id="admin-view-boutique" class="hidden glass-panel">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-warning">storefront</span> Boutique E-commerce</h3>
+                    <p class="text-muted text-sm mb-6">Gérez votre vitrine de vente. Les produits ajoutés ici seront visibles par les clients dans l'onglet Boutique.</p>
+
+                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button id="btn-admin-boutique-orders" class="btn-primary" onclick="switchAdminBoutiqueTab('orders')" style="padding: 0.5rem 1rem;">🛍️ Commandes</button>
+                        <button id="btn-admin-boutique-products" class="btn-secondary" onclick="switchAdminBoutiqueTab('products')" style="padding: 0.5rem 1rem;">📦 Produits</button>
+                        <button id="btn-admin-boutique-categories" class="btn-secondary" onclick="switchAdminBoutiqueTab('categories')" style="padding: 0.5rem 1rem;">🏷️ Catégories</button>
+                    </div>
+
+                    <!-- Orders Subview -->
+                    <div id="admin-boutique-subview-orders">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="m-0">Commandes Clients</h4>
+                        </div>
+                        <div id="admin-boutique-orders-list" class="flex flex-col gap-4">
+                            <p class="text-muted">Chargement des commandes...</p>
+                        </div>
+                    </div>
+
+                    <!-- Products Subview -->
+                    <div id="admin-boutique-subview-products" class="hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="m-0">Vos Produits</h4>
+                            <button class="btn-primary flex items-center gap-2" onclick="openBoutiqueProductModal()">
+                                <span class="material-icons-round">add</span> Ajouter un produit
+                            </button>
+                        </div>
+                        <div id="admin-boutique-products-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                            <p class="text-muted">Chargement des produits...</p>
+                        </div>
+                    </div>
+
+                    <!-- Categories Subview -->
+                    <div id="admin-boutique-subview-categories" class="hidden">
+                        <div class="glass-panel mb-6">
+                            <h4 class="mb-4">Ajouter une catégorie</h4>
+                            <form onsubmit="addBoutiqueCategory(event)" class="flex gap-2">
+                                <input type="text" id="boutique-cat-name" required placeholder="Nom de la catégorie" class="input-field" style="flex:1;">
+                                <button type="submit" class="btn-primary"><span class="material-icons-round">add</span> Ajouter</button>
+                            </form>
+                        </div>
+                        <div class="glass-panel">
+                            <h4 class="mb-4">Catégories Existantes</h4>
+                            <div id="admin-boutique-categories-list" class="flex flex-col gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Vinted View -->
+                <div id="admin-view-stock" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">inventory_2</span> Gestion Stocks (Vinted & Leboncoin)</h3>
+                            <p class="text-muted text-sm">Gérez votre inventaire personnel (ajouter du stock, modifier vos articles).</p>
+                        </div>
+                        <div class="flex gap-4" style="flex-wrap: wrap;">
+                            <div class="glass-panel text-center" style="padding: 15px 20px;">
+                                <div class="text-sm text-muted">Chiffre d'Affaires</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-color);" id="admin-stock-total-revenue">0,00 €</div>
+                            </div>
+                            <div class="glass-panel text-center" style="background: rgba(239, 68, 68, 0.05); padding: 15px 20px;">
+                                <div class="text-sm text-muted">Coûts (Achats + Frais)</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger);" id="admin-stock-total-costs">0,00 €</div>
+                            </div>
+                            <div class="glass-panel text-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); padding: 15px 20px;">
+                                <div class="text-sm text-muted">Bénéfice Net Total</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #10b981;" id="admin-stock-total-profit">0,00 €</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Stock Form -->
+                    <div class="glass-panel mb-6">
+                        <div class="flex justify-between items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
+                            <h4 class="mb-0">Ajouter un produit au stock</h4>
+                            <button class="btn-secondary text-sm flex items-center gap-2" onclick="openManageBatchesModal()">
+                                <span class="material-icons-round" style="font-size:1.2rem;">local_shipping</span> Gérer les Colis (Chine)
+                            </button>
+                        </div>
+                        <form onsubmit="addVintedProduct(event)">
+                            <input type="hidden" id="vinted-id" value="">
+                            
+                            <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                                <div class="form-group">
+                                    <label>Titre du Produit *</label>
+                                    <input type="text" id="vinted-title" class="input-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Couleur</label>
+                                    <input type="text" id="vinted-color" class="input-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Prix d'Achat Unitaire (€) *</label>
+                                    <input type="number" step="0.01" id="vinted-purchase-price" class="input-control" required oninput="calculateIdealPrice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantité Initiale *</label>
+                                    <input type="number" id="vinted-qty" class="input-control" min="1" value="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Affecter à un Colis/Lot</label>
+                                    <select id="vinted-lot" class="input-control" onchange="updateImportCostFromBatch(); calculateIdealPrice();">
+                                        <option value="">Aucun lot sélectionné...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Frais d'import par article (€)</label>
+                                    <input type="number" step="0.01" id="vinted-import-cost" class="input-control" value="0" disabled style="background: rgba(255,255,255,0.05); color: #888;" title="Calculé automatiquement selon le colis sélectionné">
+                                </div>
+                            </div>
+                            
+                            <div class="grid-layout mb-4" style="grid-template-columns: 1fr;">
+                                <div class="glass-panel" style="padding: 15px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
+                                    <h5 class="text-sm text-primary mb-2 flex items-center gap-1"><span class="material-icons-round text-sm">calculate</span> Calculateur de Prix Idéal</h5>
+                                    <div class="flex gap-4 items-center flex-wrap">
+                                        <div class="form-group flex-1" style="min-width: 150px;">
+                                            <label style="font-size: 0.8rem;">Marge nette souhaitée (%)</label>
+                                            <input type="number" id="calc-margin-target" class="input-control" value="50" oninput="calculateIdealPrice()">
+                                        </div>
+                                        <div class="form-group flex-1" style="min-width: 150px;">
+                                            <label style="font-size: 0.8rem;">Prix de Vente Conseillé</label>
+                                            <input type="text" id="calc-ideal-price" class="input-control" disabled style="background: transparent; color: var(--success); font-weight: bold; font-size: 1.1rem; border: none; padding-left: 0;">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Ajustez le prix d'achat, le lot, et la marge souhaitée pour calculer le prix de vente optimal.</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label>Photo du produit *</label>
+                                <input type="file" id="vinted-upload-photo" class="input-control" accept="image/*" onchange="handleImageUpload('vinted-upload-photo', 'vinted-preview-photo')">
+                                <img id="vinted-preview-photo" src="" class="hidden mt-2" style="max-height: 150px; border-radius: 8px;">
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button type="submit" id="btn-submit-vinted" class="btn-primary">
+                                    <span class="material-icons-round">add</span> Ajouter au Stock
+                                </button>
+                                <button type="button" id="btn-cancel-vinted" class="btn-secondary hidden" onclick="cancelEditVinted()">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <h4 class="mb-4">Votre Inventaire Actuel</h4>
+                    <div id="admin-stock-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+                </div>
+                <!-- Sale Registration View -->
+                <div id="admin-view-salereg" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-6" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="flex items-center gap-2"><span class="material-icons-round text-warning">add_shopping_cart</span> Enregistrement des Ventes</h3>
+                            <p class="text-muted text-sm">Déclarez vos nouvelles ventes et gérez vos plateformes (Vinted, Leboncoin, etc.).</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-layout" style="grid-template-columns: 1fr 2fr; gap: 20px;">
+                        <!-- Platforms Management -->
+                        <div class="glass-panel" style="background: var(--bg-body);">
+                            <h4 class="mb-4 flex items-center gap-2"><span class="material-icons-round">storefront</span> Vos Plateformes</h4>
+                            <div class="flex gap-2 mb-4">
+                                <input type="text" id="new-platform-name" class="input-control" placeholder="Nouvelle Plateforme..." style="flex: 1;">
+                                <button class="btn-primary" onclick="addSalesPlatform()"><span class="material-icons-round">add</span></button>
+                            </div>
+                            <div id="sales-platforms-list" class="flex flex-col gap-2">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Sale Form -->
+                        <div class="glass-panel">
+                            <h4 class="mb-4">Nouvelle Vente</h4>
+                            <form onsubmit="submitNewSale(event)">
+                                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="form-group" style="grid-column: span 2;">
+                                        <label>1. Filtrer par Colis d'origine (Optionnel)</label>
+                                        <select id="sale-batch-filter" class="input-control" onchange="filterSaleProductsByBatch()">
+                                            <option value="">-- Tous les produits --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="grid-column: span 2;">
+                                        <label>2. Produit Vendu *</label>
+                                        <select id="sale-product-id" class="input-control" required>
+                                            <option value="">Sélectionnez un article en stock...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Plateforme *</label>
+                                        <select id="sale-platform" class="input-control" required>
+                                            <option value="">Sélectionnez une plateforme...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nom de l'acheteur</label>
+                                        <input type="text" id="sale-buyer-name" class="input-control" placeholder="Pseudo ou Nom">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Prix de vente final (€) *</label>
+                                        <input type="number" step="0.01" id="sale-sell-price" class="input-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Frais annexes (Port, Comm...) (€)</label>
+                                        <input type="number" step="0.01" id="sale-shipping-cost" class="input-control" value="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Paiement du Client</label>
+                                        <select id="sale-payment-status" class="input-control">
+                                            <option value="payé">Payé</option>
+                                            <option value="en_attente">En attente</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="grid-column: span 2;">
+                                        <label>Lien du bordereau d'expédition</label>
+                                        <input type="text" id="sale-bordereau" class="input-control" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end">
+                                    <button type="submit" class="btn-primary flex items-center gap-2">
+                                        <span class="material-icons-round">check_circle</span> Valider la Vente
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- Premium Sales Dashboard Style -->
+                <style>
+                    #admin-view-sales {
+                        background: radial-gradient(circle at top left, #0d1b2a, #030712);
+                        position: relative;
+                        overflow: hidden;
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        padding: 30px !important;
+                    }
+                    /* Glowing particles effect */
+                    #admin-view-sales::before {
+                        content: '';
+                        position: absolute;
+                        top: 20%; left: 30%;
+                        width: 300px; height: 300px;
+                        background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%);
+                        pointer-events: none;
+                    }
+                    #admin-view-sales::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 10%; right: 20%;
+                        width: 250px; height: 250px;
+                        background: radial-gradient(circle, rgba(16, 185, 129, 0.1), transparent 70%);
+                        pointer-events: none;
+                    }
+                    .glass-card-premium {
+                        background: rgba(255, 255, 255, 0.03);
+                        backdrop-filter: blur(12px);
+                        -webkit-backdrop-filter: blur(12px);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+                        border-radius: 12px;
+                        padding: 20px;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 10;
+                    }
+                    .glass-card-premium:hover {
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.15);
+                    }
+                    .kpi-label {
+                        font-size: 0.85rem;
+                        color: rgba(255, 255, 255, 0.6);
+                        margin-bottom: 8px;
+                        text-align: left;
+                    }
+                    .kpi-value {
+                        font-size: 2rem;
+                        font-weight: 700;
+                        text-align: left;
+                        line-height: 1.1;
+                    }
+                    .filter-row {
+                        display: grid;
+                        grid-template-columns: repeat(3, 1fr);
+                        gap: 15px;
+                        position: relative;
+                        z-index: 10;
+                    }
+                    .premium-select {
+                        background: rgba(0, 0, 0, 0.2);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        color: #fff;
+                        border-radius: 8px;
+                        padding: 8px 12px;
+                        width: 100%;
+                        font-size: 0.9rem;
+                        outline: none;
+                    }
+                    .premium-select option {
+                        background: #0f172a;
+                        color: #fff;
+                    }
+                    .header-top {
+                        position: relative;
+                        z-index: 10;
+                    }
+                </style>
+                <div id="admin-view-sales" class="hidden glass-panel">
+                    <div class="flex justify-between items-start mb-8 header-top" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 class="flex items-center gap-2" style="font-size: 1.5rem; margin-bottom: 5px;">📈 Analytique & Suivi des Ventes</h3>
+                            <p class="text-sm" style="color: rgba(255,255,255,0.5);">Analysez votre rentabilité, vos marges et vos performances globales.</p>
+                        </div>
+                        <button onclick="exportSalesCSV()" class="glass-card-premium flex items-center gap-2 cursor-pointer hover:bg-white/10" style="padding: 10px 16px; font-size: 0.9rem; color: #fff;">
+                            📥 Exporter CSV
+                        </button>
+                    </div>
+                    
+                    <!-- Filters Section -->
+                    <div class="filter-row mb-6">
+                        <div class="glass-card-premium" style="padding: 12px 15px;">
+                            <label class="kpi-label block" style="font-size: 0.75rem;">Période</label>
+                            <select id="filter-sales-period" class="premium-select" onchange="renderVintedSales()">
+                                <option value="all">Toutes les dates</option>
+                                <option value="this_month">Ce mois-ci</option>
+                                <option value="last_month">Mois dernier</option>
+                                <option value="6_months">6 derniers mois</option>
+                            </select>
+                        </div>
+                        <div class="glass-card-premium" style="padding: 12px 15px;">
+                            <label class="kpi-label block" style="font-size: 0.75rem;">Plateforme</label>
+                            <select id="filter-sales-platform" class="premium-select" onchange="renderVintedSales()">
+                                <option value="all">Toutes</option>
+                                <option value="Vinted">Vinted</option>
+                                <option value="Leboncoin">Leboncoin</option>
+                            </select>
+                        </div>
+                        <div class="glass-card-premium" style="padding: 12px 15px;">
+                            <label class="kpi-label block" style="font-size: 0.75rem;">Statut</label>
+                            <select id="filter-sales-status" class="premium-select" onchange="renderVintedSales()">
+                                <option value="all">Tous</option>
+                                <option value="à expédier">À Expédier</option>
+                                <option value="envoyé">Expédié / Envoyé</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="grid-layout mb-8 relative z-10" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Ventes</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-count">0</div>
+                        </div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">C.A.</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-total-revenue">0.00 €</div>
+                        </div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">En attente</div>
+                            <div class="kpi-value" style="color: #fcd34d;" id="admin-sales-pending-revenue">0.00 €</div>
+                        </div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Coûts</div>
+                            <div class="kpi-value" style="color: #ff7676;" id="admin-sales-total-costs">0.00 €</div>
+                        </div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Bénéfice Net</div>
+                            <div class="kpi-value" style="color: #86efac;" id="admin-sales-total-profit">0.00 €</div>
+                        </div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Marge (ROI)</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-roi">0%</div>
+                        </div>
+                        <div class="glass-card-premium">
+                            <div class="kpi-label">Bénéfice / Vente</div>
+                            <div class="kpi-value" style="color: #ffffff;" id="admin-sales-avg-profit">0.00 €</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Objectif Mensuel -->
+                    <div class="glass-panel mb-8 relative z-10" style="padding: 20px;">
+                        <div class="flex justify-between items-end mb-2">
+                            <div>
+                                <h4 class="text-sm text-muted">Objectif Mensuel (Bénéfice)</h4>
+                                <div class="font-bold text-xl mt-1" id="admin-sales-goal-text">0.00 € / 1000 €</div>
+                            </div>
+                            <button onclick="promptSalesGoal()" class="btn-icon text-muted hover:text-white" title="Modifier l'objectif">
+                                <span class="material-icons-round" style="font-size: 1.2rem;">edit</span>
+                            </button>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; position: relative;">
+                            <div id="admin-sales-goal-bar" style="background: var(--success); width: 0%; height: 100%; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tops -->
+                    <div class="grid-layout mb-8 relative z-10" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                        <div class="glass-panel" style="padding: 20px;">
+                            <h4 class="mb-4 text-sm text-muted flex items-center gap-2"><span class="material-icons-round" style="color: gold; font-size: 1.2rem;">emoji_events</span> Top Produits (Bénéfice)</h4>
+                            <div id="admin-top-products" class="flex flex-col gap-3"></div>
+                        </div>
+                        <div class="glass-panel" style="padding: 20px;">
+                            <h4 class="mb-4 text-sm text-muted flex items-center gap-2"><span class="material-icons-round" style="color: #60a5fa; font-size: 1.2rem;">trending_up</span> Top Plateformes (Bénéfice)</h4>
+                            <div id="admin-top-platforms" class="flex flex-col gap-3"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="grid-layout mb-8" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+                        <div class="glass-panel">
+                            <h4 class="mb-4 text-sm text-muted">Évolution mensuelle (CA & Bénéfices)</h4>
+                            <canvas id="sales-trend-chart" style="max-height: 250px; width: 100%;"></canvas>
+                        </div>
+                        <div class="glass-panel flex flex-col justify-center items-center">
+                            <h4 class="mb-4 text-sm text-muted">Répartition par Plateforme</h4>
+                            <div style="position:relative; height:200px; width:100%; max-width: 200px; margin: 0 auto;">
+                                <canvas id="sales-platform-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-4">Historique des Ventes</h4>
+                    <div id="admin-sales-list"></div>
+                </div>
+                
+                <!-- 11. HISTORIQUE / SAUVEGARDES -->
+                <div id="admin-view-backups" class="hidden glass-panel">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold"><span class="material-icons-round align-middle text-accent">history</span> Historique des Sauvegardes</h2>
+                    </div>
+                    <p class="text-muted text-sm mb-4">À chaque modification ou suppression d'un fournisseur, une copie est enregistrée ici. Vous pouvez restaurer l'ancienne version en un clic.</p>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                    <th>Fournisseur</th>
+                                    <th>Catégorie</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-backups-table">
+                                <!-- Backup rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Share Access Modal -->
+    <div id="share-supplier-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'share-supplier-modal')">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <button class="close-btn" onclick="closeModal('share-supplier-modal')"><span class="material-icons-round">close</span></button>
+            <h3 class="mb-4 text-warning">Partager l'Accès Fournisseur</h3>
+            <p class="text-sm text-muted mb-4">Envoyez ce message au fournisseur pour qu'il prenne le contrôle de son compte.</p>
+            
+            <div class="form-group mb-4">
+                <label>Message (Anglais / Chinois)</label>
+                <textarea id="share-message-content" class="input-control" rows="8" readonly style="font-family: monospace; font-size: 12px; resize: none;"></textarea>
+            </div>
+            
+            <div class="flex gap-2" style="flex-direction: column;">
+                <button class="btn-primary w-full" id="btn-share-whatsapp" style="background: #25D366; color: white; justify-content:center; border:none;">
+                    <span class="material-icons-round">chat</span> Envoyer sur WhatsApp
+                </button>
+                <button class="btn-ghost w-full" id="btn-share-copy" style="justify-content:center;" onclick="copyShareMessage()">
+                    <span class="material-icons-round">content_copy</span> Copier pour WeChat
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPPLIER DETAILS MODAL (Client Side) -->
+    <div id="supplier-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'supplier-modal')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('supplier-modal')"><span class="material-icons-round" style="font-size:32px;">close</span></button>
+            
+            <div class="flex items-center gap-4 mb-4">
+                <div class="btn-icon" style="width:50px; height:50px; font-size:24px; pointer-events:none;"><span class="material-icons-round text-warning">business</span></div>
+                <div>
+                    <h2 id="modal-sup-name">Nom Fournisseur</h2>
+                    <p id="modal-sup-cat" class="text-warning text-sm flex items-center gap-1"></p>
+                </div>
+            </div>
+            
+            <div class="glass-panel mb-4" style="background:rgba(0,0,0,0.2); padding:1rem; border:none;">
+                <p id="modal-sup-desc" style="line-height:1.6;"></p>
+                <div id="modal-sup-link-container" class="mt-4 hidden"></div>
+            </div>
+
+            <h4 class="mb-2 text-muted text-sm uppercase tracking-wider">Carte de visite (Survolez pour retourner, cliquez pour agrandir)</h4>
+            <!-- 3D Flip Card -->
+            <div id="modal-flip-card" class="flip-card-container hover-flip">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front" onclick="openLightbox([document.getElementById('card-front-img').src, document.getElementById('card-back-img').src])">
+                        <img id="card-front-img" src="" alt="Recto" style="cursor:zoom-in;">
+                        <div class="flip-hint"><span class="material-icons-round text-sm">360</span> Survolez</div>
+                    </div>
+                    <div class="flip-card-back" onclick="openLightbox([document.getElementById('card-front-img').src, document.getElementById('card-back-img').src])">
+                        <img id="card-back-img" src="" alt="Verso" style="cursor:zoom-in;">
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">Contacts Rapides (Cliquez pour agrandir)</h4>
+            <div id="modal-qr-container" class="qr-grid">
+                <!-- Injected via client.js?v=6 -->
+            </div>
+
+            <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">E-Catalogues (Vue en Ligne)</h4>
+            <div id="modal-catalog-container" style="display:flex; flex-direction:column; gap:1rem;">
+                <!-- Injected via client.js?v=6 -->
+            </div>
+            
+            <button class="btn-secondary w-full mt-6" onclick="closeModal('supplier-modal')" style="justify-content:center;">
+                <span class="material-icons-round">arrow_back</span> Retour aux fournisseurs
+            </button>
+        </div>
+    </div>
+
+    <!-- TRAINING DETAILS MODAL -->
+    <div id="training-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'training-modal')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()" style="max-width:800px;">
+            <button class="close-btn" onclick="closeModal('training-modal')"><span class="material-icons-round" style="font-size:32px;">close</span></button>
+            
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-white/10">
+                <div class="btn-icon" style="width:50px; height:50px; font-size:24px; pointer-events:none; background:var(--primary-color); color:white;"><span class="material-icons-round">school</span></div>
+                <div>
+                    <h2 id="modal-train-title" class="text-accent-gold m-0" style="font-size:1.8rem;">Titre de la formation</h2>
+                </div>
+            </div>
+            
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto; padding-right:10px;">
+                <div id="modal-train-content" class="text-white text-lg mb-8" style="white-space: pre-wrap; line-height: 1.8;">
+                    Contenu de la formation...
+                </div>
+                
+                <div id="modal-train-media-container" class="mt-6 pt-6 border-t border-white/10 hidden">
+                    <a id="modal-train-media-link" href="#" target="_blank" class="btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; text-decoration:none;">
+                        <span class="material-icons-round text-xl">play_circle</span>
+                        <span>Accéder à la ressource associée</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EBOOK READING MODAL -->
+    <style>
+        #ebook-modal .modal-content {
+            max-width: 1000px;
+            width: 95vw;
+            height: 95vh;
+            padding: 0;
+            margin: auto;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        #ebook-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            #ebook-modal .modal-content {
+                width: 100vw !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+            }
+            #ebook-modal-header {
+                display: none !important;
+            }
+            #ebook-modal-close {
+                top: 15px;
+                right: 15px;
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+    </style>
+    <div id="ebook-modal" class="modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'ebook-modal')" style="padding: 0;">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
+            <!-- Floating close button -->
+            <button id="ebook-modal-close" class="btn-icon" onclick="closeModal('ebook-modal')">
+                <span class="material-icons-round text-white">close</span>
+            </button>
+            
+            <!-- Header (Desktop only) -->
+            <div id="ebook-modal-header" class="flex justify-between items-center p-4 border-b border-white/10" style="background: rgba(15, 23, 42, 0.9);">
+                <div class="flex items-center gap-3">
+                    <span class="material-icons-round text-accent-gold" style="font-size:28px;">menu_book</span>
+                    <h2 id="modal-ebook-title" class="text-white m-0" style="font-size:1.3rem;">Titre de l'Ebook</h2>
+                </div>
+            </div>
+            
+            <div id="modal-ebook-container" class="w-full flex-1" style="background:#fff; display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+                <!-- Iframe injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX FOR IMAGES -->
+    <div id="lightbox-modal" class="modal-overlay hidden" style="z-index: 200; background:rgba(0,0,0,0.95);" onclick="closeModal('lightbox-modal')">
+        <button class="close-btn" style="top:2rem; right:2rem; opacity:1;"><span class="material-icons-round" style="font-size:48px; color:white;">close</span></button>
+        <div id="lightbox-container" class="flex justify-center items-center" style="width:100%; height:100%; padding:2rem; flex-wrap:wrap; gap:1rem; overflow-y:auto;" onclick="event.stopPropagation()">
+            <!-- Injected via client.js?v=6 -->
+        </div>
+    </div>
+    <!-- DEMO EXPIRED OVERLAY -->
+    <div id="demo-expired-overlay" class="hidden" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(10,10,15,0.95); backdrop-filter: blur(10px); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white;">
+        <span class="material-icons-round" style="font-size: 80px; color: var(--danger); margin-bottom: 20px;">timer_off</span>
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Votre pass Démo a expiré</h1>
+        <p style="font-size: 1.2rem; max-width: 600px; color: var(--text-muted); margin-bottom: 2rem;">
+            Votre accès temporaire de 1 heure est maintenant terminé. Pour continuer à profiter de notre catalogue complet et de nos outils exclusifs, veuillez passer à la version Premium.
+        </p>
+        <a href="https://wa.me/" target="_blank" class="btn-primary" style="font-size: 1.1rem; padding: 15px 30px; display: inline-flex; align-items: center; gap: 10px;">
+            <span class="material-icons-round">whatsapp</span>
+            Contacter l'administrateur
+        </a>
+    </div>
+
+    <!-- DEMO FLOATING TIMER -->
+    <div id="demo-floating-timer" class="hidden" style="position: fixed; top: 80px; right: 20px; background: rgba(15, 23, 42, 0.9); border: 2px solid var(--danger); border-radius: var(--radius-md); padding: 10px 20px; z-index: 9999; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3); backdrop-filter: blur(10px);">
+        <span class="material-icons-round" style="color: var(--danger); animation: pulse 2s infinite;">hourglass_top</span>
+            <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Temps restant</span>
+            <span id="demo-timer-clock" style="font-size: 1.2rem; font-weight: bold; color: white; font-family: monospace;">--:--</span>
+        </div>
+    <!-- EDIT SALE MODAL -->
+    <div id="modal-edit-sale" class="modal modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'modal-edit-sale')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()" style="max-width: 600px;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="flex items-center gap-2"><span class="material-icons-round">edit</span> Modifier la Vente</h3>
+                <span class="close-btn material-icons-round" onclick="closeModal('modal-edit-sale')">close</span>
+            </div>
+            
+            <form id="form-edit-sale" onsubmit="submitEditSale(event)">
+                <input type="hidden" id="edit-sale-product-id">
+                <input type="hidden" id="edit-sale-id">
+                
+                <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Acheteur</label>
+                        <input type="text" id="edit-sale-buyer" class="input-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Plateforme *</label>
+                        <select id="edit-sale-platform" class="input-control" required>
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Affecter à un Colis/Lot (optionnel)</label>
+                        <select id="edit-sale-lot" class="input-control" onchange="updateImportCostInEditSale()">
+                            <option value="">Aucun lot sélectionné...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Prix de Vente (€) *</label>
+                        <input type="number" step="0.01" id="edit-sale-sell-price" class="input-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Frais d'envoi annexes (€)</label>
+                        <input type="number" step="0.01" id="edit-sale-shipping" class="input-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Frais d'import par article (€)</label>
+                        <input type="number" step="0.01" id="edit-sale-import-cost" class="input-control" disabled style="background: rgba(255,255,255,0.05); color: #888;" title="Lié au lot/colis sélectionné">
+                    </div>
+                    <div class="form-group">
+                        <label>Paiement du Client</label>
+                        <select id="edit-sale-payment-status" class="input-control">
+                            <option value="payé">Payé</option>
+                            <option value="en_attente">En attente</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Lien du Bordereau</label>
+                        <input type="text" id="edit-sale-bordereau" class="input-control" placeholder="https://...">
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-sale')">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MANAGE BATCHES MODAL (CHINE) -->
+    <div id="modal-manage-batches" class="modal modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'modal-manage-batches')">
+        <div class="modal-content glass-panel" onclick="event.stopPropagation()" style="max-width: 600px;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="flex items-center gap-2 text-warning"><span class="material-icons-round">local_shipping</span> Gestion des Colis (Chine)</h3>
+                <span class="close-btn material-icons-round" onclick="closeModal('modal-manage-batches')">close</span>
+            </div>
+            
+            <form id="form-manage-batch" onsubmit="submitNewBatch(event)" class="mb-6">
+                <h4 id="batch-form-title" class="mb-3 text-sm text-accent-gold">Créer un nouveau lot / colis</h4>
+                <input type="hidden" id="batch-id" value="">
+                <div class="grid-layout mb-4" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Référence de suivi *</label>
+                        <input type="text" id="batch-ref" class="input-control" placeholder="ex: YT123456789" required>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Coût de transport total du colis (€) *</label>
+                        <input type="number" step="0.01" id="batch-total-cost" class="input-control" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="flex justify-between items-center mb-2">
+                        <span>Contenu du Colis (Catégories) *</span>
+                        <button type="button" class="btn-icon secondary text-sm" onclick="addBatchCategoryRow()" title="Ajouter une ligne"><span class="material-icons-round">add</span></button>
+                    </label>
+                    <div id="batch-categories-container" class="flex flex-col gap-2">
+                        <!-- Dynamic rows injected here -->
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end gap-3">
+                    <button type="button" id="batch-cancel-btn" class="btn-secondary hidden" onclick="cancelEditBatch()">Annuler</button>
+                    <button type="submit" id="batch-submit-btn" class="btn-primary flex items-center gap-2">
+                        <span class="material-icons-round">save</span> Enregistrer le colis
+                    </button>
+                </div>
+            </form>
+            
+            <h4 class="mb-3 text-sm text-accent-gold border-t border-white/10 pt-4">Vos colis existants</h4>
+            <div id="batches-list" class="flex flex-col gap-2" style="max-height: 250px; overflow-y: auto;">
+                <!-- Dynamically populated -->
+                <p class="text-muted text-sm">Aucun colis enregistré.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEMO NAME MODAL -->
+    <div id="demo-name-modal" class="hidden" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(10,10,15,0.95); backdrop-filter: blur(10px); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div class="glass-panel" style="max-width: 450px; width: 90%; text-align: center; padding: 2.5rem;">
+            <span class="material-icons-round text-warning" style="font-size: 64px; margin-bottom: 1rem;">person_add</span>
+            <h2 style="margin-bottom: 1rem;">Bienvenue dans votre espace Démo !</h2>
+            <p class="text-muted mb-6" style="line-height: 1.6;">Pour personnaliser votre expérience et démarrer votre session de 1 Heure, veuillez nous indiquer votre nom complet.</p>
+            
+            <form onsubmit="activateDemoSession(event)" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <input type="text" id="demo-name-input" class="input-control" placeholder="Entrez votre Prénom et Nom..." required style="text-align: center; font-size: 1.1rem; padding: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                    <span class="material-icons-round">play_circle</span> Démarrer ma session (1H)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
+    
+    <!-- PDF.js for Custom Premium Ebook Reader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- QRCode.js for Inventory Barcodes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Driver.js for Guided Tour -->
+
+    <!-- html2pdf for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- JS Scripts -->
+    <script src="js/i18n.js?v=100"></script>
+    <script src="js/currency.js?v=100"></script>
+    <script src="js/db.js?v=100"></script>
+    <script src="js/auth.js?v=100"></script>
+    <script src="js/admin.js?v=100"></script>
+    <script src="js/admin-agent.js?v=100"></script>
+    <script src="js/client.js?v=100"></script>
+    <script src="js/client-agent.js?v=100"></script>
+    <script src="js/supplier.js?v=100"></script>
+    
+    <!-- Main Routing Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getCurrentUser();
+            const authView = document.getElementById('auth-view');
+            const clientDash = document.getElementById('client-dashboard');
+            const adminDash = document.getElementById('admin-dashboard');
+            const supplierDash = document.getElementById('supplier-dashboard');
+            const navUserArea = document.getElementById('nav-user-area');
+            
+            if (user) {
+                // User is logged in
+                authView.classList.add('hidden');
+                navUserArea.classList.remove('hidden');
+                
+                if (user.role === 'admin' || user.role === 'staff_sales' || user.role === 'staff_sourcing') {
+                    adminDash.classList.remove('hidden');
+                    
+                    // Restrict UI for staff_sales
+                    if (user.role === 'staff_sales') {
+                        // Hide all tabs except sales and boutique orders
+                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-categories', 'admin-nav-suppliers', 'admin-nav-trainings', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock'];
+                        hideNavs.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.style.display = 'none';
+                        });
+                        
+                        // Set default tab for staff
+                        setTimeout(() => {
+                            switchAdminTab('boutique');
+                            switchAdminBoutiqueTab('orders');
+                            
+                            // Hide Boutique sub-tabs (Products/Categories)
+                            document.getElementById('btn-admin-boutique-products').style.display = 'none';
+                            document.getElementById('btn-admin-boutique-categories').style.display = 'none';
+                        }, 500);
+                    } else if (user.role === 'staff_sourcing') {
+                        // Hide all tabs except suppliers, categories, and backups
+                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-trainings', 'admin-nav-boutique', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock', 'admin-nav-salereg', 'admin-nav-sales'];
+                        hideNavs.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.style.display = 'none';
+                        });
+                        
+                        // Set default tab for sourcing staff
+                        setTimeout(() => {
+                            switchAdminTab('suppliers');
+                        }, 500);
+                    }
+                } else if (user.role === 'supplier' && user.status === 'active') {
+                    supplierDash.classList.remove('hidden');
+                    // Load supplier profile script
+                    if(typeof loadSupplierProfile === 'function') loadSupplierProfile();
+                } else if (user.role === 'client' && user.status === 'active') {
+                    clientDash.classList.remove('hidden');
+                } else {
+                    // Fallback if somehow pending user bypassed
+                    logout();
+                }
+            } else {
+                // Not logged in
+                authView.classList.remove('hidden');
+                
+                // Handle invite link for sourcing staff
+                if (window.location.search.includes('invite=sourcing_staff')) {
+                    if (typeof switchAuthMode === 'function') {
+                        switchAuthMode('register');
+                        setTimeout(() => {
+                            const regTitle = document.querySelector('#register-form h2');
+                            if (regTitle) {
+                                regTitle.innerHTML = '<span class="material-icons-round text-warning" style="font-size: 32px; vertical-align: middle; margin-right: 8px;">badge</span>Inscription Sourcing';
+                                regTitle.style.color = "var(--accent-gold)";
+                            }
+                        }, 100);
+                    }
+                }
+            }
+        });
+    </script>
+    
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- BOUTIQUE CART MODAL -->
+    <div id="modal-boutique-cart" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="m-0 flex items-center gap-2"><span class="material-icons-round text-warning">shopping_cart</span> Votre Panier</h3>
+                <button class="material-icons-round text-muted hover-glow" style="background: none; border: none; cursor: pointer;" onclick="document.getElementById('modal-boutique-cart').style.display='none'">close</button>
+            </div>
+            
+            <div id="boutique-cart-items" class="mb-6 flex flex-col gap-2" style="max-height: 300px; overflow-y: auto;">
+                <!-- Cart items injected here -->
+            </div>
+            
+            <div class="flex justify-between items-center mb-6 p-4 rounded" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
+                <span style="font-size: 1.2rem; font-weight: bold;">Total:</span>
+                <span id="boutique-cart-total" style="font-size: 1.5rem; font-weight: 900; color: var(--accent-gold);">0</span>
+            </div>
+            
+            <div id="boutique-checkout-form-container">
+                <h4 class="mb-4">Informations de Livraison</h4>
+                <form id="boutique-checkout-form" onsubmit="submitBoutiqueOrder(event)">
+                    <div class="form-group mb-4">
+                        <input type="text" id="checkout-name" required class="input-field" placeholder="Nom complet">
+                    </div>
+                    <div class="form-group mb-4">
+                        <input type="tel" id="checkout-phone" required class="input-field" placeholder="Numéro de Téléphone (WhatsApp de préférence)">
+                    </div>
+                    <div class="form-group mb-4">
+                        <textarea id="checkout-address" required class="input-field" placeholder="Adresse complète de livraison" rows="2"></textarea>
+                    </div>
+                    <div class="form-group mb-6">
+                        <textarea id="checkout-notes" class="input-field" placeholder="Notes supplémentaires (facultatif)" rows="1"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary w-full" style="justify-content: center; padding: 1rem; font-size: 1.1rem; background: var(--accent-gold); color: black;">
+                        Confirmer la commande
+                    </button>
+                    <p class="text-center text-muted text-xs mt-3">Vous serez contacté pour le règlement et la livraison.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

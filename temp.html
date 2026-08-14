@@ -1,0 +1,51 @@
+    <script src="js/auth.js?v=34"></script>
+    <script src="js/admin.js?v=40"></script>
+    <script src="js/admin-agent.js?v=34"></script>
+    <script src="js/client.js?v=4?v=34"></script>
+    <script src="js/client-agent.js?v=34"></script>
+    <script src="js/supplier.js?v=34"></script>
+    
+    <!-- Main Routing Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getCurrentUser();
+            const authView = document.getElementById('auth-view');
+            const clientDash = document.getElementById('client-dashboard');
+            const adminDash = document.getElementById('admin-dashboard');
+            const supplierDash = document.getElementById('supplier-dashboard');
+            const navUserArea = document.getElementById('nav-user-area');
+            
+            if (user) {
+                // User is logged in
+                authView.classList.add('hidden');
+                navUserArea.classList.remove('hidden');
+                
+                if (user.role === 'admin' || user.role === 'staff_sales') {
+                    adminDash.classList.remove('hidden');
+                    
+                    // Restrict UI for staff_sales
+                    if (user.role === 'staff_sales') {
+                        // Hide all tabs except sales and boutique orders
+                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-categories', 'admin-nav-suppliers', 'admin-nav-trainings', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock'];
+                        hideNavs.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.style.display = 'none';
+                        });
+                        
+                        // Set default tab for staff
+                        setTimeout(() => {
+                            switchAdminTab('boutique');
+                            switchAdminBoutiqueTab('orders');
+                            
+                            // Hide Boutique sub-tabs (Products/Categories)
+                            document.getElementById('btn-admin-boutique-products').style.display = 'none';
+                            document.getElementById('btn-admin-boutique-categories').style.display = 'none';
+                        }, 500);
+                    }
+                } else if (user.role === 'supplier' && user.status === 'active') {
+                    supplierDash.classList.remove('hidden');
+                    // Load supplier profile script
+                    if(typeof loadSupplierProfile === 'function') loadSupplierProfile();
+                } else if (user.role === 'client' && user.status === 'active') {
+                    clientDash.classList.remove('hidden');
+                } else {

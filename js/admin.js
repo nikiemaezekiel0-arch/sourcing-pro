@@ -123,7 +123,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'team', 'categories', 'suppliers', 'trainings', 'agent', 'demos', 'stock', 'salereg', 'sales', 'backups', 'boutique'].forEach(t => {
+    ['users', 'team', 'categories', 'suppliers', 'trainings', 'settings', 'agent', 'demos', 'stock', 'salereg', 'sales', 'backups', 'boutique'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -142,7 +142,10 @@ function switchAdminTab(tab) {
         populateCategorySelect();
     }
     if(tab === 'trainings') {
-        if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
+        if(typeof renderAdminTrainingsConfig === 'function') renderAdminTrainingsConfig();
+    }
+    if(tab === 'settings') {
+        if(typeof renderAdminSettings === 'function') renderAdminSettings();
     }
     if(tab === 'agent') {
         switchAdminAgentTab('catalog'); // Default to catalog
@@ -304,7 +307,10 @@ function renderAdminUsers() {
             statusBadge = `<span class="badge success">Actif</span> <br>${planBadge}`;
             
             let switchPlanBtn = '';
+            let resetTrainingBtn = '';
             if (u.role === 'client') {
+                resetTrainingBtn = `<button class="btn-icon" style="color: var(--primary-color);" onclick="resetTrainingAccess('${u.id}')" title="Réinitialiser l'accès Formation"><span class="material-icons-round">lock_reset</span></button>`;
+                
                 switchPlanBtn = `
                     <select class="input-control text-xs" style="padding: 4px; width: auto; background: var(--glass-bg); color: white; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateUserStatus('${u.id}', 'active', this.value)">
                         <option value="" disabled>Changer Pack...</option>
@@ -318,6 +324,7 @@ function renderAdminUsers() {
                 
             actionBtn = `
                 ${switchPlanBtn}
+                ${resetTrainingBtn}
                 <button class="btn-icon danger" onclick="updateUserStatus('${u.id}', 'pending')" title="Suspendre"><span class="material-icons-round">block</span></button>
                 <button class="btn-icon danger" onclick="deleteUser('${u.id}')" title="Supprimer définitivement"><span class="material-icons-round">delete_forever</span></button>
             `;
@@ -937,331 +944,134 @@ function copyShareMessage() {
     });
 }
 
-// --- Trainings Management ---
-
-function renderAdminTrainings() {
-    const db = getDB();
-    const list = document.getElementById('admin-trainings-list');
-    if(!list) return;
-    
-    if (!db.trainings) db.trainings = [];
-    list.innerHTML = '';
-    
-    if (!db.trainings || db.trainings.length === 0) {
-        list.innerHTML = '<p class="text-muted text-sm text-center mt-4">Aucun module pour l\'instant.</p>';
-        return;
-    }
-    
-    // Filter out ebooks
-    const modules = db.trainings.filter(t => t.type !== 'ebook');
-    
-    if (modules.length === 0) {
-        list.innerHTML = '<p class="text-muted text-sm text-center mt-4">Aucun module classique pour l\'instant.</p>';
-        return;
-    }
-
-    modules.forEach((mod, index) => {
-        list.innerHTML += `
-            <div class="glass-panel" style="padding:1rem; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.1);">
-                <div class="flex justify-between items-center mb-2">
-                    <h4 class="font-bold text-lg text-accent-gold">Module ${index + 1} : ${mod.title}</h4>
-                    <div class="flex gap-2">
-                        <button class="btn-icon text-accent-gold" onclick="editTraining('${mod.id}')" title="Modifier ce module"><span class="material-icons-round">edit</span></button>
-                        <button class="btn-icon danger" onclick="deleteTraining('${mod.id}')" title="Supprimer ce module"><span class="material-icons-round">delete</span></button>
-                    </div>
-                </div>
-                <details class="text-sm text-muted mb-4 cursor-pointer">
-                    <summary class="font-bold text-primary" style="outline:none;">Voir le contenu du cours</summary>
-                    <div style="white-space: pre-wrap; margin-top:0.5rem; padding-left:1rem; border-left:2px solid var(--primary-color);">${mod.content}</div>
-                </details>
-                ${mod.mediaLink ? `<a href="${mod.mediaLink}" target="_blank" class="btn-secondary" style="display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none;"><span class="material-icons-round text-sm">link</span> Ouvrir le Média rattaché</a>` : ''}
-            </div>
-        `;
-    });
-}
-
-let currentEditTrainingId = null;
-
-async function addTraining(e) {
-    e.preventDefault();
-    const title = document.getElementById('train-title').value;
-    const content = document.getElementById('train-content').value;
-    const mediaLink = document.getElementById('train-media').value;
-    
-    if(!title || !content) {
-        alert("Le titre et le contenu texte sont obligatoires.");
-        return;
-    }
-    
+// --- Settings & Packs Management ---
+function renderAdminSettings() {
     const db = getDB();
     if (!db.trainings) db.trainings = [];
     
-    if (currentEditTrainingId) {
-        const modIndex = db.trainings.findIndex(t => t.id === currentEditTrainingId);
-        if (modIndex > -1) {
-            const updatedTraining = {
-                ...db.trainings[modIndex],
-                title,
-                content,
-                mediaLink: mediaLink || null,
-            };
-            await saveDoc('trainings', updatedTraining);
-            alert("✅ Module de formation mis à jour avec succès !");
-        }
-        currentEditTrainingId = null;
-        document.getElementById('btn-submit-training-text').innerText = "Enregistrer le module";
-        const cancelBtn = document.getElementById('btn-cancel-training');
-        if(cancelBtn) cancelBtn.classList.add('hidden');
-    } else {
-        const newTraining = {
-            id: generateId('train_'),
-            title,
-            content,
-            mediaLink: mediaLink || null,
-            createdAt: new Date().toISOString()
+    // Check if packRules exists, else default
+    let packRules = db.trainings.find(s => s.id === 'packRules');
+    if (!packRules) {
+        packRules = {
+            id: 'packRules',
+            fournisseur: ['suppliers', 'favorites'],
+            standard: ['suppliers', 'favorites', 'trainings'],
+            premium: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks'],
+            vip: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community']
         };
-        await saveDoc('trainings', newTraining);
-        alert("✅ Module de formation ajouté avec succès !");
     }
     
-    e.target.reset();
-}
-
-function editTraining(id) {
-    const db = getDB();
-    const mod = db.trainings.find(t => t.id === id);
-    if (!mod) return;
+    const tabs = [
+        { id: 'agent', name: 'Catalogue Agent' },
+        { id: 'suppliers', name: 'Fournisseurs' },
+        { id: 'boutique', name: 'Boutique E-commerce' },
+        { id: 'favorites', name: 'Mes Favoris' },
+        { id: 'trainings', name: 'Ma Formation' },
+        { id: 'ai', name: 'Traducteur IA' },
+        { id: 'ebooks', name: 'E-Books' },
+        { id: 'support', name: 'Support Personnalisé' },
+        { id: 'community', name: 'Communauté VIP' }
+    ];
     
-    currentEditTrainingId = id;
-    document.getElementById('train-title').value = mod.title;
-    document.getElementById('train-content').value = mod.content;
-    document.getElementById('train-media').value = mod.mediaLink || '';
+    const tbody = document.getElementById('pack-settings-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
     
-    document.getElementById('btn-submit-training-text').innerText = "Mettre à jour le module";
-    const cancelBtn = document.getElementById('btn-cancel-training');
-    if(cancelBtn) cancelBtn.classList.remove('hidden');
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function cancelEditTraining() {
-    currentEditTrainingId = null;
-    document.getElementById('train-title').value = '';
-    document.getElementById('train-content').value = '';
-    document.getElementById('train-media').value = '';
-    
-    document.getElementById('btn-submit-training-text').innerText = "Enregistrer le module";
-    const cancelBtn = document.getElementById('btn-cancel-training');
-    if(cancelBtn) cancelBtn.classList.add('hidden');
-}
-
-async function deleteTraining(id) {
-    if(!confirm("Êtes-vous sûr de vouloir supprimer ce module ?")) return;
-    await deleteDoc('trainings', id);
-    alert("✅ Module supprimé !");
-    if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
-}
-
-function switchAdminTrainingTab(subtab) {
-    const modulesView = document.getElementById('admin-train-subview-modules');
-    const ebooksView = document.getElementById('admin-train-subview-ebooks');
-    const btnModules = document.getElementById('btn-admin-train-modules');
-    const btnEbooks = document.getElementById('btn-admin-train-ebooks');
-
-    if (subtab === 'modules') {
-        modulesView.classList.remove('hidden');
-        ebooksView.classList.add('hidden');
-        btnModules.className = 'btn-primary';
-        btnEbooks.className = 'btn-secondary';
-        if(typeof renderAdminTrainings === 'function') renderAdminTrainings();
-    } else if (subtab === 'ebooks') {
-        modulesView.classList.add('hidden');
-        ebooksView.classList.remove('hidden');
-        btnModules.className = 'btn-secondary';
-        btnEbooks.className = 'btn-primary';
-        if(typeof renderAdminEbooks === 'function') renderAdminEbooks();
-    }
-}
-
-let currentEditEbookId = null;
-
-async function addEbook(e) {
-    e.preventDefault();
-    const title = document.getElementById('ebook-title').value;
-    const desc = document.getElementById('ebook-desc').value;
-    const fileInput = document.getElementById('ebook-file');
-    const submitBtn = document.getElementById('btn-submit-ebook');
-    
-    // If we are creating a new ebook, a file is required
-    if (!currentEditEbookId && (!title || !desc || !fileInput.files.length)) {
-        alert("Veuillez remplir tous les champs et sélectionner un PDF.");
-        return;
-    }
-    
-    // If editing, title and desc are required, but file is optional
-    if (currentEditEbookId && (!title || !desc)) {
-        alert("Veuillez remplir le titre et la description.");
-        return;
-    }
-
-    // Change button state
-    submitBtn.innerHTML = '<span class="material-icons-round animate-spin">sync</span> Enregistrement en cours... Ne quittez pas la page';
-    submitBtn.disabled = true;
-
-    try {
-        if (currentEditEbookId) {
-            // EDIT EXISTING EBOOK
-            const db = getDB();
-            const existingEbook = db.trainings.find(t => t.id === currentEditEbookId);
-            if (!existingEbook) throw new Error("Ebook introuvable");
-            
-            let finalUrl = existingEbook.fileUrl;
-            let finalName = existingEbook.fileName;
-            
-            // If a new file is provided, upload it
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                if (file.type !== 'application/pdf') {
-                    alert("Veuillez sélectionner un fichier PDF valide.");
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Mettre à jour l\'Ebook</span>';
-                    return;
-                }
-                const newUrl = await uploadFileToStorage(file, 'ebooks');
-                if (!newUrl) throw new Error("Échec de l'upload du nouveau fichier");
-                finalUrl = newUrl;
-                finalName = file.name;
-            }
-            
-            const updatedEbook = {
-                ...existingEbook,
-                title: title,
-                description: desc,
-                fileUrl: finalUrl,
-                fileName: finalName
-            };
-            
-            await saveDoc('trainings', updatedEbook);
-            alert("✅ Ebook mis à jour avec succès !");
-            cancelEditEbook();
-            
-        } else {
-            // CREATE NEW EBOOK
-            const file = fileInput.files[0];
-            if (file.type !== 'application/pdf') {
-                alert("Veuillez sélectionner un fichier PDF valide.");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l\'Ebook</span>';
-                return;
-            }
-            
-            const fileUrl = await uploadFileToStorage(file, 'ebooks');
-            if (!fileUrl) throw new Error("Échec de la récupération de l'URL du fichier.");
-
-            const newEbook = {
-                id: generateId('ebk_'),
-                type: 'ebook',
-                title: title,
-                description: desc,
-                fileUrl: fileUrl,
-                fileName: file.name,
-                createdAt: new Date().toISOString()
-            };
-
-            await saveDoc('trainings', newEbook);
-            alert("✅ Ebook ajouté avec succès au pack !");
-            e.target.reset();
-        }
-        
-        renderAdminEbooks();
-        
-    } catch (error) {
-        console.error("Erreur ajout/édition ebook:", error);
-        alert("Erreur technique DÉTAILLÉE : " + error.message);
-    } finally {
-        // Restore button state (cancelEditEbook handles the text if we were editing)
-        if (!currentEditEbookId) {
-            submitBtn.innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l\'Ebook</span>';
-        }
-        submitBtn.disabled = false;
-    }
-}
-
-function editEbook(id) {
-    const db = getDB();
-    const ebook = db.trainings.find(t => t.id === id);
-    if (!ebook) return;
-    
-    currentEditEbookId = id;
-    document.getElementById('ebook-title').value = ebook.title;
-    document.getElementById('ebook-desc').value = ebook.description;
-    
-    document.getElementById('ebook-file-required').classList.add('hidden');
-    document.getElementById('btn-submit-ebook-text').innerText = "Mettre à jour l'Ebook";
-    
-    const cancelBtn = document.getElementById('btn-cancel-ebook');
-    if(cancelBtn) cancelBtn.classList.remove('hidden');
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function cancelEditEbook() {
-    currentEditEbookId = null;
-    document.getElementById('ebook-title').value = '';
-    document.getElementById('ebook-desc').value = '';
-    document.getElementById('ebook-file').value = '';
-    
-    document.getElementById('ebook-file-required').classList.remove('hidden');
-    document.getElementById('btn-submit-ebook').innerHTML = '<span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l\'Ebook</span>';
-    
-    const cancelBtn = document.getElementById('btn-cancel-ebook');
-    if(cancelBtn) cancelBtn.classList.add('hidden');
-}
-
-async function deleteEbook(id) {
-    if(!confirm("Êtes-vous sûr de vouloir supprimer cet Ebook du pack ?")) return;
-    await deleteDoc('trainings', id);
-    alert("✅ Ebook supprimé !");
-    renderAdminEbooks();
-}
-
-function renderAdminEbooks() {
-    const db = getDB();
-    const list = document.getElementById('admin-ebooks-list');
-    if (!list) return;
-
-    list.innerHTML = '';
-    
-    // Filter out only ebooks from the trainings collection
-    const ebooks = db.trainings ? db.trainings.filter(t => t.type === 'ebook') : [];
-
-    if (ebooks.length === 0) {
-        list.innerHTML = '<p class="text-muted text-sm text-center">Aucun Ebook dans le pack pour le moment.</p>';
-        return;
-    }
-
-    // Sort newest first
-    const sortedEbooks = [...ebooks].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    sortedEbooks.forEach(ebook => {
-        const card = document.createElement('div');
-        card.className = 'glass-panel flex flex-col gap-2 relative';
-        card.innerHTML = `
-            <div style="background: rgba(251, 191, 36, 0.1); border-radius: 8px; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-                <span class="material-icons-round text-warning" style="font-size: 64px;">picture_as_pdf</span>
-            </div>
-            <div class="font-bold text-lg text-primary">${ebook.title}</div>
-            <div class="text-sm text-muted mb-2 line-clamp-2">${ebook.description}</div>
-            <div class="text-xs text-muted mb-4">Nom du fichier : ${ebook.fileName}</div>
-            
-            <div class="flex gap-2 mt-auto">
-                <a href="${ebook.fileUrl}" target="_blank" class="btn-secondary" style="flex:1; text-align:center; padding:0.5rem;"><span class="material-icons-round text-sm">visibility</span> Voir</a>
-                <button class="btn-icon" style="background:rgba(255,255,255,0.1); color:white;" onclick="editEbook('${ebook.id}')" title="Modifier"><span class="material-icons-round">edit</span></button>
-                <button class="btn-icon danger" onclick="deleteEbook('${ebook.id}')" title="Supprimer"><span class="material-icons-round">delete_outline</span></button>
-            </div>
+    tabs.forEach(tab => {
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${tab.name}</strong></td>
+                <td class="text-center"><input type="checkbox" id="cb-fournisseur-${tab.id}" ${packRules.fournisseur && packRules.fournisseur.includes(tab.id) ? 'checked' : ''} style="width:20px; height:20px; accent-color: var(--primary-color);"></td>
+                <td class="text-center"><input type="checkbox" id="cb-standard-${tab.id}" ${packRules.standard && packRules.standard.includes(tab.id) ? 'checked' : ''} style="width:20px; height:20px; accent-color: var(--primary-color);"></td>
+                <td class="text-center"><input type="checkbox" id="cb-premium-${tab.id}" ${packRules.premium && packRules.premium.includes(tab.id) ? 'checked' : ''} style="width:20px; height:20px; accent-color: var(--primary-color);"></td>
+                <td class="text-center"><input type="checkbox" id="cb-vip-${tab.id}" ${packRules.vip && packRules.vip.includes(tab.id) ? 'checked' : ''} style="width:20px; height:20px; accent-color: var(--primary-color);"></td>
+            </tr>
         `;
-        list.appendChild(card);
     });
+}
+
+async function savePackSettings(e) {
+    e.preventDefault();
+    const tabs = ['agent', 'suppliers', 'boutique', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community'];
+    
+    const packRules = { id: 'packRules', fournisseur: [], standard: [], premium: [], vip: [] };
+    
+    tabs.forEach(t => {
+        if (document.getElementById(`cb-fournisseur-${t}`).checked) packRules.fournisseur.push(t);
+        if (document.getElementById(`cb-standard-${t}`).checked) packRules.standard.push(t);
+        if (document.getElementById(`cb-premium-${t}`).checked) packRules.premium.push(t);
+        if (document.getElementById(`cb-vip-${t}`).checked) packRules.vip.push(t);
+    });
+    
+    try {
+        await saveDoc('trainings', packRules);
+        showNotification("Paramètres des packs mis à jour avec succès !", "success");
+    } catch(err) {
+        alert("Erreur lors de la sauvegarde : " + err.message);
+    }
+}
+
+// --- Trainings & E-books Config ---
+function renderAdminTrainingsConfig() {
+    const db = getDB();
+    if (!db.trainings) db.trainings = [];
+    
+    const trainingConfig = db.trainings.find(s => s.id === 'trainingConfig');
+    if (trainingConfig) {
+        document.getElementById('config-training-img').value = trainingConfig.imgUrl || '';
+        document.getElementById('config-training-link').value = trainingConfig.link || '';
+    }
+    
+    const ebookConfig = db.trainings.find(s => s.id === 'ebookConfig');
+    if (ebookConfig) {
+        document.getElementById('config-ebook-title').value = ebookConfig.title || '';
+        document.getElementById('config-ebook-img').value = ebookConfig.imgUrl || '';
+        document.getElementById('config-ebook-link').value = ebookConfig.link || '';
+    }
+}
+
+async function saveTrainingConfig(e) {
+    e.preventDefault();
+    const imgUrl = document.getElementById('config-training-img').value;
+    const link = document.getElementById('config-training-link').value;
+    
+    try {
+        await saveDoc('trainings', { id: 'trainingConfig', imgUrl, link });
+        showNotification("Configuration de la formation sauvegardée !", "success");
+    } catch(err) {
+        alert("Erreur : " + err.message);
+    }
+}
+
+async function saveEbookConfig(e) {
+    e.preventDefault();
+    const title = document.getElementById('config-ebook-title').value;
+    const imgUrl = document.getElementById('config-ebook-img').value;
+    const link = document.getElementById('config-ebook-link').value;
+    
+    try {
+        await saveDoc('trainings', { id: 'ebookConfig', title, imgUrl, link });
+        showNotification("Configuration de l'E-book sauvegardée !", "success");
+    } catch(err) {
+        alert("Erreur : " + err.message);
+    }
+}
+
+async function resetTrainingAccess(userId) {
+    if (!confirm("Voulez-vous réinitialiser l'accès à la formation de ce client ? Cela réaffichera le bouton 'Obtenir mon lien' de son côté.")) return;
+    
+    try {
+        const db = getDB();
+        const user = db.users.find(u => u.id === userId);
+        if (user) {
+            user.trainingFlowState = null;
+            user.savedTrainingLink = null;
+            await saveDoc('users', user);
+            showNotification("L'accès à la formation a été réinitialisé.", "success");
+        }
+    } catch(err) {
+        alert("Erreur : " + err.message);
+    }
 }
 
 // --- Analytics Charts ---

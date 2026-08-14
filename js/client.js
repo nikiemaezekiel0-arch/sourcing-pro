@@ -49,63 +49,94 @@ function initClientPortal() {
         }, 1000); // Check and update every second
     }
     
-    // Check access based on plan
-    const allRestrictedTabs = ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community'];
-    const navElements = {};
-    allRestrictedTabs.forEach(t => navElements[t] = document.getElementById(`client-nav-${t}`));
+    function updateClientNav() {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return;
+        
+        const allRestrictedTabs = ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community'];
+        const navElements = {};
+        allRestrictedTabs.forEach(t => navElements[t] = document.getElementById(`client-nav-${t}`));
+        Object.values(navElements).forEach(el => { if(el) el.style.display = 'none'; });
+
+        if (currentUser.role === 'admin' || currentUser.role === 'staff_sales' || currentUser.role === 'staff_sourcing') {
+            Object.values(navElements).forEach(el => { if(el) el.style.display = 'flex'; });
+        } else {
+            const p = currentUser.planType || 'none';
+            const db = getDB();
+            let packRules = db.trainings ? db.trainings.find(s => s.id === 'packRules') : null;
+            if (!packRules) {
+                packRules = {
+                    fournisseur: ['suppliers', 'favorites'],
+                    standard: ['suppliers', 'favorites', 'trainings'],
+                    premium: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks'],
+                    vip: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community']
+                };
+            }
+            const allowedTabs = packRules[p] || [];
+            allowedTabs.forEach(t => {
+                if(navElements[t]) navElements[t].style.display = 'flex';
+            });
+        }
+    }
     
-    // Hide all restricted tabs by default
-    Object.values(navElements).forEach(el => { if(el) el.style.display = 'none'; });
+    // Call immediately on init
+    updateClientNav();
+    
+    // Make it available globally so the event listener can call it
+    window.updateClientNav = updateClientNav;
 
     if (user && (user.role === 'admin' || user.role === 'staff_sales' || user.role === 'staff_sourcing')) {
-        Object.values(navElements).forEach(el => { if(el) el.style.display = 'flex'; });
         switchClientTab('suppliers');
         renderClientStats();
         renderClientCategories();
         renderClientSuppliers();
     } else if (user) {
-        const p = user.planType;
+        const p = user.planType || 'none';
+        const db = getDB();
+        let packRules = db.trainings ? db.trainings.find(s => s.id === 'packRules') : null;
+        if (!packRules) {
+            packRules = {
+                fournisseur: ['suppliers', 'favorites'],
+                standard: ['suppliers', 'favorites', 'trainings'],
+                premium: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks'],
+                vip: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community']
+            };
+        }
         
-        // Unlocking cascade
-        if (p === 'fournisseur' || p === 'standard' || p === 'premium' || p === 'vip') {
-            if(navElements.suppliers) navElements.suppliers.style.display = 'flex';
-            if(navElements.favorites) navElements.favorites.style.display = 'flex';
+        const allowedTabs = packRules[p] || [];
+        
+        // Switch to the first logical tab they have access to, or boutique
+        
+        // Switch to the first logical tab they have access to, or boutique
+        if (allowedTabs.includes('suppliers')) {
             switchClientTab('suppliers');
             renderClientStats();
             renderClientCategories();
             renderClientSuppliers();
-        }
-        if (p === 'standard' || p === 'premium' || p === 'vip') {
-            if(navElements.trainings) navElements.trainings.style.display = 'flex';
-        }
-        if (p === 'premium' || p === 'vip') {
-            if(navElements.ai) navElements.ai.style.display = 'flex';
-            if(navElements.ebooks) navElements.ebooks.style.display = 'flex';
-        }
-        if (p === 'vip') {
-            if(navElements.support) navElements.support.style.display = 'flex';
-            if(navElements.community) navElements.community.style.display = 'flex';
-        }
-        
-        // If they have no recognized pack, default to boutique
-        if (!p || (p !== 'fournisseur' && p !== 'standard' && p !== 'premium' && p !== 'vip')) {
+        } else if (allowedTabs.includes('trainings')) {
+            switchClientTab('trainings');
+        } else {
             switchClientTab('boutique');
         }
     }
     
     renderClientTrainings();
+    renderClientEbook(); // New function we will create
     
     // Start Onboarding Tour
     setTimeout(startClientTour, 1000);
     
     // Listen to changes
     window.addEventListener('db_updated', () => {
+        if(typeof window.updateClientNav === 'function') window.updateClientNav();
+        
         if(user && user.planType !== 'standard') {
             renderClientStats();
             renderClientCategories();
             renderClientSuppliers();
         }
         renderClientTrainings();
+        renderClientEbook();
     });
 
     // Utility function for debouncing
@@ -130,13 +161,32 @@ function initClientPortal() {
 function switchClientTab(tab) {
     const user = getCurrentUser();
     
-    // Access control check for direct URL manipulation or console hacks
+    // Access control check
     if (user && user.role !== 'admin' && user.role !== 'staff_sales' && user.role !== 'staff_sourcing') {
         const p = user.planType || 'none';
-        if (['suppliers', 'favorites'].includes(tab) && !['fournisseur', 'standard', 'premium', 'vip'].includes(p)) return alert("Accès refusé.");
-        if (tab === 'trainings' && !['standard', 'premium', 'vip'].includes(p)) return alert("Accès refusé. Nécessite le Pack Standard.");
-        if (['ai', 'ebooks'].includes(tab) && !['premium', 'vip'].includes(p)) return alert("Accès refusé. Nécessite le Pack Premium.");
-        if (['support', 'community'].includes(tab) && p !== 'vip') return alert("Accès refusé. Nécessite le Pack VIP.");
+        const db = getDB();
+        let packRules = db.trainings ? db.trainings.find(s => s.id === 'packRules') : null;
+        if (!packRules) {
+            packRules = {
+                fournisseur: ['suppliers', 'favorites'],
+                standard: ['suppliers', 'favorites', 'trainings'],
+                premium: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks'],
+                vip: ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community']
+            };
+        }
+        
+        const allowedTabs = packRules[p] || [];
+        const restrictedTabs = ['suppliers', 'favorites', 'trainings', 'ai', 'ebooks', 'support', 'community'];
+        
+        if (restrictedTabs.includes(tab) && !allowedTabs.includes(tab)) {
+            return alert("Accès refusé. Veuillez upgrader votre forfait pour accéder à cette section.");
+        }
+        
+        // SPECIAL LOGIC: If tab is 'trainings' and they have saved a link, open it immediately
+        if (tab === 'trainings' && user.trainingFlowState === 'saved' && user.savedTrainingLink) {
+            window.open(user.savedTrainingLink, '_blank');
+            return; // don't switch the UI tab
+        }
     }
     
     ['suppliers', 'trainings', 'agent', 'boutique', 'favorites', 'ai', 'ebooks', 'support', 'community'].forEach(t => {
@@ -201,490 +251,126 @@ function switchClientTrainingTab(subtab) {
         ebooksView.classList.remove('hidden');
         btnModules.className = 'btn-secondary';
         btnEbooks.className = 'btn-primary';
-        renderClientEbooks();
+        renderClientEbook();
     }
 }
 
 function renderClientTrainings() {
-    switchClientTrainingTab('modules');
-    // The new learning path is hardcoded in index.html (Dashboard view).
-    // This function ensures we are in the dashboard state initially if we just switch tabs.
-    updateTrainingProgressUI();
-    closeTrainingModule();
-}
-
-function renderClientEbooks() {
+    const user = getCurrentUser();
+    if (!user) return;
     const db = getDB();
-    const list = document.getElementById('client-ebooks-list');
-    if (!list) return;
+    const trainingConfig = db.trainings ? db.trainings.find(s => s.id === 'trainingConfig') : null;
+    const container = document.getElementById('client-training-container');
+    if (!container) return;
 
-    list.innerHTML = '';
-    
-    // Filter out only ebooks from the trainings collection
-    const ebooks = db.trainings ? db.trainings.filter(t => t.type === 'ebook') : [];
+    if (!trainingConfig || !trainingConfig.link) {
+        container.innerHTML = `<span class="material-icons-round text-muted" style="font-size: 4rem;">school</span><p class="mt-4 text-muted">La formation est en cours de configuration.</p>`;
+        return;
+    }
 
-    if (ebooks.length === 0) {
-        list.innerHTML = `
-            <div class="text-center py-8" style="grid-column: 1 / -1;">
-                <span class="material-icons-round text-muted" style="font-size: 48px; opacity:0.5;">local_library</span>
-                <p class="text-muted mt-4">La bibliothèque est vide pour le moment.</p>
+    if (user.trainingFlowState === 'saved' && user.savedTrainingLink) {
+        container.innerHTML = `
+            <div class="glass-panel" style="background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.3);">
+                <span class="material-icons-round text-success" style="font-size: 4rem; margin-bottom:1rem;">check_circle</span>
+                <h3 class="text-xl font-bold mb-2">Accès Formation Activé</h3>
+                <p class="text-muted mb-4">Votre accès à la plateforme est configuré.</p>
+                <p class="text-sm">Pour accéder à la formation, il vous suffit de cliquer sur <strong>Ma Formation</strong> dans le menu de gauche. La plateforme s'ouvrira automatiquement dans un nouvel onglet.</p>
+                <button class="btn-primary mt-6" onclick="window.open('${user.savedTrainingLink}', '_blank')" style="margin: 0 auto;"><span class="material-icons-round">open_in_new</span> Ouvrir la formation maintenant</button>
             </div>
         `;
         return;
     }
 
-    // Sort newest first
-    const sortedEbooks = [...ebooks].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    const categories = ['Business', 'Technologie', 'Design', 'Marketing'];
-
-    sortedEbooks.forEach((ebook, index) => {
-        const category = categories[index % categories.length];
-        const pages = Math.floor(Math.random() * 200) + 100;
-        
-        const user = getCurrentUser();
-        const progressObj = (user && user.ebookProgress && user.ebookProgress[ebook.fileUrl]) ? user.ebookProgress[ebook.fileUrl] : null;
-        const percent = progressObj ? progressObj.percent : 0;
-        
-        const card = document.createElement('div');
-        card.className = 'ebook-premium-card';
-        card.onclick = () => openEbookModal(ebook.fileUrl, ebook.title);
-        
-        card.innerHTML = `
-            <div class="ebook-premium-cover-container" id="ebook-cover-container-${ebook.id}">
-                <div class="ebook-premium-cover">
-                    <div class="ebook-premium-cover-title">${ebook.title}</div>
-                </div>
-            </div>
-            
-            <div class="ebook-premium-content">
-                <div>
-                    <div class="ebook-premium-meta">[ ${category.toUpperCase()} • ${pages} PAGES ]</div>
-                    <div class="ebook-premium-title" title="${ebook.title.replace(/"/g, '&quot;')}">${ebook.title}</div>
-                    
-                    <div style="margin-top: 10px; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-                        <div style="height: 100%; width: ${percent}%; background: var(--accent-gold);"></div>
-                    </div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-align: right;">${percent}% lu</div>
-                </div>
-                <button class="ebook-premium-btn" style="margin-top: 10px;" onclick="event.stopPropagation(); openEbookModal('${ebook.fileUrl}', '${ebook.title.replace(/'/g, "\\'")}')">${percent > 0 ? 'REPRENDRE LA LECTURE' : "LIRE L'EBOOK"}</button>
-            </div>
-        `;
-        list.appendChild(card);
-    });
-
-    // Asynchronously load PDF covers
-    setTimeout(async () => {
-        if (!window.pdfjsLib) return;
-        for (const ebook of sortedEbooks) {
-            try {
-                const container = document.getElementById(`ebook-cover-container-${ebook.id}`);
-                if (!container) continue;
-                
-                const pdf = await pdfjsLib.getDocument(ebook.fileUrl).promise;
-                const page = await pdf.getPage(1);
-                
-                const viewport = page.getViewport({ scale: 0.5 });
-                const canvas = document.createElement('canvas');
-                canvas.className = 'ebook-premium-cover';
-                canvas.style.padding = '0';
-                canvas.style.border = 'none';
-                canvas.style.objectFit = 'cover';
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                const ctx = canvas.getContext('2d');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                
-                // Replace the default cover with the canvas
-                container.innerHTML = '';
-                container.appendChild(canvas);
-            } catch (err) {
-                console.error("Impossible de charger la couverture PDF de " + ebook.title, err);
-            }
-        }
-    }, 500);
-}
-
-window.updateEbookProgress = function(url, pageNum, numPages) {
-    const user = getCurrentUser();
-    if (!user) return;
-    
-    if (!user.ebookProgress) user.ebookProgress = {};
-    
-    const currentMax = user.ebookProgress[url] ? user.ebookProgress[url].page : 0;
-    
-    if (pageNum > currentMax) {
-        user.ebookProgress[url] = {
-            page: pageNum,
-            total: numPages,
-            percent: Math.min(100, Math.round((pageNum / numPages) * 100))
-        };
-        
-        if(user.id && user.id !== 'usr_admin1' && user.id !== 'usr_client1' && user.id !== 'usr_supplier1') {
-            saveDoc('users', user);
-            setCurrentUser(user);
-        }
-    }
-};
-
-let customPdfDoc = null;
-let customPdfPageNum = 1;
-let customPdfPageIsRendering = false;
-let customPdfPageNumIsPending = null;
-let customPdfCanvas = null;
-let customPdfCtx = null;
-
-let currentPdfDoc = null;
-let pdfPageObserver = null;
-
-async function openEbookModal(url, title) {
-    document.getElementById('modal-ebook-title').innerText = title;
-    const container = document.getElementById('modal-ebook-container');
-    document.getElementById('ebook-modal').classList.remove('hidden');
-    
-    // Show loading state
-    container.innerHTML = `
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; background:#f1f5f9;">
-            <div class="loader" style="border:4px solid #e2e8f0; border-top:4px solid var(--accent-gold); border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite;"></div>
-            <p style="margin-top:16px; color:#475569; font-family:Outfit; font-weight:600;">Chargement et optimisation du document...</p>
-        </div>
-        <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-    `;
-
-    try {
-        if (!window.pdfjsLib) {
-            throw new Error("PDF.js n'est pas chargé");
-        }
-        
-        currentPdfDoc = await pdfjsLib.getDocument(url).promise;
-        const numPages = currentPdfDoc.numPages;
-        
-        // Get first page to calculate aspect ratio
-        const firstPage = await currentPdfDoc.getPage(1);
-        const containerWidth = container.clientWidth || window.innerWidth;
-        
-        // Calculate scale to fit width
-        const targetWidth = Math.min(containerWidth - 20, 1000); 
-        const unscaledViewport = firstPage.getViewport({ scale: 1.0 });
-        const scale = targetWidth / unscaledViewport.width;
-        const scaledViewport = firstPage.getViewport({ scale });
-        
-        const pageHeight = scaledViewport.height;
-        const pageWidth = scaledViewport.width;
-        
-        // Setup the scrolling container
-        container.innerHTML = `<div id="pdf-scroll-view" style="width:100%; height:100%; overflow-y:auto; background:#cbd5e1; display:flex; flex-direction:column; align-items:center; padding:15px 0;"></div>`;
-        const scrollView = document.getElementById('pdf-scroll-view');
-        
-        // Disconnect previous observer
-        if (pdfPageObserver) pdfPageObserver.disconnect();
-        
-        pdfPageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const pageNum = parseInt(entry.target.dataset.page);
-                if (entry.isIntersecting) {
-                    renderPdfPage(pageNum, entry.target, scale);
-                    updateEbookProgress(url, pageNum, numPages);
-                } else {
-                    // Memory optimization: clear canvas if it goes too far off-screen
-                    // We only do this if we want strict memory management
-                }
-            });
-        }, { root: scrollView, rootMargin: '1000px 0px' }); // Render a few pages ahead
-        
-        for (let i = 1; i <= numPages; i++) {
-            const pageDiv = document.createElement('div');
-            pageDiv.className = 'pdf-page-container';
-            pageDiv.dataset.page = i;
-            pageDiv.dataset.rendered = "false";
-            pageDiv.style.width = `${pageWidth}px`;
-            pageDiv.style.height = `${pageHeight}px`;
-            pageDiv.style.backgroundColor = '#fff';
-            pageDiv.style.marginBottom = '15px';
-            pageDiv.style.boxShadow = '0 4px 10px rgba(0,0,0,0.15)';
-            pageDiv.style.position = 'relative';
-            
-            pageDiv.innerHTML = `
-                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#cbd5e1;">
-                    <span class="material-icons-round" style="font-size:32px;">hourglass_empty</span>
-                </div>
-                <div style="position:absolute; bottom:10px; right:10px; font-size:12px; color:#94a3b8; font-weight:bold;">${i} / ${numPages}</div>
-            `;
-            
-            scrollView.appendChild(pageDiv);
-            pdfPageObserver.observe(pageDiv);
-        }
-        
-    } catch (error) {
-        console.error("PDF Load Error:", error);
-        // Mobile fallback
+    if (user.trainingFlowState === 'clicked') {
         container.innerHTML = `
-            <div style="background: #fef2f2; padding: 20px; text-align: center; border-bottom: 1px solid #fca5a5;">
-                <p style="color: #ef4444; font-weight: bold; margin-bottom: 10px;">Le lecteur natif ne peut pas ouvrir ce fichier.</p>
-                <a href="${url}" target="_blank" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
-                    <span class="material-icons-round">open_in_new</span> Ouvrir en plein écran
-                </a>
+            <div class="glass-panel">
+                <span class="material-icons-round text-warning" style="font-size: 4rem; margin-bottom:1rem;">content_paste</span>
+                <h3 class="text-xl font-bold mb-4 text-warning">Dernière étape</h3>
+                <p class="text-muted mb-6">Veuillez coller le lien d'accès de la formation que vous venez de copier ci-dessous :</p>
+                <form onsubmit="saveClientTrainingLink(event)">
+                    <input type="url" id="client-training-link-input" class="input-control mb-4" placeholder="Collez le lien ici..." required>
+                    <button type="submit" class="btn-primary w-full" style="justify-content:center;"><span class="material-icons-round">save</span> Enregistrer mon accès</button>
+                </form>
             </div>
-            <iframe src="${url}" style="width:100%; height:100%; border:none; background:#fff; flex:1;"></iframe>
         `;
+        return;
     }
+
+    container.innerHTML = `
+        ${trainingConfig.imgUrl ? `<img src="${trainingConfig.imgUrl}" alt="Formation" style="width:100%; max-height:200px; object-fit:cover; border-radius:12px; margin-bottom:2rem;">` : ''}
+        <h3 class="text-2xl font-bold mb-4">Accéder à ma formation</h3>
+        <p class="text-muted mb-6">Cliquez sur le bouton ci-dessous pour obtenir votre lien d'accès secret.</p>
+        <button class="btn-primary" onclick="requestTrainingAccess('${trainingConfig.link}')" style="font-size:1.2rem; padding: 1rem 2rem; margin: 0 auto;"><span class="material-icons-round">local_activity</span> Obtenir mon lien de formation</button>
+    `;
 }
 
-async function renderPdfPage(pageNum, containerDiv, scale) {
-    if (containerDiv.dataset.rendered === "true") return;
-    containerDiv.dataset.rendered = "true";
-    
-    try {
-        const page = await currentPdfDoc.getPage(pageNum);
-        // Use a higher scale for rendering to ensure crisp text on Retina/Mobile displays
-        const renderScale = window.devicePixelRatio || 2;
-        const viewport = page.getViewport({ scale: scale * renderScale });
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        canvas.style.display = 'block';
-        
-        const context = canvas.getContext('2d');
-        const renderContext = {
-            canvasContext: context,
-            viewport: viewport
-        };
-        
-        await page.render(renderContext).promise;
-        
-        containerDiv.innerHTML = '';
-        containerDiv.appendChild(canvas);
-        
-    } catch (err) {
-        console.error("Error rendering page", pageNum, err);
-        containerDiv.dataset.rendered = "false";
-    }
-}
-
-let currentTrainingModule = 0;
-
-window.openTrainingModule = function(moduleNumber) {
-    currentTrainingModule = moduleNumber;
-    
-    // Hide dashboard
-    document.getElementById('training-dashboard-view').classList.add('hidden');
-    
-    // Show reading view
-    const readingView = document.getElementById('training-reading-view');
-    readingView.classList.remove('hidden');
-    
-    // Update title
-    document.getElementById('tr-module-title').innerText = `Module 0${moduleNumber}`;
-    
-    // Hide all module contents
-    for(let i = 1; i <= 4; i++) {
-        const modEl = document.getElementById(`t-module-${i}`);
-        if(modEl) modEl.classList.add('hidden');
-    }
-    
-    // Show specific module
-    const targetMod = document.getElementById(`t-module-${moduleNumber}`);
-    if(targetMod) {
-        targetMod.classList.remove('hidden');
-    }
-    
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Handle "Next" and "Finish" buttons visibility
-    const nextBtn = document.getElementById('tr-next-btn');
-    const finishBtn = document.getElementById('tr-finish-btn');
-    
-    if(nextBtn && finishBtn) {
-        if(moduleNumber >= 4) {
-            nextBtn.style.display = 'none';
-            finishBtn.style.display = 'inline-flex';
-            finishBtn.classList.remove('hidden');
+function requestTrainingAccess(link) {
+    navigator.clipboard.writeText(link).then(() => {
+        alert("✅ Lien de la formation copié dans le presse-papier !");
+        const user = getCurrentUser();
+        user.trainingFlowState = 'clicked';
+        if(user.id && !user.id.startsWith("usr_admin") && !user.id.startsWith("usr_client") && !user.id.startsWith("usr_supplier")) {
+            saveDoc('users', user).then(() => {
+                setCurrentUser(user);
+                renderClientTrainings();
+            });
         } else {
-            nextBtn.style.display = 'inline-flex';
-            finishBtn.style.display = 'none';
-        }
-    }
-};
-
-window.closeTrainingModule = function() {
-    currentTrainingModule = 0;
-    
-    const dashboard = document.getElementById('training-dashboard-view');
-    const readingView = document.getElementById('training-reading-view');
-    
-    if(dashboard && readingView) {
-        readingView.classList.add('hidden');
-        dashboard.classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-};
-
-function getTrainingProgress() {
-    const user = getCurrentUser();
-    if (!user) return { completed: [], current: 1 };
-    if (!user.trainingProgress) {
-        user.trainingProgress = { completed: [], current: 1 };
-        // wait, let's just do a safe update via saveDoc if we have user id
-        // but only if the user is a real authenticated user!
-        if (user.id && user.id !== 'usr_admin1' && user.id !== 'usr_client1' && user.id !== 'usr_supplier1') {
-            saveDoc('users', user);
             setCurrentUser(user);
+            renderClientTrainings();
         }
-    }
-    return user.trainingProgress;
+    }).catch(err => {
+        alert("Erreur lors de la copie du lien. Réessayez.");
+    });
 }
 
-window.markModuleAsCompleted = function(moduleNum) {
+function saveClientTrainingLink(e) {
+    e.preventDefault();
+    const inputLink = document.getElementById('client-training-link-input').value;
+    const db = getDB();
+    const config = db.trainings ? db.trainings.find(s => s.id === 'trainingConfig') : null;
+    
+    if (config && inputLink === config.link) {
+        const user = getCurrentUser();
+        user.trainingFlowState = 'saved';
+        user.savedTrainingLink = inputLink;
+        if(user.id && !user.id.startsWith("usr_admin") && !user.id.startsWith("usr_client") && !user.id.startsWith("usr_supplier")) {
+            saveDoc('users', user).then(() => {
+                setCurrentUser(user);
+                alert("✅ Accès enregistré avec succès !");
+                renderClientTrainings();
+            });
+        } else {
+            setCurrentUser(user);
+            alert("✅ Accès enregistré avec succès !");
+            renderClientTrainings();
+        }
+    } else {
+        alert("Le lien collé ne correspond pas au lien de la formation.");
+    }
+}
+
+function renderClientEbook() {
     const user = getCurrentUser();
     if (!user) return;
-    
-    if (!user.trainingProgress) {
-        user.trainingProgress = { completed: [], current: 1 };
-    }
-    
-    if (!user.trainingProgress.completed.includes(moduleNum)) {
-        user.trainingProgress.completed.push(moduleNum);
-    }
-    
-    if (moduleNum === user.trainingProgress.current && moduleNum < 4) {
-        user.trainingProgress.current = moduleNum + 1;
-    }
-    
-    if(user.id && user.id !== 'usr_admin1' && user.id !== 'usr_client1' && user.id !== 'usr_supplier1') {
-        saveDoc('users', user);
-        setCurrentUser(user);
-    }
-    
-    updateTrainingProgressUI();
-};
+    const db = getDB();
+    const config = db.trainings ? db.trainings.find(s => s.id === 'ebookConfig') : null;
+    const container = document.getElementById('client-ebook-container');
+    if (!container) return;
 
-window.updateTrainingProgressUI = function() {
-    const progress = getTrainingProgress();
-    const totalModules = 4;
-    const completedCount = progress.completed.length;
-    const percent = Math.round((completedCount / totalModules) * 100);
-    
-    // Update Progress Card
-    const elText = document.getElementById('saas-progress-percent');
-    if(elText) elText.innerText = `${percent}%`;
-    
-    const elDone = document.getElementById('saas-progress-done-text');
-    if(elDone) elDone.innerText = `${completedCount} module${completedCount > 1 ? 's' : ''} terminé${completedCount > 1 ? 's' : ''}`;
-    
-    const elLeft = document.getElementById('saas-progress-left-text');
-    const leftCount = totalModules - completedCount;
-    if(elLeft) elLeft.innerText = `${leftCount} module${leftCount > 1 ? 's' : ''} restant${leftCount > 1 ? 's' : ''}`;
-    
-    const elFill = document.getElementById('saas-progress-fill');
-    if(elFill) elFill.style.width = `${percent}%`;
-    
-    const elCta = document.getElementById('saas-progress-cta');
-    if(elCta) {
-        if(completedCount === totalModules) {
-            elCta.innerHTML = `<span class="material-icons-round">emoji_events</span> Formation terminée !`;
-            elCta.onclick = null;
-            elCta.style.background = 'var(--success)';
-            elCta.style.color = 'white';
-            elCta.className = 'btn-primary';
-        } else {
-            elCta.innerHTML = `<span class="material-icons-round">play_circle</span> Reprendre le module ${progress.current}`;
-            elCta.onclick = () => openTrainingModule(progress.current);
-            elCta.style.background = '';
-            elCta.style.color = '';
-            elCta.className = 'btn-primary';
-        }
+    if (!config || !config.link) {
+        container.innerHTML = `<div class="glass-panel text-center" style="padding: 4rem 2rem;"><span class="material-icons-round text-accent-gold" style="font-size: 4rem; margin-bottom: 1rem;">menu_book</span><h3>Bibliothèque Numérique</h3><p class="text-muted">Retrouvez bientôt ici tous vos guides et e-books exclusifs.</p></div>`;
+        return;
     }
 
-    // Update Timeline & Cards
-    for(let i=1; i<=totalModules; i++) {
-        const isDone = progress.completed.includes(i);
-        const isActive = progress.current === i;
-        const isLocked = !isDone && !isActive;
-
-        // Timeline
-        const tlItem = document.getElementById(`tl-item-${i}`);
-        if(tlItem) {
-            tlItem.className = 'saas-timeline-item ' + (isDone ? 'done' : isActive ? 'active' : 'locked');
-        }
-        if(i < totalModules) {
-            const tlConn = document.getElementById(`tl-conn-${i}`);
-            if(tlConn) tlConn.className = 'saas-timeline-connector ' + (isDone ? 'done' : '');
-        }
-
-        // Card
-        const card = document.getElementById(`saas-mod-${i}`);
-        if(card) {
-            card.className = 'saas-module-card ' + (isDone ? 'done' : isActive ? 'active' : 'locked');
-            
-            const badge = card.querySelector('.saas-status-badge');
-            const footerBtn = card.querySelector('.btn-secondary, .saas-btn-continue');
-            const footer = document.getElementById(`saas-mod-footer-${i}`);
-            
-            if(isDone) {
-                if(badge) badge.innerHTML = `<span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">check_circle</span> Terminé`;
-                if(!footerBtn && footer) {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-secondary';
-                    btn.style = 'padding: 0.4rem 0.8rem; font-size: 0.8rem;';
-                    btn.innerText = 'Revoir';
-                    btn.onclick = () => openTrainingModule(i);
-                    footer.appendChild(btn);
-                } else if(footerBtn) {
-                    footerBtn.className = 'btn-secondary';
-                    footerBtn.style = 'padding: 0.4rem 0.8rem; font-size: 0.8rem;';
-                    footerBtn.innerText = 'Revoir';
-                    footerBtn.onclick = () => openTrainingModule(i);
-                }
-            } else if(isActive) {
-                if(badge) badge.innerHTML = `<span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">play_arrow</span> En cours`;
-                if(!footerBtn && footer) {
-                    const btn = document.createElement('button');
-                    btn.className = 'saas-btn-continue';
-                    btn.innerText = 'Continuer';
-                    btn.onclick = () => openTrainingModule(i);
-                    footer.appendChild(btn);
-                } else if(footerBtn) {
-                    footerBtn.className = 'saas-btn-continue';
-                    footerBtn.style = '';
-                    footerBtn.innerText = 'Continuer';
-                    footerBtn.onclick = () => openTrainingModule(i);
-                }
-            } else {
-                if(badge) badge.innerHTML = `<span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé`;
-                if(footerBtn) footerBtn.remove();
-            }
-        }
-    }
-};
-
-window.nextTrainingModule = function() {
-    // Mark current module as completed when clicking next
-    if (currentTrainingModule > 0) {
-        markModuleAsCompleted(currentTrainingModule);
-    }
-
-    if(currentTrainingModule > 0 && currentTrainingModule < 4) {
-        openTrainingModule(currentTrainingModule + 1);
-    } else {
-        closeTrainingModule();
-    }
-};
-
-window.finishTraining = function() {
-    if (currentTrainingModule === 4) {
-        markModuleAsCompleted(4);
-        closeTrainingModule();
-        showNotification("Félicitations ! Vous avez terminé la formation.", "success");
-    }
-};
-
+    container.innerHTML = `
+        <div class="glass-panel" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 3rem 2rem;">
+            ${config.imgUrl ? `<img src="${config.imgUrl}" alt="E-Book" style="width:100%; max-height:300px; object-fit:contain; border-radius:12px; margin-bottom:2rem;">` : '<span class="material-icons-round text-accent-gold" style="font-size: 4rem; margin-bottom: 1rem;">menu_book</span>'}
+            <h3 class="text-2xl font-bold mb-4">${config.title || "Votre E-Book"}</h3>
+            <p class="text-muted mb-6">Cliquez sur le bouton ci-dessous pour ouvrir et télécharger votre E-book.</p>
+            <button class="btn-primary" onclick="window.open('${config.link}', '_blank')" style="font-size:1.2rem; padding: 1rem 2rem; margin: 0 auto; background: var(--accent-gold); color: black;"><span class="material-icons-round">download</span> Accéder à l'E-book</button>
+        </div>
+    `;
+}
 function renderClientStats() {
     const db = getDB();
     const banner = document.getElementById('client-stats-banner');
@@ -1306,7 +992,7 @@ function renderClientBoutique() {
         
         htmlStr += `
         <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.15); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 25px rgba(0,0,0,0.3)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)'; this.querySelector('img').style.transform='scale(1)';">
-            <div style="height: 160px; overflow: hidden; position: relative; background: #000;">
+            <div style="height: 120px; overflow: hidden; position: relative; background: #000;">
                 <img src="${prod.image || 'https://via.placeholder.com/400'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='https://via.placeholder.com/400'">
                 <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
                     ${cat ? cat.name : 'Nouveau'}
@@ -1314,9 +1000,9 @@ function renderClientBoutique() {
                 ${isOutOfStock ? '<div style="position: absolute; top: 8px; right: 8px; background: #dc2626; color: white; padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; font-weight: 600;">Épuisé</div>' : ''}
             </div>
             <div style="padding: 12px; flex-grow: 1; display: flex; flex-direction: column;">
-                <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; font-weight: 700; color: #fff; line-height: 1.3;">${prod.title}</h4>
+                <h4 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 700; color: #fff; line-height: 1.3;">${prod.title}</h4>
                 <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.1rem;">${prod.price}</span>
+                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1rem;">${prod.price}</span>
                     <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                         <span class="material-icons-round" style="font-size: 18px;">add_shopping_cart</span>
                     </button>
@@ -1374,7 +1060,7 @@ function openBoutiqueProductDetail(prodId) {
                     </div>
                     
                     <div style="margin-top: auto;">
-                        <button class="hover-grow" style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 1.2rem; font-size: 1.1rem; gap: 10px; background: var(--accent-gold); color: black; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);" onclick="addBoutiqueToCart('${prod.id}')">
+                        <button class="hover-grow" style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 1.2rem; font-size: 1rem; gap: 10px; background: var(--accent-gold); color: black; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);" onclick="addBoutiqueToCart('${prod.id}')">
                             <span class="material-icons-round">shopping_bag</span>
                             Ajouter au panier
                         </button>
@@ -1455,7 +1141,7 @@ function renderPublicBoutique() {
         
         htmlStr += `
         <div style="background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.15); ${isOutOfStock ? 'opacity: 0.6; pointer-events: none;' : ''}" onclick="openBoutiqueProductDetail('${prod.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 25px rgba(0,0,0,0.3)'; this.querySelector('img').style.transform='scale(1.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)'; this.querySelector('img').style.transform='scale(1)';">
-            <div style="height: 160px; overflow: hidden; position: relative; background: #000;">
+            <div style="height: 120px; overflow: hidden; position: relative; background: #000;">
                 <img src="${prod.image || 'https://via.placeholder.com/400'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='https://via.placeholder.com/400'">
                 <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; font-weight: 600;">
                     ${cat ? cat.name : 'Nouveau'}
@@ -1463,9 +1149,9 @@ function renderPublicBoutique() {
                 ${isOutOfStock ? '<div style="position: absolute; top: 8px; right: 8px; background: #dc2626; color: white; padding: 3px 8px; border-radius: 50px; font-size: 0.65rem; font-weight: 600;">Épuisé</div>' : ''}
             </div>
             <div style="padding: 12px; flex-grow: 1; display: flex; flex-direction: column;">
-                <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; font-weight: 700; color: #fff; line-height: 1.3;">${prod.title}</h4>
+                <h4 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 700; color: #fff; line-height: 1.3;">${prod.title}</h4>
                 <div class="flex justify-between items-center" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1.1rem;">${prod.price}</span>
+                    <span style="font-weight: 900; color: var(--accent-gold); font-size: 1rem;">${prod.price}</span>
                     <button style="background: var(--accent-gold); color: black; border: none; border-radius: 50px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                         <span class="material-icons-round" style="font-size: 18px;">add_shopping_cart</span>
                     </button>

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "csv-parse": "^7.0.2",
+    "exceljs": "^4.4.0",
+    "firebase": "^12.16.0",
+    "puppeteer": "^24.43.1",
+    "qrcode": "^1.5.4"
+  }
+}

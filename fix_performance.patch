@@ -1,0 +1,107 @@
+--- js/admin.js
++++ js/admin.js
+@@ -20,6 +20,9 @@ function initAdminPortal() {
+     switchAdminTab('users');
+     let hasRunRepair = false;
++    let renderTimeout = null;
+     window.addEventListener('db_updated', async () => {
++        if (renderTimeout) clearTimeout(renderTimeout);
++        renderTimeout = setTimeout(() => {
+         const db = getDB();
+ 
+@@ -35,6 +38,7 @@ function initAdminPortal() {
+         if (typeof renderAdminCharts === 'function') {
+             renderAdminCharts(db.users);
+         }
++        }, 150);
+     });
+ 
+@@ -226,7 +230,8 @@ function renderAdminUsers() {
+         return;
+     }
+     
++    let htmlStr = '';
+     usersList.forEach(u => {
+@@ -275,7 +280,7 @@ function renderAdminUsers() {
+         }
+         
+-        tbody.innerHTML += `
++        htmlStr += `
+             <tr>
+                 <td>${u.company ? (u.company + '<br><small class="text-muted">' + u.name + '</small>') : u.name}</td>
+                 <td>${roleBadge}</td>
+@@ -285,6 +290,7 @@ function renderAdminUsers() {
+             </tr>
+         `;
+     });
++    tbody.innerHTML = htmlStr;
+ }
+ 
+@@ -382,9 +388,9 @@ function renderAdminCategories() {
+     const list = document.getElementById('admin-categories-list');
+     if(!list) return;
+     
+-    list.innerHTML = '';
++    let htmlStr = '';
+     db.categories.forEach(cat => {
+-        list.innerHTML += `
++        htmlStr += `
+             <div class="glass-panel flex justify-between items-center" style="padding:1rem; margin-bottom:0.5rem;">
+                 <div class="flex items-center gap-4">
+@@ -397,6 +403,7 @@ function renderAdminCategories() {
+             </div>
+         `;
+     });
++    list.innerHTML = htmlStr;
+     
+@@ -723,10 +730,11 @@ function renderAdminSuppliers() {
+         return nameA.localeCompare(nameB);
+     });
+     
++    let htmlStr = '';
+     filtered.forEach(sup => {
+         const catId = sup.categoryId || (sup.categories && sup.categories.length > 0 ? sup.categories[0] : null);
+         const cat = db.categories.find(c => c.id === catId);
+-        list.innerHTML += `
++        htmlStr += `
+             <div class="glass-panel flex justify-between items-center" style="padding:1rem; margin-bottom:0.5rem;">
+                 <div>
+@@ -744,6 +752,7 @@ function renderAdminSuppliers() {
+             </div>
+         `;
+     });
++    list.innerHTML = htmlStr;
+ }
+ 
+@@ -2855,8 +2864,8 @@ function renderAdminBackups() {
+         return;
+     }
+     
++    let htmlStr = '';
+     history.forEach(item => {
+-        const tr = document.createElement('tr');
+         const dateStr = new Date(item.timestamp).toLocaleString('fr-FR', {
+             day: '2-digit', month: 'short', year: 'numeric',
+@@ -2867,19 +2876,21 @@ function renderAdminBackups() {
+         if (item.action === 'MODIFICATION') actionBadge = '<span class="status-badge" style="background:#eab30820; color:#eab308;">MODIFICATION</span>';
+         if (item.action === 'SUPPRESSION') actionBadge = '<span class="status-badge" style="background:#ef444420; color:#ef4444;">SUPPRESSION</span>';
+         
+-        tr.innerHTML = `
++        htmlStr += `
++        <tr>
+             <td>${dateStr}</td>
+             <td>${actionBadge}</td>
+             <td class="font-bold">${item.supplierName}</td>
+-            <td><span class="category-badge">${item.category}</span></td>
++            <td><span class="category-badge">${item.category || 'Général'}</span></td>
+             <td>
+                 <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="restoreBackup('${item.id}')">
+                     <span class="material-icons-round" style="font-size:1rem;">restore</span> Restaurer
+                 </button>
+             </td>
++        </tr>
+         `;
+-        tbody.appendChild(tr);
+     });
++    tbody.innerHTML = htmlStr;
+ }

@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon" href="https://via.placeholder.com/192/0a0a0f/ffffff?text=SP">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css?v=16">
+    <link rel="stylesheet" href="css/style.css?v=103">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Material Icons -->
@@ -942,7 +942,7 @@
                 </div>
     
                 <!-- Products Grid -->
-                <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div id="public-boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem;">
                     <p class="text-muted text-center w-full" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
                 </div>
             </div>
@@ -992,7 +992,7 @@
                         </button>
                     </div>
                     <div id="client-stats-banner" class="flex flex-row flex-wrap gap-4 mb-4" style="align-items: center;">
-                        <!-- Injected by client.js?v=6 -->
+                        <!-- Injected by client.js?v=103 -->
                     </div>
                     <div class="search-bar-container">
                         <div class="search-bar">
@@ -1002,326 +1002,31 @@
                     </div>
 
                     <div id="category-filters" class="category-filters">
-                        <!-- Injected by client.js?v=6 -->
+                        <!-- Injected by client.js?v=103 -->
                     </div>
 
                     <div id="suppliers-grid" class="suppliers-grid">
-                        <!-- Injected by client.js?v=6 -->
+                        <!-- Injected by client.js?v=103 -->
                     </div>
                     <div id="load-more-trigger" style="height: 20px; width: 100%; margin-top: 20px;"></div>
                 </div>
 
                 <!-- Trainings View -->
+                <!-- Trainings View -->
                 <div id="client-view-trainings" class="hidden">
-                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <button id="btn-client-train-modules" class="btn-primary" onclick="switchClientTrainingTab('modules')" style="padding: 0.5rem 1rem;">🎥 Modules Classiques</button>
-                        <button id="btn-client-train-ebooks" class="btn-secondary" onclick="switchClientTrainingTab('ebooks')" style="padding: 0.5rem 1rem;">📚 Pack Ebooks</button>
-                    </div>
-
-                    <div id="client-train-subview-modules">
-                        <!-- SaaS Premium Dashboard View -->
-                        <!-- SaaS Premium Dashboard View -->
-                        <div id="training-dashboard-view" class="training-dashboard">
-                            
-                            <!-- Progress Card -->
-                            <div class="saas-progress-card">
-                                <div class="saas-progress-left">
-                                    <h2 class="saas-progress-title">Import China Pro</h2>
-                                    <div class="saas-progress-stats">
-                                        <span>Progression globale : <strong id="saas-progress-percent" style="color:var(--accent-gold);">0%</strong></span>
-                                        <span id="saas-progress-done-text">0 module terminé</span>
-                                        <span id="saas-progress-left-text">4 modules restants</span>
-                                    </div>
-                                    <div class="saas-progress-bar-bg">
-                                        <div id="saas-progress-fill" class="saas-progress-bar-fill" style="width: 0%;"></div>
-                                    </div>
-                                </div>
-                                <div class="saas-progress-right mt-4" style="margin-top: 0;">
-                                    <button id="saas-progress-cta" class="btn-primary" onclick="openTrainingModule(1)" style="font-size: 0.95rem;">
-                                        <span class="material-icons-round">play_circle</span> Commencer la formation
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Timeline -->
-                            <div class="saas-timeline">
-                                <div id="tl-item-1" class="saas-timeline-item active">
-                                    <div class="saas-timeline-icon">🌏</div>
-                                    <div class="saas-timeline-text mt-2">01</div>
-                                </div>
-                                <div id="tl-conn-1" class="saas-timeline-connector"></div>
-                                <div id="tl-item-2" class="saas-timeline-item locked">
-                                    <div class="saas-timeline-icon">🤝</div>
-                                    <div class="saas-timeline-text mt-2">02</div>
-                                </div>
-                                <div id="tl-conn-2" class="saas-timeline-connector"></div>
-                                <div id="tl-item-3" class="saas-timeline-item locked">
-                                    <div class="saas-timeline-icon">🔍</div>
-                                    <div class="saas-timeline-text mt-2">03</div>
-                                </div>
-                                <div id="tl-conn-3" class="saas-timeline-connector"></div>
-                                <div id="tl-item-4" class="saas-timeline-item locked">
-                                    <div class="saas-timeline-icon">💸</div>
-                                    <div class="saas-timeline-text mt-2">04</div>
-                                </div>
-                            </div>
-
-                            <!-- Modules Grid -->
-                            <h3 style="font-size:1.2rem; font-weight:800; color:#fff; margin-bottom: 1rem;">Parcours d'apprentissage</h3>
-                            <div class="saas-module-grid">
-                                
-                                <!-- Module 1 -->
-                                <div id="saas-mod-1" class="saas-module-card active">
-                                    <div class="saas-module-header">
-                                        <span class="saas-module-num">Module 01</span>
-                                        <span class="saas-module-icon">🌏</span>
-                                    </div>
-                                    <h3 class="saas-module-title">Plateformes Chinoises</h3>
-                                    <p class="saas-module-desc">Taobao, 1688, Weidian — comprendre les différences et savoir chercher.</p>
-                                    <div class="saas-module-meta">
-                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 6 leçons</span>
-                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 1h15</span>
-                                    </div>
-                                    <div class="saas-module-footer" id="saas-mod-footer-1">
-                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">play_arrow</span> En cours</span>
-                                        <button class="saas-btn-continue" onclick="openTrainingModule(1)">Continuer</button>
-                                    </div>
-                                </div>
-
-                                <!-- Module 2 -->
-                                <div id="saas-mod-2" class="saas-module-card locked">
-                                    <div class="saas-module-header">
-                                        <span class="saas-module-num">Module 02</span>
-                                        <span class="saas-module-icon">🤝</span>
-                                    </div>
-                                    <h3 class="saas-module-title">Agents d'Achat</h3>
-                                    <p class="saas-module-desc">Choisir un bon agent, comprendre leur rôle et accéder aux meilleurs.</p>
-                                    <div class="saas-module-meta">
-                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 8 leçons</span>
-                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 1h45</span>
-                                    </div>
-                                    <div class="saas-module-footer" id="saas-mod-footer-2">
-                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
-                                    </div>
-                                </div>
-
-                                <!-- Module 3 -->
-                                <div id="saas-mod-3" class="saas-module-card locked">
-                                    <div class="saas-module-header">
-                                        <span class="saas-module-num">Module 03</span>
-                                        <span class="saas-module-icon">🔍</span>
-                                    </div>
-                                    <h3 class="saas-module-title">Sourcing & Qualité</h3>
-                                    <p class="saas-module-desc">Trouver les bons produits, vérifier la qualité, accéder aux officiels.</p>
-                                    <div class="saas-module-meta">
-                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 12 leçons</span>
-                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 2h30</span>
-                                    </div>
-                                    <div class="saas-module-footer" id="saas-mod-footer-3">
-                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
-                                    </div>
-                                </div>
-
-                                <!-- Module 4 -->
-                                <div id="saas-mod-4" class="saas-module-card locked">
-                                    <div class="saas-module-header">
-                                        <span class="saas-module-num">Module 04</span>
-                                        <span class="saas-module-icon">💸</span>
-                                    </div>
-                                    <h3 class="saas-module-title">Revente & Profit</h3>
-                                    <p class="saas-module-desc">Plateformes, prix, marges et stratégie pour maximiser tes profits.</p>
-                                    <div class="saas-module-meta">
-                                        <span><span class="material-icons-round" style="font-size:14px;">menu_book</span> 10 leçons</span>
-                                        <span><span class="material-icons-round" style="font-size:14px;">schedule</span> 2h15</span>
-                                    </div>
-                                    <div class="saas-module-footer" id="saas-mod-footer-4">
-                                        <span class="saas-status-badge"><span class="material-icons-round" style="font-size:12px; vertical-align:-2px;">lock</span> Verrouillé</span>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- KPI Stats Grid -->
-                            <div class="saas-kpi-grid">
-                                <div class="saas-kpi-card">
-                                    <div class="saas-kpi-icon" style="color: #3b82f6;"><span class="material-icons-round">library_books</span></div>
-                                    <div class="saas-kpi-content">
-                                        <h4>36</h4>
-                                        <span>Leçons totales</span>
-                                    </div>
-                                </div>
-                                <div class="saas-kpi-card">
-                                    <div class="saas-kpi-icon" style="color: #10b981;"><span class="material-icons-round">language</span></div>
-                                    <div class="saas-kpi-content">
-                                        <h4>3 Plateformes</h4>
-                                        <span>Maîtrisées</span>
-                                    </div>
-                                </div>
-                                <div class="saas-kpi-card">
-                                    <div class="saas-kpi-icon" style="color: var(--accent-gold);"><span class="material-icons-round">trending_up</span></div>
-                                    <div class="saas-kpi-content">
-                                        <h4>x2 à x3</h4>
-                                        <span>Marge estimée</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    
-                    <!-- Reading View -->
-                    <div id="training-reading-view" class="training-reading-view hidden">
-                        <div class="tr-header">
-                            <button class="tr-back-btn" onclick="closeTrainingModule()">
-                                <span class="material-icons-round">arrow_back</span> Retour aux modules
-                            </button>
-                            <span id="tr-module-title" style="font-weight:700; color:var(--accent-gold); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Module</span>
-                        </div>
-                        
-                        <!-- Content Containers -->
-                        <div id="t-module-1" class="t-module-content hidden">
-                            <div class="t-section-header">
-                                <div class="t-section-badge">🌏</div>
-                                <div>
-                                    <span class="t-section-label">Module 01 · Fondamentaux</span>
-                                    <h2 class="t-section-title">Les 3 géants de l'e-commerce chinois</h2>
-                                    <p class="t-section-desc">Comprendre les différences entre Taobao, 1688 et Weidian.</p>
-                                </div>
-                            </div>
-                            <div class="t-grid-3">
-                                <div class="t-platform-card">
-                                    <div class="t-platform-top"><span class="t-chip">Débutant</span><span class="t-flag">🛍️</span><div class="t-name">Taobao</div><div class="t-sub">Amazon chinois</div></div>
-                                    <div class="t-platform-body">
-                                        <ul class="t-feature-list"><li><span class="t-dot">✓</span> Aucun MOQ (Achat à l'unité)</li><li><span class="t-dot warn">!</span> Site 100% chinois</li></ul>
-                                    </div>
-                                </div>
-                                <div class="t-platform-card">
-                                    <div class="t-platform-top"><span class="t-chip">B2B</span><span class="t-flag">🏭</span><div class="t-name">1688</div><div class="t-sub">Prix usine</div></div>
-                                    <div class="t-platform-body">
-                                        <ul class="t-feature-list"><li><span class="t-dot">✓</span> Prix ultra-compétitifs</li><li><span class="t-dot warn">!</span> MOQ élevé (100+)</li></ul>
-                                    </div>
-                                </div>
-                                <div class="t-platform-card">
-                                    <div class="t-platform-top"><span class="t-chip">Mobile</span><span class="t-flag">📱</span><div class="t-name">Weidian</div><div class="t-sub">Indépendants</div></div>
-                                    <div class="t-platform-body">
-                                        <ul class="t-feature-list"><li><span class="t-dot">✓</span> Tendances originales</li><li><span class="t-dot warn">!</span> Qualité variable</li></ul>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <hr style="border-color:var(--glass-border); margin: 2rem 0;">
-                            
-                            <div class="t-section-header"><div class="t-section-badge">📖</div><div><h2 class="t-section-title">Créer son compte Taobao</h2></div></div>
-                            <div class="t-steps-list">
-                                <div class="t-step-item"><div class="t-step-num">1</div><div class="t-step-content"><h3>Navigateur Brave</h3><p>Utilise Brave ou Chrome pour traduire la page via clic droit.</p></div></div>
-                                <div class="t-step-item"><div class="t-step-num">2</div><div class="t-step-content"><h3>Inscription Numéro</h3><p>Valide ton numéro avec le SMS à 6 chiffres.</p></div></div>
-                                <div class="t-step-item"><div class="t-step-num">3</div><div class="t-step-content"><h3>CAPTCHA</h3><p>Sélectionne toutes les images identiques pour valider.</p></div></div>
-                            </div>
-
-                            <hr style="border-color:var(--glass-border); margin: 2rem 0;">
-                            <div class="t-section-header"><div class="t-section-badge">💱</div><div><h2 class="t-section-title">Convertir Yuan (¥) → Euro (€)</h2></div></div>
-                            <div class="t-callout success mb-4"><div><strong>Astuce rapide :</strong> Divise le prix en Yuan par 8 pour avoir l'Euro. (ex: ¥80 ≈ 10€)</div></div>
-                        </div>
-
-                        <div id="t-module-2" class="t-module-content hidden">
-                            <div class="t-section-header">
-                                <div class="t-section-badge">🤝</div>
-                                <div>
-                                    <span class="t-section-label">Module 02 · Intermédiaires</span>
-                                    <h2 class="t-section-title">L'agent d'achat</h2>
-                                    <p class="t-section-desc">Il paie, réceptionne, vérifie (QC) et expédie tes colis. Indispensable.</p>
-                                </div>
-                            </div>
-                            <div class="t-grid-2">
-                                <div class="t-agent-card">
-                                    <div class="t-agent-top"><div class="t-agent-name">NiuNiuBox</div><span class="t-tag" style="background:rgba(168,85,247,0.2);color:#c084fc;">Privé</span></div>
-                                    <p class="t-agent-desc">Agent récent et fiable, non saturé. Idéal pour Taobao & Weidian.</p>
-                                    <a href="https://niuniubox.com/?invite_code=nmnUY4kVilWe79L8" target="_blank" class="t-agent-link">🚀 Accéder</a>
-                                </div>
-                                <div class="t-agent-card">
-                                    <div class="t-agent-top"><div class="t-agent-name">RizzitGO</div><span class="t-tag" style="background:rgba(56,189,248,0.2);color:#38bdf8;">Privé</span></div>
-                                    <p class="t-agent-desc">Plateforme stable, service client dispo. Très bon équilibre.</p>
-                                    <a href="https://rizzitgo.com/?rno=297FB2" target="_blank" class="t-agent-link" style="background:#38bdf8;">🚀 Accéder</a>
-                                </div>
-                                <div class="t-agent-card" style="grid-column: 1 / -1;">
-                                    <div class="t-agent-top"><div class="t-agent-name">CH1NE Factory</div><span class="t-tag" style="background:rgba(249,115,22,0.2);color:#fb923c;">Grossiste</span></div>
-                                    <p class="t-agent-desc">Sourcing personnalisé direct usines (WhatsApp). High-tech, vêtements luxe.</p>
-                                    <div class="t-agent-feat"><div class="t-feat-item">📲 WhatsApp : +33 7 80 93 56 24</div></div>
-                                    <a href="https://wa.me/33780935624" target="_blank" class="t-agent-link" style="background:#fb923c; max-width:200px;">💬 WhatsApp</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="t-module-3" class="t-module-content hidden">
-                            <div class="t-section-header"><div class="t-section-badge">🔍</div><div><span class="t-section-label">Module 03 · Sourcing</span><h2 class="t-section-title">Trouver & Valider</h2></div></div>
-                            <div class="t-steps-list">
-                                <div class="t-step-item"><div class="t-step-num">1</div><div class="t-step-content"><h3>Recherche par image</h3><p>Sur Taobao, utilise l'icône appareil photo 📷 pour trouver n'importe quel article depuis une image Vinted ou TikTok.</p></div></div>
-                                <div class="t-step-item"><div class="t-step-num">2</div><div class="t-step-content"><h3>Validation Qualité (QC)</h3><p>Utilise <strong>uufinds.com/qcfinds</strong> pour voir les vraies photos d'autres acheteurs avant de commander.</p></div></div>
-                                <div class="t-step-item"><div class="t-step-num">3</div><div class="t-step-content"><h3>Fournisseurs Officiels (Tmall)</h3><p>Privilégie les boutiques Tmall Flagship (Nike, Zara, Apple) pour de l'authentique à 100%.</p></div></div>
-                            </div>
-                        </div>
-
-                        <div id="t-module-4" class="t-module-content hidden">
-                            <div class="t-section-header"><div class="t-section-badge">💸</div><div><span class="t-section-label">Module 04 · Business</span><h2 class="t-section-title">Revente & Rentabilité</h2></div></div>
-                            <div class="t-grid-2">
-                                <div class="t-info-card">
-                                    <div class="t-info-title">📊 Calcul de marge</div>
-                                    <p>Ajoute Prix produit + Frais livraison + Com. agent. Vise une marge de x2 à x3 sur le textile.</p>
-                                </div>
-                                <div class="t-info-card">
-                                    <div class="t-info-title">📦 Optimisation colis</div>
-                                    <p>Regroupe tes achats. Retire les boîtes inutiles. Fais emballer sous-vide les vêtements.</p>
-                                </div>
-                            </div>
-                            <h3 class="mt-4 mb-2 text-white font-bold">Meilleures plateformes</h3>
-                            <div class="t-grid-3">
-                                <div class="t-info-card text-center"><span style="font-size:2rem;">🟢</span><h4 class="font-bold text-white mt-2">Vinted</h4><p class="text-xs text-muted">Mode & Sneakers. Mondial Relay intégré.</p></div>
-                                <div class="t-info-card text-center"><span style="font-size:2rem;">🔵</span><h4 class="font-bold text-white mt-2">Leboncoin</h4><p class="text-xs text-muted">Zéro commission. Remise en main propre.</p></div>
-                                <div class="t-info-card text-center"><span style="font-size:2rem;">📱</span><h4 class="font-bold text-white mt-2">TikTok Shop</h4><p class="text-xs text-muted">Trafic viral. Redirection WhatsApp.</p></div>
-                            </div>
-                        </div>
-                        
-                        <div class="t-module-footer">
-                            <button class="btn-ghost" onclick="closeTrainingModule()">Quitter</button>
-                            <button id="tr-next-btn" class="btn-primary" onclick="nextTrainingModule()">Module suivant <span class="material-icons-round text-sm ml-2">arrow_forward</span></button>
-                            <button id="tr-finish-btn" class="btn-primary hidden" onclick="finishTraining()" style="background:var(--success); color:white;">Terminer la formation <span class="material-icons-round text-sm ml-2">emoji_events</span></button>
-                        </div>
-                    </div>
-                    </div> <!-- End of client-train-subview-modules -->
-
-                    <!-- Ebooks Subview -->
-                    <div id="client-train-subview-ebooks" class="hidden">
-                        
-                        <!-- Premium Hero Banner -->
-                        <div class="ebook-hero-banner" style="position:relative; overflow:hidden; border-radius:24px; padding:3rem; margin-bottom:3rem; background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border:1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-                            <!-- Abstract glowing orbs in background -->
-                            <div style="position:absolute; top:-50%; left:-10%; width:300px; height:300px; background:rgba(251, 191, 36, 0.15); filter:blur(100px); border-radius:50%;"></div>
-                            <div style="position:absolute; bottom:-50%; right:-10%; width:400px; height:400px; background:rgba(59, 130, 246, 0.15); filter:blur(120px); border-radius:50%;"></div>
-                            
-                            <div style="position:relative; z-index:1; display:flex; flex-direction:column; max-width:600px;">
-                                <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:0.4rem 1rem; border-radius:30px; border:1px solid rgba(255,255,255,0.1); width:fit-content; margin-bottom:1.5rem;">
-                                    <span class="material-icons-round" style="color:#FFE600; font-size:16px;">stars</span>
-                                    <span style="font-size:0.8rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#fff;">Espace Premium</span>
-                                </div>
-                                <h2 style="font-size: 2.8rem; font-weight:900; color:#fff; line-height:1.1; margin-bottom:1rem; font-family:'Outfit', sans-serif;">
-                                    Maîtrisez l'art du <span style="background: linear-gradient(135deg, #FFE600, #F59E0B); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Sourcing</span>
-                                </h2>
-                                <p style="font-size:1.1rem; color:rgba(255,255,255,0.6); line-height:1.6; margin-bottom:0;">
-                                    Découvrez nos guides exclusifs, stratégies avancées et secrets d'experts pour importer comme un professionnel.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex justify-between items-end mb-6">
-                            <h3 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin:0;">Tous nos Ebooks</h3>
-                            <div style="font-size: 0.9rem; color: var(--text-muted);">Mise à jour régulière</div>
-                        </div>
-
-                        <div id="client-ebooks-list" class="ebook-premium-grid">
-                            <!-- Injected by client.js?v=6 -->
-                        </div>
+                    <div id="client-training-container" class="glass-panel" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 3rem 2rem;">
+                        <span class="material-icons-round animate-spin" style="font-size: 3rem; color: var(--accent-gold);">sync</span>
+                        <p class="mt-4">Chargement de la formation...</p>
                     </div>
                 </div>
 
+                <!-- Ebooks Subview -->
+                <div id="client-view-ebooks" class="hidden">
+                    <div id="client-ebook-container" class="glass-panel" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 3rem 2rem;">
+                        <span class="material-icons-round animate-spin" style="font-size: 3rem; color: var(--accent-gold);">sync</span>
+                        <p class="mt-4">Chargement de l'E-book...</p>
+                    </div>
+                </div>
                 <!-- Boutique E-commerce View -->
                 <div id="client-view-boutique" class="hidden" style="margin: -2rem -2rem 2rem -2rem;">
                     <!-- Hero Banner -->
@@ -1345,7 +1050,7 @@
                         </div>
     
                         <!-- Products Grid -->
-                        <div id="boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div id="boutique-products-grid" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem;">
                             <p class="text-muted w-full text-center" style="grid-column: 1 / -1; padding: 3rem;">Chargement de la boutique...</p>
                         </div>
                     </div>
@@ -1364,16 +1069,6 @@
                 </div>
 
                 <!-- E-Books View -->
-                <div id="client-view-ebooks" class="hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Mes E-Books</h2>
-                    </div>
-                    <div class="glass-panel text-center" style="padding: 4rem 2rem;">
-                        <span class="material-icons-round text-accent-gold" style="font-size: 4rem; margin-bottom: 1rem;">menu_book</span>
-                        <h3>Bibliothèque Numérique</h3>
-                        <p class="text-muted">Retrouvez bientôt ici tous vos guides et e-books exclusifs.</p>
-                    </div>
-                </div>
 
                 <!-- Support Personnalisé View -->
                 <div id="client-view-support" class="hidden">
@@ -1521,7 +1216,7 @@
                         <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
                         
                         <h3>Images & Media</h3>
-                        <div class="grid mb-6" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                        <div class="grid mb-6" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1rem;">
                             <!-- Card Front -->
                             <div class="form-group">
                                 <label class="text-sm text-muted">Business Card (Front)</label>
@@ -1578,7 +1273,7 @@
                 <div id="sp-view-stats" class="hidden" style="max-width: 1000px; margin: 2rem auto;">
                     <h3 class="mb-4">Statistiques de Visites</h3>
                     
-                    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                         <div class="glass-panel text-center" style="border-color: var(--accent-gold);">
                             <span class="material-icons-round text-accent-gold" style="font-size: 32px;">today</span>
                             <div style="font-size: 2rem; font-weight: bold; margin: 10px 0;" id="stat-today">0</div>
@@ -1617,6 +1312,9 @@
             <div class="sidebar">
                 <div class="nav-item" id="admin-nav-team" onclick="switchAdminTab('team')" style="background: rgba(245, 158, 11, 0.15); border-left: 4px solid #f59e0b;">
                     <span class="material-icons-round" style="color: #f59e0b;">badge</span> Équipe & Collaborateurs
+                </div>
+                <div class="nav-item" id="admin-nav-settings" onclick="switchAdminTab('settings')" style="background: rgba(255, 255, 255, 0.1); border-left: 4px solid #fff;">
+                    <span class="material-icons-round">settings</span> Paramètres des Packs
                 </div>
                 <div class="nav-item active" id="admin-nav-users" onclick="switchAdminTab('users')">
                     <span class="material-icons-round">group</span> Validations Clients
@@ -1834,7 +1532,7 @@
 
                             <h4 class="mb-4 mt-6 border-b pb-2 text-warning">Images & Médias</h4>
                             
-                            <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                            <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1rem;">
                                 <!-- Card Front -->
                                 <div class="form-group">
                                     <label>Carte de visite (Recto)</label>
@@ -1922,81 +1620,82 @@
                 </div>
 
                 <!-- Trainings View -->
+                <!-- Trainings & E-books View -->
                 <div id="admin-view-trainings" class="hidden">
-                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">school</span> Gestion des Formations</h3>
-                    
-                    <div class="flex gap-4 mb-6" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <button id="btn-admin-train-modules" class="btn-primary" onclick="switchAdminTrainingTab('modules')" style="padding: 0.5rem 1rem;">🎥 Modules Classiques</button>
-                        <button id="btn-admin-train-ebooks" class="btn-secondary" onclick="switchAdminTrainingTab('ebooks')" style="padding: 0.5rem 1rem;">📚 Pack Ebooks</button>
-                    </div>
-
-                    <!-- Modules Subview -->
-                    <div id="admin-train-subview-modules">
-                        <div class="glass-panel mb-6">
-                            <h3 class="mb-4 text-primary flex items-center gap-2"><span class="material-icons-round">add_circle</span> Ajouter un Module</h3>
-                            <form onsubmit="addTraining(event)">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">school</span> Contenus & Formations</h3>
+                    <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                        <!-- Configuration Formation Principale -->
+                        <div class="glass-panel">
+                            <h3 class="mb-4 text-primary flex items-center gap-2"><span class="material-icons-round">play_lesson</span> Formation Principale</h3>
+                            <p class="text-sm text-muted mb-4">Définissez l'image de présentation et le lien secret d'accès à la plateforme de formation.</p>
+                            <form onsubmit="saveTrainingConfig(event)">
                                 <div class="form-group">
-                                    <label>Titre du module</label>
-                                    <input type="text" id="train-title" class="input-control" placeholder="Ex: Comment contacter un agent..." required>
+                                    <label>URL de l'image de présentation</label>
+                                    <input type="url" id="config-training-img" class="input-control" placeholder="https://..." required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Contenu explicatif</label>
-                                    <textarea id="train-content" class="input-control" rows="5" placeholder="Écrivez le contenu du cours ici..." required></textarea>
+                                    <label>Lien d'accès secret</label>
+                                    <input type="url" id="config-training-link" class="input-control" placeholder="https://..." required>
+                                    <small class="text-muted mt-1 inline-block">Ce lien ne sera dévoilé au client qu'après clic sur le bouton de réclamation.</small>
                                 </div>
-                                <div class="form-group">
-                                    <label>Lien Vidéo / Image (Optionnel)</label>
-                                    <input type="text" id="train-media" class="input-control" placeholder="Lien YouTube, Vimeo, Drive, ou URL d'image...">
-                                    <small class="text-muted mt-1 inline-block">Collez le lien direct vers la ressource.</small>
-                                </div>
-                                <div class="flex gap-4">
-                                    <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
-                                        <span class="material-icons-round">save</span> <span id="btn-submit-training-text">Enregistrer le module</span>
-                                    </button>
-                                    <button type="button" id="btn-cancel-training" class="btn-secondary hidden" onclick="cancelEditTraining()" style="justify-content:center;">
-                                        Annuler
-                                    </button>
-                                </div>
+                                <button type="submit" class="btn-primary w-full" style="justify-content:center;">
+                                    <span class="material-icons-round">save</span> Enregistrer Formation
+                                </button>
                             </form>
                         </div>
-                        <div class="glass-panel mt-8">
-                            <h3 class="mb-4">Modules Existants</h3>
-                            <div id="admin-trainings-list"></div>
-                        </div>
-                    </div>
-
-                    <!-- Ebooks Subview -->
-                    <div id="admin-train-subview-ebooks" class="hidden">
-                        <div class="glass-panel mb-6">
-                            <h3 class="mb-4 text-warning flex items-center gap-2"><span class="material-icons-round">library_books</span> Ajouter un Ebook PDF</h3>
-                            <form onsubmit="addEbook(event)">
+                        <!-- Configuration E-Books -->
+                        <div class="glass-panel">
+                            <h3 class="mb-4 text-warning flex items-center gap-2"><span class="material-icons-round">menu_book</span> Gestion de l'E-book</h3>
+                            <p class="text-sm text-muted mb-4">L'e-book unique affiché dans l'onglet E-books pour les clients Premium/VIP.</p>
+                            <form onsubmit="saveEbookConfig(event)">
                                 <div class="form-group">
-                                    <label>Titre de l'Ebook</label>
-                                    <input type="text" id="ebook-title" class="input-control" placeholder="Ex: Guide Ultime du Sourcing 2026..." required>
+                                    <label>Titre de l'E-book</label>
+                                    <input type="text" id="config-ebook-title" class="input-control" placeholder="Titre..." required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Description / Texte explicatif</label>
-                                    <textarea id="ebook-desc" class="input-control" rows="3" placeholder="Ce livre vous apprendra..." required></textarea>
+                                    <label>URL de l'image de couverture</label>
+                                    <input type="url" id="config-ebook-img" class="input-control" placeholder="https://..." required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Fichier PDF <span id="ebook-file-required">(Requis)</span></label>
-                                    <input type="file" id="ebook-file" accept="application/pdf" class="input-control">
-                                    <small class="text-muted mt-1 inline-block text-warning">Le fichier sera uploadé sur Firebase Storage. Laissez vide lors d'une modification pour conserver l'ancien PDF.</small>
+                                    <label>Lien de téléchargement</label>
+                                    <input type="url" id="config-ebook-link" class="input-control" placeholder="https://drive.google.com/..." required>
                                 </div>
-                                <div class="flex gap-4">
-                                    <button type="submit" class="btn-primary w-full" id="btn-submit-ebook">
-                                        <span class="material-icons-round">cloud_upload</span> <span id="btn-submit-ebook-text">Uploader et Ajouter l'Ebook</span>
-                                    </button>
-                                    <button type="button" id="btn-cancel-ebook" class="btn-secondary hidden" onclick="cancelEditEbook()">Annuler</button>
-                                </div>
+                                <button type="submit" class="btn-primary w-full" style="background: var(--accent-gold); color: black; justify-content:center;">
+                                    <span class="material-icons-round">save</span> Enregistrer E-book
+                                </button>
                             </form>
-                        </div>
-                        <div class="glass-panel mt-8">
-                            <h3 class="mb-4">Ebooks Existants</h3>
-                            <div id="admin-ebooks-list" class="grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"></div>
                         </div>
                     </div>
                 </div>
-
+                <!-- Settings / Packs View -->
+                <div id="admin-view-settings" class="hidden">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">settings</span> Paramètres des Packs d'Accès</h3>
+                    <p class="text-muted mb-6">Cochez les onglets que chaque pack débloque dans l'espace client. Les modifications s'appliquent en temps réel.</p>
+                    <div class="glass-panel mb-6">
+                        <form onsubmit="savePackSettings(event)">
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Onglet (Fonctionnalité)</th>
+                                            <th class="text-center">Fournisseur</th>
+                                            <th class="text-center">Standard</th>
+                                            <th class="text-center">Premium</th>
+                                            <th class="text-center">VIP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pack-settings-tbody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-6 flex justify-end">
+                                <button type="submit" class="btn-primary">
+                                    <span class="material-icons-round">save</span> Sauvegarder les permissions
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 <!-- Agent d'Achat View -->
                 <div id="admin-view-agent" class="glass-panel hidden">
                     <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-warning">shopping_cart</span> Espace Agent d'Achat</h3>
@@ -2141,7 +1840,7 @@
                         <form onsubmit="addVintedProduct(event)">
                             <input type="hidden" id="vinted-id" value="">
                             
-                            <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                            <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
                                 <div class="form-group">
                                     <label>Titre du Produit *</label>
                                     <input type="text" id="vinted-title" class="input-control" required>
@@ -2566,12 +2265,12 @@
 
             <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">Contacts Rapides (Cliquez pour agrandir)</h4>
             <div id="modal-qr-container" class="qr-grid">
-                <!-- Injected via client.js?v=6 -->
+                <!-- Injected via client.js?v=103 -->
             </div>
 
             <h4 class="mb-2 mt-6 text-muted text-sm uppercase tracking-wider">E-Catalogues (Vue en Ligne)</h4>
             <div id="modal-catalog-container" style="display:flex; flex-direction:column; gap:1rem;">
-                <!-- Injected via client.js?v=6 -->
+                <!-- Injected via client.js?v=103 -->
             </div>
             
             <button class="btn-secondary w-full mt-6" onclick="closeModal('supplier-modal')" style="justify-content:center;">
@@ -2682,7 +2381,7 @@
     <div id="lightbox-modal" class="modal-overlay hidden" style="z-index: 200; background:rgba(0,0,0,0.95);" onclick="closeModal('lightbox-modal')">
         <button class="close-btn" style="top:2rem; right:2rem; opacity:1;"><span class="material-icons-round" style="font-size:48px; color:white;">close</span></button>
         <div id="lightbox-container" class="flex justify-center items-center" style="width:100%; height:100%; padding:2rem; flex-wrap:wrap; gap:1rem; overflow-y:auto;" onclick="event.stopPropagation()">
-            <!-- Injected via client.js?v=6 -->
+            <!-- Injected via client.js?v=103 -->
         </div>
     </div>
     <!-- DEMO EXPIRED OVERLAY -->
@@ -2704,7 +2403,6 @@
             <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Temps restant</span>
             <span id="demo-timer-clock" style="font-size: 1.2rem; font-weight: bold; color: white; font-family: monospace;">--:--</span>
         </div>
-    </div>
     <!-- EDIT SALE MODAL -->
     <div id="modal-edit-sale" class="modal modal-overlay hidden" onclick="closeModalOnOutsideClick(event, 'modal-edit-sale')">
         <div class="modal-content glass-panel" onclick="event.stopPropagation()" style="max-width: 600px;">
@@ -2854,15 +2552,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- JS Scripts -->
-    <script src="js/i18n.js?v=34"></script>
-    <script src="js/currency.js?v=34"></script>
-    <script src="js/db.js?v=2?v=34"></script>
-    <script src="js/auth.js?v=38"></script>
-    <script src="js/admin.js?v=52"></script>
-    <script src="js/admin-agent.js?v=34"></script>
-    <script src="js/client.js?v=38"></script>
-    <script src="js/client-agent.js?v=34"></script>
-    <script src="js/supplier.js?v=34"></script>
+    <script src="js/i18n.js?v=103"></script>
+    <script src="js/currency.js?v=103"></script>
+    <script src="js/db.js?v=103"></script>
+    <script src="js/auth.js?v=103"></script>
+    <script src="js/admin.js?v=103"></script>
+    <script src="js/admin-agent.js?v=103"></script>
+    <script src="js/client.js?v=103"></script>
+    <script src="js/client-agent.js?v=103"></script>
+    <script src="js/supplier.js?v=103"></script>
     
     <!-- Main Routing Logic -->
     <script>
@@ -2885,7 +2583,7 @@
                     // Restrict UI for staff_sales
                     if (user.role === 'staff_sales') {
                         // Hide all tabs except sales and boutique orders
-                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-categories', 'admin-nav-suppliers', 'admin-nav-trainings', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock'];
+                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-categories', 'admin-nav-suppliers', 'admin-nav-trainings', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock', 'admin-nav-settings'];
                         hideNavs.forEach(id => {
                             const el = document.getElementById(id);
                             if(el) el.style.display = 'none';
@@ -2902,7 +2600,7 @@
                         }, 500);
                     } else if (user.role === 'staff_sourcing') {
                         // Hide all tabs except suppliers, categories, and backups
-                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-trainings', 'admin-nav-boutique', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock', 'admin-nav-salereg', 'admin-nav-sales'];
+                        const hideNavs = ['admin-nav-users', 'admin-nav-team', 'admin-nav-trainings', 'admin-nav-boutique', 'admin-nav-agent', 'admin-nav-demos', 'admin-nav-backups', 'admin-nav-stock', 'admin-nav-settings', 'admin-nav-salereg', 'admin-nav-sales'];
                         hideNavs.forEach(id => {
                             const el = document.getElementById(id);
                             if(el) el.style.display = 'none';

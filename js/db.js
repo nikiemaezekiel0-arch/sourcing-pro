@@ -64,13 +64,14 @@ let localDB = {
     shipping_batches: [],
     boutique_categories: [],
     boutique_products: [],
-    boutique_orders: []
+    boutique_orders: [],
+    settings: []
 };
 
 // Initialize Database structure and real-time listeners
 function initDB() {
     let collectionsLoaded = 0;
-    const collections = ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders', 'vinted_stock', 'sales_platforms', 'shipping_batches', 'boutique_categories', 'boutique_products', 'boutique_orders'];
+    const collections = ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders', 'vinted_stock', 'sales_platforms', 'shipping_batches', 'boutique_categories', 'boutique_products', 'boutique_orders', 'settings'];
     collections.forEach(collectionName => {
         firestore.collection(collectionName).onSnapshot(snapshot => {
             localDB[collectionName] = [];
