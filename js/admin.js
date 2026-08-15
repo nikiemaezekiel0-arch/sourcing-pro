@@ -123,7 +123,7 @@ async function autoSyncDatabases() {
 }
 
 function switchAdminTab(tab) {
-    ['users', 'team', 'categories', 'suppliers', 'trainings', 'ebooks', 'settings', 'agent', 'demos', 'stock', 'salereg', 'sales', 'backups', 'boutique'].forEach(t => {
+    ['users', 'team', 'categories', 'suppliers', 'trainings', 'ebooks', 'settings', 'agent', 'demos', 'stock', 'salereg', 'sales', 'backups', 'boutique', 'ai'].forEach(t => {
         const view = document.getElementById(`admin-view-${t}`);
         const nav = document.getElementById(`admin-nav-${t}`);
         if(view) view.classList.add('hidden');
@@ -149,6 +149,9 @@ function switchAdminTab(tab) {
     }
     if(tab === 'agent') {
         switchAdminAgentTab('catalog'); // Default to catalog
+    }
+    if(tab === 'ai') {
+        if(typeof renderAdminAIOrders === 'function') renderAdminAIOrders();
     }
     if(tab === 'demos') {
         if(typeof renderAdminDemos === 'function') renderAdminDemos();
@@ -3660,4 +3663,81 @@ function copySourcingInviteLink(btnElement) {
         console.error('Failed to copy: ', err);
         alert("Impossible de copier. Voici le lien :\n\n" + link);
     });
+}
+
+// --- AI Translator Orders (Admin) ---
+function renderAdminAIOrders() {
+    const container = document.getElementById('admin-ai-orders-list');
+    if (!container) return;
+    
+    const db = getDB();
+    const orders = db.ai_orders || [];
+    
+    if (orders.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center" style="padding: 2rem;">Aucune commande pour le moment.</p>';
+        return;
+    }
+    
+    // Sort by newest first
+    orders.sort((a, b) => b.createdAt - a.createdAt);
+    
+    let html = `
+        <div style="overflow-x: auto;">
+            <table class="admin-table w-full">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Téléphone</th>
+                        <th>Adresse d'expédition</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    orders.forEach(order => {
+        const date = new Date(order.createdAt).toLocaleDateString() + ' ' + new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        let statusBadge = '';
+        let btnAction = '';
+        
+        if (order.status === 'ordered') {
+            statusBadge = '<span style="background: rgba(46, 204, 113, 0.2); color: var(--success); padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; font-weight: bold;">Commandé</span>';
+            btnAction = `<button class="btn-primary" style="background: transparent; border: 1px solid var(--warning); color: var(--warning); padding: 4px 10px; font-size: 0.8rem;" onclick="toggleAIOrderStatus('${order.id}', 'pending')">Remettre en attente</button>`;
+        } else {
+            statusBadge = '<span style="background: rgba(245, 158, 11, 0.2); color: var(--warning); padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; font-weight: bold;">En attente</span>';
+            btnAction = `<button class="btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="toggleAIOrderStatus('${order.id}', 'ordered')"><span class="material-icons-round" style="font-size: 14px;">check</span> Marquer Commandé</button>`;
+        }
+        
+        html += `
+            <tr>
+                <td style="white-space: nowrap;">${date}</td>
+                <td style="font-weight: bold;">${order.firstName} ${order.lastName}</td>
+                <td><a href="tel:${order.phone}" style="color: var(--accent-gold); text-decoration: underline;">${order.phone}</a></td>
+                <td style="max-width: 250px; white-space: normal;">${order.address}</td>
+                <td>${statusBadge}</td>
+                <td>${btnAction}</td>
+            </tr>
+        `;
+    });
+    
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+async function toggleAIOrderStatus(orderId, newStatus) {
+    const db = getDB();
+    const order = (db.ai_orders || []).find(o => o.id === orderId);
+    
+    if (order) {
+        order.status = newStatus;
+        try {
+            await saveDoc('ai_orders', order);
+            renderAdminAIOrders();
+        } catch(err) {
+            alert("Erreur lors de la mise à jour: " + err.message);
+        }
+    }
 }

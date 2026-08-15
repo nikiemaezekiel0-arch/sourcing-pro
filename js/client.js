@@ -229,6 +229,9 @@ function switchClientTab(tab) {
         if (tab === 'boutique' && typeof renderClientBoutique === 'function') {
             renderClientBoutique();
         }
+        if (tab === 'ai' && typeof renderClientAI === 'function') {
+            renderClientAI();
+        }
     }
 }
 
@@ -1355,5 +1358,115 @@ async function submitBoutiqueOrder(e) {
     } catch(err) {
         console.error(err);
         alert("Erreur lors de la commande: " + err.message);
+    }
+}
+
+// --- AI Translator Orders ---
+function renderClientAI() {
+    const user = getCurrentUser();
+    if (!user) return;
+    const db = getDB();
+    const container = document.getElementById('client-ai-container');
+    if (!container) return;
+
+    // Filter user's AI orders
+    const myOrders = (db.ai_orders || []).filter(o => o.clientId === user.id).sort((a,b) => b.createdAt - a.createdAt);
+
+    let html = `
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h3 class="font-bold mb-4" style="color: var(--accent-gold);"><span class="material-icons-round align-middle">shopping_cart</span> Commander un Traducteur IA</h3>
+            <p class="text-sm text-muted mb-4">Veuillez remplir ce formulaire pour commander votre appareil. Il sera expédié à l'adresse indiquée.</p>
+            
+            <form onsubmit="submitClientAIOrder(event)">
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label>Prénom</label>
+                        <input type="text" id="ai-order-firstname" class="input-control" required>
+                    </div>
+                    <div>
+                        <label>Nom</label>
+                        <input type="text" id="ai-order-lastname" class="input-control" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label>Adresse Postale Complète</label>
+                    <textarea id="ai-order-address" class="input-control" rows="3" placeholder="Numéro, rue, code postal, ville, pays..." required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label>Numéro de Téléphone</label>
+                    <input type="tel" id="ai-order-phone" class="input-control" placeholder="+33 6..." required>
+                </div>
+                <button type="submit" class="btn-primary w-full" style="justify-content:center;">Confirmer la commande</button>
+            </form>
+        </div>
+    `;
+
+    if (myOrders.length > 0) {
+        html += `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem;">
+                <h3 class="font-bold mb-4 flex items-center gap-2"><span class="material-icons-round">history</span> Mes Commandes</h3>
+                <div class="space-y-4">
+        `;
+        myOrders.forEach(order => {
+            const date = new Date(order.createdAt).toLocaleDateString();
+            const statusColor = order.status === 'ordered' ? 'var(--success)' : 'var(--warning)';
+            const statusText = order.status === 'ordered' ? 'Commandé (En route)' : 'En attente';
+            html += `
+                <div class="glass-panel flex justify-between items-center" style="padding: 1rem;">
+                    <div>
+                        <div class="font-bold">Traducteur IA</div>
+                        <div class="text-sm text-muted">Commandé le ${date}</div>
+                        <div class="text-xs text-muted mt-1">${order.address}</div>
+                    </div>
+                    <div style="color: ${statusColor}; font-weight: bold; font-size: 0.9rem; padding: 5px 10px; background: rgba(255,255,255,0.05); border-radius: 50px;">
+                        ${statusText}
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div></div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+async function submitClientAIOrder(e) {
+    e.preventDefault();
+    const user = getCurrentUser();
+    if(!user) return;
+    
+    const firstName = document.getElementById('ai-order-firstname').value;
+    const lastName = document.getElementById('ai-order-lastname').value;
+    const address = document.getElementById('ai-order-address').value;
+    const phone = document.getElementById('ai-order-phone').value;
+
+    const orderId = 'ai_ord_' + Date.now() + Math.random().toString(36).substring(2,7);
+    
+    const orderData = {
+        id: orderId,
+        clientId: user.id,
+        firstName,
+        lastName,
+        address,
+        phone,
+        status: 'pending',
+        createdAt: Date.now()
+    };
+
+    try {
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-icons-round spin">sync</span> Envoi...';
+        
+        await saveDoc('ai_orders', orderData);
+        alert("✅ Votre commande a bien été enregistrée !");
+        
+        // Render again to show the history and clear form
+        renderClientAI();
+    } catch(err) {
+        alert("Erreur: " + err.message);
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = false;
+        btn.innerText = "Confirmer la commande";
     }
 }

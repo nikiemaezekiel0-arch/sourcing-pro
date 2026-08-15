@@ -1061,10 +1061,8 @@
                     <div class="flex justify-between items-center mb-6">
                         <h2 style="font-weight: 800; color: #ffffff; margin: 0; font-size: 1.8rem;">Traducteur IA</h2>
                     </div>
-                    <div class="glass-panel text-center" style="padding: 4rem 2rem;">
-                        <span class="material-icons-round text-accent-gold" style="font-size: 4rem; margin-bottom: 1rem;">translate</span>
-                        <h3>Bientôt disponible</h3>
-                        <p class="text-muted">Votre traducteur instantané propulsé par l'IA sera bientôt activé dans cette section.</p>
+                    <div id="client-ai-container">
+                        <!-- Rendered by renderClientAI() -->
                     </div>
                 </div>
 
@@ -1336,6 +1334,9 @@
                 </div>
                 <div class="nav-item" id="admin-nav-agent" onclick="switchAdminTab('agent')">
                     <span class="material-icons-round">shopping_cart</span> Agent d'Achat
+                </div>
+                <div class="nav-item" id="admin-nav-ai" onclick="switchAdminTab('ai')">
+                    <span class="material-icons-round">translate</span> Commandes Traducteur IA
                 </div>
                 <div class="nav-item" id="admin-nav-demos" onclick="switchAdminTab('demos')">
                     <span class="material-icons-round">timer</span> Accès Démo
@@ -1774,6 +1775,13 @@
                         
                         <div id="admin-orders-list"></div>
                     </div>
+                </div>
+
+                <!-- AI Translator Admin View -->
+                <div id="admin-view-ai" class="hidden glass-panel">
+                    <h3 class="mb-4 flex items-center gap-2"><span class="material-icons-round text-accent-gold">translate</span> Commandes Traducteur IA</h3>
+                    <p class="text-muted text-sm mb-6">Gérez ici les commandes de Traducteurs IA passées par vos clients.</p>
+                    <div id="admin-ai-orders-list"></div>
                 </div>
 
                 <!-- Boutique E-commerce View -->
