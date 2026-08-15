@@ -2705,5 +2705,25 @@
             </div>
         </div>
     </div>
+
+    <!-- DEBUG SCRIPT FOR CLIENT -->
+    <script>
+        setTimeout(() => {
+            let diag = "--- DIAGNOSTIC ---\n";
+            if (typeof firebase === 'undefined') diag += "- Firebase SDK Manquant\n";
+            else diag += "- Firebase SDK OK\n";
+            
+            if (typeof getDB === 'undefined') diag += "- db.js Manquant\n";
+            else {
+                const db = getDB();
+                diag += "- DB isLoaded: " + (db._isLoaded ? "OUI" : "NON") + "\n";
+                diag += "- Users: " + (db.users ? db.users.length : "undefined") + "\n";
+                diag += "- Fournisseurs: " + (db.suppliers ? db.suppliers.length : "undefined") + "\n";
+            }
+            if (!diag.includes("Users: 291") && !diag.includes("Users: 292")) {
+                alert(diag + "\nPrenez une capture d'écran de ce message !");
+            }
+        }, 5000);
+    </script>
 </body>
 </html>
