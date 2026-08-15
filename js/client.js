@@ -268,29 +268,16 @@ function renderClientTrainings() {
         return;
     }
 
-    if (user.trainingFlowState === 'saved' && user.savedTrainingLink) {
+    const finalLink = user.trainingAccessLink || user.savedTrainingLink;
+
+    if (finalLink) {
         container.innerHTML = `
             <div class="glass-panel" style="background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.3);">
                 <span class="material-icons-round text-success" style="font-size: 4rem; margin-bottom:1rem;">check_circle</span>
                 <h3 class="text-xl font-bold mb-2">Accès Formation Activé</h3>
                 <p class="text-muted mb-4">Votre accès à la plateforme est configuré.</p>
-                <p class="text-sm">Pour accéder à la formation, il vous suffit de cliquer sur <strong>Ma Formation</strong> dans le menu de gauche. La plateforme s'ouvrira automatiquement dans un nouvel onglet.</p>
-                <button class="btn-primary mt-6" onclick="window.open('${user.savedTrainingLink}', '_blank')" style="margin: 0 auto;"><span class="material-icons-round">open_in_new</span> Ouvrir la formation maintenant</button>
-            </div>
-        `;
-        return;
-    }
-
-    if (user.trainingFlowState === 'clicked') {
-        container.innerHTML = `
-            <div class="glass-panel">
-                <span class="material-icons-round text-warning" style="font-size: 4rem; margin-bottom:1rem;">content_paste</span>
-                <h3 class="text-xl font-bold mb-4 text-warning">Dernière étape</h3>
-                <p class="text-muted mb-6">Veuillez coller le lien d'accès de la formation que vous venez de copier ci-dessous :</p>
-                <form onsubmit="saveClientTrainingLink(event)">
-                    <input type="url" id="client-training-link-input" class="input-control mb-4" placeholder="Collez le lien ici..." required>
-                    <button type="submit" class="btn-primary w-full" style="justify-content:center;"><span class="material-icons-round">save</span> Enregistrer mon accès</button>
-                </form>
+                <button class="btn-primary mt-6 mb-4" onclick="window.open('${finalLink}', '_blank')" style="margin: 0 auto; padding: 1rem 2rem; font-size: 1.1rem;"><span class="material-icons-round">school</span> Accéder à ma formation</button>
+                <p class="text-center mt-4"><a href="#" onclick="editClientTrainingLink(event)" style="color: var(--accent-gold); text-decoration: underline; font-size: 0.9rem;">Modifier mon lien d'accès</a></p>
             </div>
         `;
         return;
@@ -298,54 +285,66 @@ function renderClientTrainings() {
 
     container.innerHTML = `
         ${trainingConfig.imgUrl ? `<img src="${trainingConfig.imgUrl}" alt="Formation" style="width:100%; max-height:200px; object-fit:cover; border-radius:12px; margin-bottom:2rem;">` : ''}
-        <h3 class="text-2xl font-bold mb-4">${trainingConfig.title || 'Accéder à ma formation'}</h3>
-        <p class="text-muted mb-6">Cliquez sur le bouton ci-dessous pour obtenir votre lien d'accès secret.</p>
-        <button class="btn-primary" onclick="requestTrainingAccess('${trainingConfig.link}')" style="font-size:1.2rem; padding: 1rem 2rem; margin: 0 auto;"><span class="material-icons-round">local_activity</span> Obtenir mon lien de formation</button>
+        <h3 class="text-2xl font-bold mb-4">${trainingConfig.title || 'Formation Sourcing Pro'}</h3>
+        <p class="text-muted mb-6">Inscrivez-vous sur Stan Store, puis collez le lien d'accès reçu par email ci-dessous pour débloquer votre accès direct.</p>
+        
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h4 class="font-bold mb-3" style="color: var(--accent-gold);">1. S'inscrire</h4>
+            <button class="btn-primary" onclick="window.open('${trainingConfig.link}', '_blank')" style="font-size:1.1rem; padding: 0.8rem 1.5rem; margin: 0 auto; background: #fff; color: #000;"><span class="material-icons-round">shopping_cart</span> S'inscrire sur Stan Store</button>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem;">
+            <h4 class="font-bold mb-3" style="color: var(--accent-gold);">2. Valider mon accès</h4>
+            <p class="text-sm text-muted mb-4">Collez le lien d'accès final que vous avez reçu après votre inscription :</p>
+            <form onsubmit="saveClientTrainingLink(event)">
+                <input type="url" id="client-training-link-input" class="input-control mb-4" placeholder="Ex: https://skool.com/..." required>
+                <button type="submit" class="btn-primary w-full" style="justify-content:center;"><span class="material-icons-round">save</span> Enregistrer mon accès</button>
+            </form>
+        </div>
     `;
 }
 
-function requestTrainingAccess(link) {
-    navigator.clipboard.writeText(link).then(() => {
-        alert("✅ Lien de la formation copié dans le presse-papier !");
-        const user = getCurrentUser();
-        user.trainingFlowState = 'clicked';
-        if(user.id && !user.id.startsWith("usr_admin") && !user.id.startsWith("usr_client") && !user.id.startsWith("usr_supplier")) {
-            saveDoc('users', user).then(() => {
-                setCurrentUser(user);
-                renderClientTrainings();
-            });
-        } else {
+function editClientTrainingLink(e) {
+    e.preventDefault();
+    const user = getCurrentUser();
+    delete user.trainingAccessLink;
+    delete user.savedTrainingLink;
+    if(user.id && !user.id.startsWith("usr_admin") && !user.id.startsWith("usr_client") && !user.id.startsWith("usr_supplier")) {
+        saveDoc('users', user).then(() => {
             setCurrentUser(user);
             renderClientTrainings();
-        }
-    }).catch(err => {
-        alert("Erreur lors de la copie du lien. Réessayez.");
-    });
+        });
+    } else {
+        setCurrentUser(user);
+        renderClientTrainings();
+    }
 }
 
 function saveClientTrainingLink(e) {
     e.preventDefault();
     const inputLink = document.getElementById('client-training-link-input').value;
-    const db = getDB();
-    const config = db.trainings ? db.trainings.find(s => s.id === 'trainingConfig') : null;
     
-    if (config && inputLink === config.link) {
-        const user = getCurrentUser();
-        user.trainingFlowState = 'saved';
-        user.savedTrainingLink = inputLink;
-        if(user.id && !user.id.startsWith("usr_admin") && !user.id.startsWith("usr_client") && !user.id.startsWith("usr_supplier")) {
-            saveDoc('users', user).then(() => {
-                setCurrentUser(user);
-                alert("✅ Accès enregistré avec succès !");
-                renderClientTrainings();
-            });
-        } else {
+    if (!inputLink) return;
+    
+    const user = getCurrentUser();
+    user.trainingAccessLink = inputLink;
+    
+    // Clean up old states if they existed
+    delete user.trainingFlowState;
+    delete user.savedTrainingLink;
+
+    if(user.id && !user.id.startsWith("usr_admin") && !user.id.startsWith("usr_client") && !user.id.startsWith("usr_supplier")) {
+        saveDoc('users', user).then(() => {
             setCurrentUser(user);
             alert("✅ Accès enregistré avec succès !");
             renderClientTrainings();
-        }
+        }).catch(err => {
+            alert("Erreur lors de l'enregistrement : " + err.message);
+        });
     } else {
-        alert("Le lien collé ne correspond pas au lien de la formation.");
+        setCurrentUser(user);
+        alert("✅ Accès enregistré avec succès !");
+        renderClientTrainings();
     }
 }
 
