@@ -71,7 +71,7 @@ let localDB = {
 // Initialize Database structure and real-time listeners
 function initDB() {
     let collectionsLoaded = 0;
-    const collections = ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders', 'vinted_stock', 'sales_platforms', 'shipping_batches', 'boutique_categories', 'boutique_products', 'boutique_orders', 'settings'];
+    const collections = ['users', 'categories', 'suppliers', 'trainings', 'agent_products', 'orders', 'vinted_stock', 'sales_platforms', 'shipping_batches', 'boutique_categories', 'boutique_products', 'boutique_orders'];
     collections.forEach(collectionName => {
         firestore.collection(collectionName).onSnapshot(snapshot => {
             localDB[collectionName] = [];
@@ -84,7 +84,7 @@ function initDB() {
             }
             window.dispatchEvent(new Event('db_updated'));
         }, error => {
-            console.error("Firebase Snapshot Error:", error);
+            console.error("Firebase Snapshot Error:", error); if (!window.fbErrShown) { alert("FIREBASE ERROR: " + error.message); window.fbErrShown = true; }
         });
     });
 
