@@ -289,8 +289,8 @@ function renderClientTrainings() {
         <p class="text-muted mb-6">Inscrivez-vous sur Stan Store, puis collez le lien d'accès reçu par email ci-dessous pour débloquer votre accès direct.</p>
         
         <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-            <h4 class="font-bold mb-3" style="color: var(--accent-gold);">1. S'inscrire</h4>
-            <button class="btn-primary" onclick="window.open('${trainingConfig.link}', '_blank')" style="font-size:1.1rem; padding: 0.8rem 1.5rem; margin: 0 auto; background: #fff; color: #000;"><span class="material-icons-round">shopping_cart</span> S'inscrire sur Stan Store</button>
+            <h4 class="font-bold mb-3" style="color: var(--accent-gold);">1. Enregistrement</h4>
+            <button class="btn-primary" onclick="window.open('${trainingConfig.link}', '_blank')" style="font-size:1.1rem; padding: 0.8rem 1.5rem; margin: 0 auto; background: #fff; color: #000;"><span class="material-icons-round">shopping_cart</span> Enregistrement à la formation</button>
         </div>
 
         <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem;">
