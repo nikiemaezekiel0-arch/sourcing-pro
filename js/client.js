@@ -295,9 +295,9 @@ function renderClientTrainings() {
 
         <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem;">
             <h4 class="font-bold mb-3" style="color: var(--accent-gold);">2. Valider mon accès</h4>
-            <p class="text-sm text-muted mb-4">Collez le lien d'accès final que vous avez reçu après votre inscription :</p>
+            <p class="text-sm text-muted mb-4">Collez le lien reçu par mail :</p>
             <form onsubmit="saveClientTrainingLink(event)">
-                <input type="url" id="client-training-link-input" class="input-control mb-4" placeholder="Ex: https://skool.com/..." required>
+                <input type="url" id="client-training-link-input" class="input-control mb-4" placeholder="Collez le lien reçu par mail ici..." required>
                 <button type="submit" class="btn-primary w-full" style="justify-content:center;"><span class="material-icons-round">save</span> Enregistrer mon accès</button>
             </form>
         </div>
