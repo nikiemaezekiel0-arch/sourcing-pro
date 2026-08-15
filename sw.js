@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sourcing-pro-cache-v20';
+const CACHE_NAME = 'sourcing-pro-cache-v21';
 const urlsToCache = [
   './',
   './index.html',
@@ -24,6 +24,7 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   // Only intercept GET requests
   if (event.request.method !== 'GET') return;
+  if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('identitytoolkit.googleapis.com') || event.request.url.includes('googleapis.com')) return;
   
   event.respondWith(
     caches.match(event.request)

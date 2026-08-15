@@ -16,12 +16,6 @@ if (!firebase.apps.length) {
 }
 
 const firestore = firebase.firestore();
-try {
-    firestore.enablePersistence({ synchronizeTabs: true })
-        .catch(err => console.error("Firebase persistence error:", err));
-} catch (e) {
-    console.error(e);
-}
 const storage = firebase.storage();
 
 
