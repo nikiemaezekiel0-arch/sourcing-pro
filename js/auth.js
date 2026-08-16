@@ -98,7 +98,24 @@ async function handleLogin(event) {
         
         // Fetch user data from local Firestore cache
         const db = getDB();
-        const userDoc = db.users.find(u => u.email === userEmail || u.email === email);
+        let userDoc = db.users.find(u => u.email === userEmail || u.email === email);
+        
+        // Fallback: Direct Firestore lookup if local cache is not yet synced
+        if (!userDoc) {
+            try {
+                const userSnap = await firestore.collection('users').doc(userCredential.user.uid).get();
+                if (userSnap.exists) {
+                    userDoc = userSnap.data();
+                } else {
+                    const emailQuery = await firestore.collection('users').where('email', '==', userEmail).get();
+                    if (!emailQuery.empty) {
+                        userDoc = emailQuery.docs[0].data();
+                    }
+                }
+            } catch (err) {
+                console.warn("Direct lookup failed:", err);
+            }
+        }
         
         if (!userDoc) {
             throw new Error("Compte introuvable dans la base de données. Veuillez vous réinscrire.");
