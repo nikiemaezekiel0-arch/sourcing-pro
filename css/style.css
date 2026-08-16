@@ -130,7 +130,8 @@ textarea.input-control { resize: vertical; min-height: 100px; }
 .dashboard-container { display: flex; flex: 1; overflow: hidden; }
 
 /* --- Sidebar --- */
-.sidebar { width: 220px; border-right: 1px solid var(--glass-border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.sidebar { width: 220px; border-right: 1px solid var(--glass-border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; scrollbar-width: none; }
+.sidebar::-webkit-scrollbar { display: none; }
 .nav-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); cursor: pointer; color: var(--text-secondary); transition: var(--transition); font-weight: 500; font-size: 0.95rem; }
 .nav-item:hover { background: rgba(255,255,255,0.05); color: white; transform: translateX(4px); }
 .nav-item.active { background: #0D1425; color: var(--accent-gold); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
